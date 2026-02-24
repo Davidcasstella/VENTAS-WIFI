@@ -1,0 +1,152 @@
+.top-header {
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 240px;
+    /* Aligned with sidebar width */
+    height: 60px;
+    background: rgba(13, 17, 23, 0.8);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    /* Aligned to left as requested */
+    padding: 0 1.5rem;
+    z-index: 90;
+    transition: all 0.3s ease;
+    gap: 1rem;
+}
+
+/* Cyber status badges container */
+.header-cyber-badges {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-right: auto;
+}
+
+@media (max-width: 768px) {
+    .header-cyber-badges {
+        display: none;
+    }
+}
+
+
+.header-nav {
+    display: flex;
+    gap: 0.5rem;
+    /* Tighter gap for SaaS look */
+    align-items: center;
+}
+
+.header-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.825rem;
+    font-weight: 500;
+    padding: 0.5rem 0.85rem;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.header-nav-item:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.header-nav-item.active {
+    color: white;
+    background: rgba(99, 102, 241, 0.15);
+}
+
+.header-nav-item.active::after {
+    content: '';
+    position: absolute;
+    bottom: -15px;
+    left: 20%;
+    right: 20%;
+    height: 2px;
+    background: var(--primary-color);
+    box-shadow: 0 -2px 10px var(--primary-color);
+}
+
+.header-nav-item.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.logout-btn {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    padding: 0.5rem 1rem;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.logout-btn:hover {
+    background: #ef4444;
+    color: white;
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
+}
+
+/* Responsividad */
+@media (max-width: 768px) {
+    .logout-btn {
+        position: absolute;
+        right: 1.25rem;
+        padding: 0.5rem;
+        background: transparent;
+        border: none;
+    }
+
+    .logout-text {
+        display: none;
+    }
+}
+
+/* Logo móvil (oculto en desktop) */
+.header-logo-mobile {
+    display: none;
+    align-items: center;
+}
+
+.header-logo-img {
+    height: 42px;
+    /* Más grande, de 32px a 42px */
+    width: auto;
+    filter: drop-shadow(0 0 10px var(--accent-blue-glow));
+    transition: transform 0.3s ease;
+}
+
+/* Responsividad */
+@media (max-width: 768px) {
+    .top-header {
+        left: 0;
+        padding: 0 1rem;
+        justify-content: center;
+        /* Centramos el contenido del header */
+    }
+
+    .header-logo-mobile {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .header-nav {
+        display: none !important;
+        /* Aseguramos que solo se vea el logo */
+    }
+}

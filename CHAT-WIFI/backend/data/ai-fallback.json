@@ -1,0 +1,24 @@
+{
+  "config": {
+    "adminJid": "573028599105@s.whatsapp.net",
+    "fallbackPhrases": [
+      "no tengo información",
+      "no tengo información suficiente",
+      "no estoy seguro",
+      "no puedo ayudar",
+      "desconozco",
+      "no tengo datos",
+      "no cuento con información",
+      "no tengo la respuesta",
+      "no dispongo de información"
+    ]
+  },
+  "pending": {
+    "151771427143897@lid": {
+      "lastMessage": "Que es la vida ?",
+      "disabledAt": "2026-02-24T05:51:45.226Z",
+      "reason": "fallback_unanswered",
+      "attended": false
+    }
+  }
+}

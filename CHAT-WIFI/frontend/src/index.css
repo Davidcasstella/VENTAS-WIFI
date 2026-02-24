@@ -1,0 +1,95 @@
+:root {
+    --bg-deep: #0b0f1a;
+    --bg-sidebar: #080b13;
+    --bg-panel: #121826;
+    --bg-main: #0b0f1a;
+    --bg-card: rgba(18, 24, 40, 0.65);
+    --accent-blue: #00e5ff;
+    --accent-blue-glow: rgba(0, 229, 255, 0.35);
+    --text-primary: #ffffff;
+    --text-secondary: #94a3b8;
+    --text-muted: #4a5568;
+    --border-light: rgba(255, 255, 255, 0.05);
+    --glass-bg: rgba(18, 24, 40, 0.6);
+    --glass-blur: blur(14px);
+    /* Neon palette */
+    --neon-cyan: #00e5ff;
+    --neon-purple: #bf5af2;
+    --neon-green: #00ff88;
+    --neon-yellow: #ffc800;
+    --neon-red: #ff3c5f;
+    /* Primary */
+    --primary-color: #6366f1;
+    --primary-gradient: linear-gradient(135deg, #6366f1, #a855f7);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: var(--bg-deep);
+    background: linear-gradient(135deg, #0b0f1a 0%, #0e1520 50%, #121826 100%);
+    color: var(--text-primary);
+    height: 100vh;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+}
+
+
+#root {
+    height: 100%;
+}
+
+.premium-card {
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--border-light);
+    border-radius: 24px;
+}
+
+button {
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s ease;
+}
+
+input {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+    color: white;
+    padding: 0.75rem 1rem;
+    transition: all 0.2s;
+}
+
+input:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+}
+
+.glow-blue {
+    box-shadow: 0 0 20px var(--accent-blue-glow);
+}
+
+/* Scrollbar minimalista */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+}

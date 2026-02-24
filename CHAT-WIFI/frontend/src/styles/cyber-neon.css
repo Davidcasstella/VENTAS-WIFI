@@ -1,0 +1,1311 @@
+/* ============================================================
+   CYBER NEON THEME — CHAT WIFI DASHBOARD
+   Pure visual enhancement layer. No logic changes.
+   All keyframes, glow effects, glassmorphism & hover states.
+   ============================================================ */
+
+/* ---- Design Tokens ---- */
+:root {
+    /* Neon palette */
+    --neon-cyan: #00e5ff;
+    --neon-purple: #bf5af2;
+    --neon-green: #00ff88;
+    --neon-yellow: #ffc800;
+    --neon-red: #ff3c5f;
+    --neon-blue: #4f8fff;
+
+    /* Glow shadows */
+    --glow-cyan: 0 0 10px rgba(0, 229, 255, 0.45), 0 0 30px rgba(0, 229, 255, 0.18);
+    --glow-purple: 0 0 10px rgba(191, 90, 242, 0.45), 0 0 30px rgba(191, 90, 242, 0.18);
+    --glow-green: 0 0 10px rgba(0, 255, 136, 0.45), 0 0 30px rgba(0, 255, 136, 0.18);
+    --glow-yellow: 0 0 10px rgba(255, 200, 0, 0.45), 0 0 30px rgba(255, 200, 0, 0.18);
+    --glow-red: 0 0 10px rgba(255, 60, 95, 0.45), 0 0 30px rgba(255, 60, 95, 0.18);
+    --glow-blue: 0 0 10px rgba(79, 143, 255, 0.45), 0 0 30px rgba(79, 143, 255, 0.18);
+
+    /* Backgrounds */
+    --bg-main: #0b0f1a;
+    --bg-sidebar: #080b13;
+    --bg-card: rgba(18, 24, 40, 0.65);
+    --bg-header: rgba(8, 11, 20, 0.85);
+
+    /* Accents */
+    --primary-color: #6366f1;
+    --primary-gradient: linear-gradient(135deg, #6366f1, #a855f7);
+    --text-muted: #4a5568;
+}
+
+/* ============================================================
+   GLOBAL BACKGROUND — Deep space feel
+   ============================================================ */
+body {
+    background: linear-gradient(135deg, #0b0f1a 0%, #0e1520 50%, #121826 100%) !important;
+}
+
+/* ============================================================
+   PREMIUM CARD — Glassmorphism + neon border glow
+   ============================================================ */
+.premium-card {
+    background: rgba(18, 24, 40, 0.65) !important;
+    backdrop-filter: blur(14px) !important;
+    -webkit-backdrop-filter: blur(14px) !important;
+    border-radius: 18px !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    box-shadow:
+        0 4px 24px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+    transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+}
+
+.premium-card:hover {
+    transform: translateY(-3px) !important;
+    box-shadow:
+        0 8px 40px rgba(0, 0, 0, 0.5),
+        var(--glow-cyan),
+        inset 0 1px 0 rgba(255, 255, 255, 0.07) !important;
+}
+
+/* ============================================================
+   STAT CARDS — Glow by icon color variant
+   ============================================================ */
+.stat-card.premium-card:hover {
+    transform: translateY(-4px) !important;
+}
+
+/* Blue stat (Usuarios Activos) */
+.stat-card:has(.stat-icon.blue):hover {
+    box-shadow:
+        0 8px 40px rgba(0, 0, 0, 0.5),
+        var(--glow-cyan) !important;
+    border-color: rgba(0, 229, 255, 0.18) !important;
+}
+
+/* Purple stat (Consumo IA) */
+.stat-card:has(.stat-icon.purple):hover {
+    box-shadow:
+        0 8px 40px rgba(0, 0, 0, 0.5),
+        var(--glow-purple) !important;
+    border-color: rgba(191, 90, 242, 0.18) !important;
+}
+
+/* Green stat (Estado Sistema) */
+.stat-card:has(.stat-icon.green):hover {
+    box-shadow:
+        0 8px 40px rgba(0, 0, 0, 0.5),
+        var(--glow-green) !important;
+    border-color: rgba(0, 255, 136, 0.18) !important;
+}
+
+/* ============================================================
+   STAT ICONS — Neon icon glow
+   ============================================================ */
+.stat-icon.blue {
+    background: rgba(0, 229, 255, 0.1) !important;
+    color: var(--neon-cyan) !important;
+    box-shadow: var(--glow-cyan);
+    border-radius: 14px !important;
+}
+
+.stat-icon.purple {
+    background: rgba(191, 90, 242, 0.1) !important;
+    color: var(--neon-purple) !important;
+    box-shadow: var(--glow-purple);
+    border-radius: 14px !important;
+}
+
+.stat-icon.green {
+    background: rgba(0, 255, 136, 0.1) !important;
+    color: var(--neon-green) !important;
+    box-shadow: var(--glow-green);
+    border-radius: 14px !important;
+}
+
+/* ============================================================
+   STAT VALUE — Neon gradient text
+   ============================================================ */
+.stat-value {
+    font-size: 1.6rem !important;
+    font-weight: 800 !important;
+    background: linear-gradient(135deg, #ffffff 0%, var(--neon-cyan) 100%);
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    letter-spacing: -0.5px;
+}
+
+/* ============================================================
+   STATUS INDICATORS — Pulse dot animation
+   ============================================================ */
+.cyber-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.cyber-status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+/* Optimal / Green */
+.cyber-status.optimal {
+    color: var(--neon-green);
+}
+
+.cyber-status.optimal .cyber-status-dot {
+    background: var(--neon-green);
+    box-shadow: 0 0 8px rgba(0, 255, 136, 0.8);
+    animation: cyber-pulse-green 2s ease-in-out infinite;
+}
+
+/* Warning / Yellow */
+.cyber-status.warning {
+    color: var(--neon-yellow);
+}
+
+.cyber-status.warning .cyber-status-dot {
+    background: var(--neon-yellow);
+    box-shadow: 0 0 8px rgba(255, 200, 0, 0.8);
+    animation: cyber-pulse-yellow 2s ease-in-out infinite;
+}
+
+/* Critical / Red */
+.cyber-status.critical {
+    color: var(--neon-red);
+}
+
+.cyber-status.critical .cyber-status-dot {
+    background: var(--neon-red);
+    box-shadow: 0 0 8px rgba(255, 60, 95, 0.8);
+    animation: cyber-pulse-red 2s ease-in-out infinite;
+}
+
+@keyframes cyber-pulse-green {
+
+    0%,
+    100% {
+        box-shadow: 0 0 6px rgba(0, 255, 136, 0.6);
+        transform: scale(1);
+    }
+
+    50% {
+        box-shadow: 0 0 14px rgba(0, 255, 136, 1);
+        transform: scale(1.25);
+    }
+}
+
+@keyframes cyber-pulse-yellow {
+
+    0%,
+    100% {
+        box-shadow: 0 0 6px rgba(255, 200, 0, 0.6);
+        transform: scale(1);
+    }
+
+    50% {
+        box-shadow: 0 0 14px rgba(255, 200, 0, 1);
+        transform: scale(1.25);
+    }
+}
+
+@keyframes cyber-pulse-red {
+
+    0%,
+    100% {
+        box-shadow: 0 0 6px rgba(255, 60, 95, 0.6);
+        transform: scale(1);
+    }
+
+    50% {
+        box-shadow: 0 0 14px rgba(255, 60, 95, 1);
+        transform: scale(1.25);
+    }
+}
+
+/* ============================================================
+   SIDEBAR — Dark cyber style
+   ============================================================ */
+.sidebar {
+    background: linear-gradient(180deg, #080b13 0%, #0a0e1a 100%) !important;
+    border-right: 1px solid rgba(0, 229, 255, 0.06) !important;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Logo neon glow */
+.logo-img-sidebar {
+    filter: drop-shadow(0 0 10px rgba(0, 229, 255, 0.5)) !important;
+    transition: filter 0.3s ease;
+}
+
+.logo-img-sidebar:hover {
+    filter: drop-shadow(0 0 18px rgba(0, 229, 255, 0.8)) !important;
+}
+
+/* Nav items — hover glow */
+.nav-item {
+    position: relative;
+    overflow: hidden;
+    border-radius: 10px !important;
+    transition: all 0.25s ease !important;
+}
+
+.nav-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 0;
+    background: var(--neon-cyan);
+    border-radius: 0 3px 3px 0;
+    box-shadow: 0 0 8px rgba(0, 229, 255, 0.8);
+    transition: height 0.25s ease;
+}
+
+.nav-item:hover {
+    background: rgba(0, 229, 255, 0.05) !important;
+    color: var(--neon-cyan) !important;
+}
+
+.nav-item:hover::before {
+    height: 70%;
+}
+
+/* Active item — neon accent + left bar */
+.nav-item.active {
+    background: linear-gradient(90deg, rgba(0, 229, 255, 0.12) 0%, rgba(0, 229, 255, 0.03) 100%) !important;
+    color: var(--neon-cyan) !important;
+    box-shadow: none !important;
+    border: 1px solid rgba(0, 229, 255, 0.12) !important;
+}
+
+.nav-item.active::before {
+    height: 70%;
+}
+
+/* Group label */
+.nav-group-label {
+    color: rgba(0, 229, 255, 0.3) !important;
+    letter-spacing: 0.12em !important;
+    font-size: 0.62rem !important;
+}
+
+/* User avatar neon ring */
+.user-avatar {
+    border: 2px solid rgba(0, 229, 255, 0.3);
+    box-shadow: 0 0 10px rgba(0, 229, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+.user-avatar:hover {
+    border-color: rgba(0, 229, 255, 0.7);
+    box-shadow: 0 0 16px rgba(0, 229, 255, 0.4);
+}
+
+/* Footer logout button */
+.sidebar-footer .logout-btn:hover {
+    color: var(--neon-red) !important;
+    background: rgba(255, 60, 95, 0.08) !important;
+    border-radius: 10px;
+}
+
+/* ============================================================
+   TOP HEADER — Cyber glass bar
+   ============================================================ */
+.top-header {
+    background: rgba(8, 11, 20, 0.88) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border-bottom: 1px solid rgba(0, 229, 255, 0.07) !important;
+    box-shadow: 0 1px 30px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Header nav hover */
+.header-nav-item:hover {
+    color: var(--neon-cyan) !important;
+    background: rgba(0, 229, 255, 0.05) !important;
+}
+
+.header-nav-item.active {
+    color: var(--neon-cyan) !important;
+    background: rgba(0, 229, 255, 0.1) !important;
+}
+
+.header-nav-item.active::after {
+    background: var(--neon-cyan) !important;
+    box-shadow: 0 0 8px var(--neon-cyan) !important;
+}
+
+/* ============================================================
+   PAGE HEADER — Neon gradient title
+   ============================================================ */
+.page-header h1 {
+    background: linear-gradient(135deg, #ffffff 0%, var(--neon-cyan) 60%, var(--neon-purple) 100%) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+}
+
+.subtitle {
+    color: rgba(148, 163, 184, 0.7) !important;
+    letter-spacing: 0.02em;
+}
+
+/* ============================================================
+   INFO CARD (Próximos pasos) — Neon card header
+   ============================================================ */
+.info-card.main .card-header {
+    color: var(--neon-cyan);
+    border-bottom: 1px solid rgba(0, 229, 255, 0.1);
+    padding-bottom: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.todo-list li::before {
+    color: var(--neon-cyan) !important;
+    text-shadow: 0 0 8px rgba(0, 229, 255, 0.6);
+}
+
+/* ============================================================
+   STATUS DOTS (WhatsApp) — Extra glow
+   ============================================================ */
+.status-dot.connected {
+    background: var(--neon-green) !important;
+    box-shadow: 0 0 10px rgba(0, 255, 136, 0.6), 0 0 20px rgba(0, 255, 136, 0.2) !important;
+    animation: cyber-pulse-green 2s ease-in-out infinite;
+}
+
+.status-dot.waiting_qr {
+    background: var(--neon-yellow) !important;
+    box-shadow: 0 0 10px rgba(255, 200, 0, 0.6), 0 0 20px rgba(255, 200, 0, 0.2) !important;
+    animation: cyber-pulse-yellow 2s ease-in-out infinite;
+}
+
+.status-dot.disconnected {
+    background: var(--neon-red) !important;
+    box-shadow: 0 0 10px rgba(255, 60, 95, 0.6) !important;
+    animation: cyber-pulse-red 2s ease-in-out infinite;
+}
+
+/* ============================================================
+   BUTTONS — Neon glow on hover
+   ============================================================ */
+.btn-premium.primary:hover:not(:disabled) {
+    box-shadow: 0 6px 24px rgba(99, 102, 241, 0.5), 0 0 20px rgba(168, 85, 247, 0.25) !important;
+    transform: translateY(-2px) !important;
+}
+
+.btn-submit:hover:not(:disabled) {
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.5), 0 0 40px rgba(99, 102, 241, 0.15) !important;
+}
+
+/* ============================================================
+   FORM INPUTS — Cyan focus glow
+   ============================================================ */
+.form-input:focus {
+    border-color: var(--neon-cyan) !important;
+    box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.1), 0 0 12px rgba(0, 229, 255, 0.15) !important;
+    background: rgba(0, 229, 255, 0.03) !important;
+}
+
+input:focus {
+    border-color: var(--neon-cyan) !important;
+    box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.1), 0 0 12px rgba(0, 229, 255, 0.15) !important;
+}
+
+/* ============================================================
+   WHATSAPP CARD — Neon glass
+   ============================================================ */
+.whatsapp-card-central {
+    background: rgba(18, 24, 40, 0.65) !important;
+    backdrop-filter: blur(14px) !important;
+    border: 1px solid rgba(0, 229, 255, 0.07) !important;
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4), var(--glow-cyan) !important;
+}
+
+.qr-frame {
+    background: rgba(0, 0, 0, 0.4) !important;
+    border: 1px solid rgba(0, 229, 255, 0.2) !important;
+    box-shadow: 0 0 20px rgba(0, 229, 255, 0.1) !important;
+    padding: 1rem !important;
+}
+
+.qr-frame img {
+    filter: brightness(1.1) contrast(1.1);
+    background: white;
+    /* Conserve white behind QR for readability */
+    padding: 10px;
+    border-radius: 12px;
+}
+
+/* ============================================================
+   KB UPLOAD ZONE — Neon dashed border
+   ============================================================ */
+.kb-upload-zone {
+    border-color: rgba(0, 229, 255, 0.25) !important;
+}
+
+.kb-upload-zone:hover,
+.kb-upload-zone.kb-drag-active {
+    border-color: var(--neon-cyan) !important;
+    background: rgba(0, 229, 255, 0.04) !important;
+    box-shadow: 0 0 24px rgba(0, 229, 255, 0.1) !important;
+}
+
+/* ============================================================
+   SCROLLBAR — Neon accent
+   ============================================================ */
+::-webkit-scrollbar-thumb {
+    background: rgba(0, 229, 255, 0.15) !important;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 229, 255, 0.3) !important;
+}
+
+/* ============================================================
+   MOBILE — Cyber bottom nav
+   ============================================================ */
+@media (max-width: 768px) {
+    .mobile-bottom-nav {
+        background: rgba(8, 11, 20, 0.96) !important;
+        border-top: 1px solid rgba(0, 229, 255, 0.06) !important;
+        box-shadow: 0 -4px 30px rgba(0, 0, 0, 0.6) !important;
+    }
+
+    .mobile-nav-item.active {
+        color: var(--neon-cyan) !important;
+    }
+
+    .mobile-nav-item.active span {
+        color: var(--neon-cyan) !important;
+    }
+}
+
+/* ============================================================
+   TOPBAR CYBER BADGES — SYSTEM ONLINE / AI ACTIVE
+   ============================================================ */
+.cyber-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.75rem;
+    border-radius: 50px;
+    position: relative;
+}
+
+.cyber-badge-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+
+.cyber-badge.system-online {
+    color: var(--neon-green);
+    background: rgba(0, 255, 136, 0.08);
+    border: 1px solid rgba(0, 255, 136, 0.2);
+}
+
+.cyber-badge.system-online .cyber-badge-dot {
+    background: var(--neon-green);
+    box-shadow: 0 0 6px var(--neon-green);
+    animation: cyber-pulse-green 2s ease-in-out infinite;
+}
+
+.cyber-badge.ai-active {
+    color: var(--neon-purple);
+    background: rgba(191, 90, 242, 0.08);
+    border: 1px solid rgba(191, 90, 242, 0.2);
+}
+
+.cyber-badge.ai-active .cyber-badge-dot {
+    background: var(--neon-purple);
+    box-shadow: 0 0 6px var(--neon-purple);
+    animation: cyber-pulse-yellow 1.5s ease-in-out infinite;
+}
+
+/* ============================================================
+   PULSE GLOW for online-indicator (existing class)
+   ============================================================ */
+.dot.Pulse {
+    background: var(--neon-green) !important;
+    box-shadow: 0 0 0 rgba(0, 255, 136, 0.4) !important;
+    animation: cyber-pulse-green 2s infinite !important;
+}
+
+/* ============================================================
+   PROVIDER CARDS — Neon purple glow
+   ============================================================ */
+.provider-card.premium-card:hover {
+    box-shadow:
+        0 8px 40px rgba(0, 0, 0, 0.5),
+        var(--glow-purple) !important;
+    border-color: rgba(191, 90, 242, 0.15) !important;
+}
+
+/* ============================================================
+   AI MASTER SWITCH CARD
+   ============================================================ */
+.ai-master-switch-card {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.4rem 2rem;
+    margin-bottom: 1.75rem;
+    border-radius: 20px !important;
+    transition: all 0.4s ease !important;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Shimmer line on top */
+.ai-master-switch-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    transition: background 0.4s ease;
+}
+
+/* ON state — cyan-green */
+.ai-master-switch-card.ai-on {
+    border-color: rgba(0, 255, 136, 0.18) !important;
+    box-shadow:
+        0 6px 40px rgba(0, 0, 0, 0.4),
+        0 0 30px rgba(0, 255, 136, 0.06) !important;
+}
+
+.ai-master-switch-card.ai-on::before {
+    background: linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.6), transparent);
+}
+
+/* OFF state — red */
+.ai-master-switch-card.ai-off {
+    border-color: rgba(255, 60, 95, 0.18) !important;
+    box-shadow:
+        0 6px 40px rgba(0, 0, 0, 0.4),
+        0 0 30px rgba(255, 60, 95, 0.06) !important;
+}
+
+.ai-master-switch-card.ai-off::before {
+    background: linear-gradient(90deg, transparent, rgba(255, 60, 95, 0.5), transparent);
+}
+
+/* Icon */
+.ai-switch-icon {
+    flex-shrink: 0;
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.4s ease;
+}
+
+.ai-on .ai-switch-icon {
+    background: rgba(0, 255, 136, 0.1);
+    color: var(--neon-green);
+    box-shadow: var(--glow-green);
+}
+
+.ai-off .ai-switch-icon {
+    background: rgba(255, 60, 95, 0.08);
+    color: var(--neon-red);
+    box-shadow: var(--glow-red);
+}
+
+/* Text Info */
+.ai-switch-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.ai-switch-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #e2e8f0;
+    letter-spacing: 0.01em;
+}
+
+.ai-switch-subtitle {
+    font-size: 0.82rem;
+    color: rgba(148, 163, 184, 0.7);
+    line-height: 1.4;
+}
+
+/* Controls wrapper */
+.ai-switch-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    flex-shrink: 0;
+}
+
+/* State label */
+.ai-switch-label {
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    transition: color 0.4s ease;
+}
+
+.ai-switch-label.label-on {
+    color: var(--neon-green);
+    text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+}
+
+.ai-switch-label.label-off {
+    color: var(--neon-red);
+    text-shadow: 0 0 10px rgba(255, 60, 95, 0.5);
+}
+
+/* === TOGGLE SWITCH BUTTON === */
+.ai-toggle-btn {
+    position: relative;
+    width: 72px;
+    height: 38px;
+    border-radius: 50px;
+    border: none;
+    cursor: pointer;
+    outline: none;
+    transition: background 0.4s ease, box-shadow 0.4s ease;
+    padding: 0;
+}
+
+.ai-toggle-btn.toggle-on {
+    background: linear-gradient(135deg, rgba(0, 255, 136, 0.35), rgba(0, 229, 255, 0.25));
+    box-shadow: 0 0 0 1px rgba(0, 255, 136, 0.4), var(--glow-green);
+}
+
+.ai-toggle-btn.toggle-off {
+    background: rgba(255, 60, 95, 0.15);
+    box-shadow: 0 0 0 1px rgba(255, 60, 95, 0.3), var(--glow-red);
+}
+
+.ai-toggle-btn:not(:disabled):hover {
+    transform: scale(1.06);
+}
+
+.ai-toggle-btn.toggle-loading {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+/* Thumb (the moving circle) */
+.ai-toggle-thumb {
+    position: absolute;
+    top: 4px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    transition: left 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+        background 0.4s ease,
+        box-shadow 0.4s ease;
+}
+
+.toggle-on .ai-toggle-thumb {
+    left: calc(100% - 34px);
+    background: var(--neon-green);
+    box-shadow: 0 0 12px rgba(0, 255, 136, 0.8), 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.toggle-off .ai-toggle-thumb {
+    left: 4px;
+    background: var(--neon-red);
+    box-shadow: 0 0 12px rgba(255, 60, 95, 0.7), 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+/* Responsive: stack on mobile */
+@media (max-width: 600px) {
+    .ai-master-switch-card {
+        flex-wrap: wrap;
+        gap: 1rem;
+        padding: 1.2rem;
+    }
+
+    .ai-switch-controls {
+        width: 100%;
+        flex-direction: row;
+        justify-content: flex-end;
+    }
+}
+
+/* ============================================================
+   BLOCKED NUMBERS MODULE
+   ============================================================ */
+
+/* Sidebar badge */
+.bn-sidebar-badge {
+    background: linear-gradient(135deg, #ff3c5f, #ff6b6b);
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 99px;
+    margin-left: auto;
+    box-shadow: 0 0 8px rgba(255, 60, 95, 0.5);
+    min-width: 18px;
+    text-align: center;
+}
+
+/* Top row: stats + group toggle */
+.bn-top-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+}
+
+.bn-stats {
+    display: flex;
+    gap: 0.6rem;
+}
+
+.bn-stat-pill {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    background: rgba(255, 255, 255, 0.04);
+    padding: 0.3rem 0.75rem;
+    border-radius: 99px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.bn-stat-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.active-dot {
+    background: var(--neon-green);
+    box-shadow: 0 0 6px var(--neon-green);
+}
+
+.total-dot {
+    background: var(--text-secondary);
+}
+
+/* Group toggle card */
+.bn-group-toggle-card {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.65rem 1.25rem;
+    border-radius: 14px !important;
+    flex: 1;
+    min-width: 280px;
+    transition: all 0.4s ease !important;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.bn-group-toggle-card.bn-groups-on {
+    border-color: rgba(255, 60, 95, 0.2) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 0 0 16px rgba(255, 60, 95, 0.05) !important;
+}
+
+.bn-group-toggle-card.bn-groups-off {
+    border-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+.bn-group-toggle-label {
+    flex: 1;
+}
+
+.bn-group-state {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+}
+
+.bn-group-state.bn-on {
+    color: #ff3c5f;
+    text-shadow: 0 0 8px rgba(255, 60, 95, 0.7);
+}
+
+.bn-group-state.bn-off {
+    color: var(--text-secondary);
+}
+
+/* Reuse existing toggle button styles */
+.bn-group-toggle-btn {
+    position: relative;
+    width: 52px;
+    height: 28px;
+    border-radius: 999px;
+    border: none;
+    cursor: pointer;
+    transition: background 0.35s ease;
+    flex-shrink: 0;
+}
+
+/* Table card */
+.bn-table-card {
+    padding: 0;
+    overflow: hidden;
+    border-radius: 18px !important;
+}
+
+.bn-table-wrapper {
+    overflow-x: auto;
+    width: 100%;
+}
+
+.bn-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+}
+
+.bn-table thead tr {
+    background: rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.bn-table th {
+    padding: 0.85rem 1.25rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.bn-table td {
+    padding: 0.9rem 1.25rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    vertical-align: middle;
+}
+
+.bn-table tbody tr {
+    transition: background 0.2s ease;
+}
+
+.bn-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.bn-row-inactive td {
+    opacity: 0.5;
+}
+
+.bn-phone {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.03em;
+    color: var(--neon-cyan);
+}
+
+.bn-muted {
+    color: var(--text-secondary);
+    font-style: italic;
+    opacity: 0.6;
+}
+
+/* Status badges */
+.bn-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 99px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+}
+
+.bn-badge-active {
+    background: rgba(0, 255, 136, 0.12);
+    color: var(--neon-green);
+    border: 1px solid rgba(0, 255, 136, 0.25);
+}
+
+.bn-badge-inactive {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-secondary);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Row action buttons */
+.bn-actions {
+    display: flex;
+    gap: 0.4rem;
+    align-items: center;
+}
+
+.bn-action-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
+}
+
+.bn-action-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.bn-action-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.bn-toggle:hover {
+    color: var(--neon-cyan);
+    border-color: rgba(0, 230, 255, 0.25);
+}
+
+.bn-edit:hover {
+    color: #a78bfa;
+    border-color: rgba(167, 139, 250, 0.25);
+}
+
+.bn-delete:hover {
+    color: #ff3c5f;
+    border-color: rgba(255, 60, 95, 0.25);
+}
+
+/* Empty state */
+.bn-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 3.5rem 1rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+/* Spinner */
+@keyframes bn-rotate {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.bn-spin {
+    animation: bn-rotate 1s linear infinite;
+}
+
+/* Top buttons */
+.bn-btn-add {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    background: linear-gradient(135deg, rgba(0, 255, 136, 0.25), rgba(0, 230, 255, 0.18));
+    color: var(--neon-green);
+    border: 1px solid rgba(0, 255, 136, 0.2);
+    box-shadow: 0 0 12px rgba(0, 255, 136, 0.08);
+    transition: all 0.25s ease;
+}
+
+.bn-btn-add:hover {
+    background: linear-gradient(135deg, rgba(0, 255, 136, 0.35), rgba(0, 230, 255, 0.28));
+    box-shadow: 0 0 20px rgba(0, 255, 136, 0.15);
+}
+
+.bn-btn-refresh {
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.bn-btn-refresh:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-primary);
+}
+
+/* ============================================================
+   BLOCKED NUMBERS MODAL
+   ============================================================ */
+.bn-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(6px);
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    animation: fadeIn 0.2s ease;
+}
+
+.bn-modal-card {
+    width: 100%;
+    max-width: 480px;
+    padding: 2rem;
+    border-radius: 20px !important;
+    animation: slideUp 0.25s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.bn-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.bn-modal-header h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+}
+
+.bn-modal-close {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.bn-modal-close:hover {
+    background: rgba(255, 60, 95, 0.12);
+    color: #ff3c5f;
+}
+
+.bn-modal-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+}
+
+.bn-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.bn-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.bn-required {
+    color: #ff3c5f;
+}
+
+.bn-input {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 0.65rem 0.9rem;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.bn-input::placeholder {
+    color: rgba(255, 255, 255, 0.25);
+}
+
+.bn-input:focus {
+    border-color: rgba(0, 230, 255, 0.4);
+    box-shadow: 0 0 0 3px rgba(0, 230, 255, 0.06);
+}
+
+.bn-input-error {
+    border-color: rgba(255, 60, 95, 0.5) !important;
+}
+
+.bn-error-msg {
+    font-size: 0.78rem;
+    color: #ff3c5f;
+}
+
+.bn-hint {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    opacity: 0.65;
+}
+
+.bn-toggle-field {
+    gap: 0.6rem;
+}
+
+.bn-status-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.6rem 1rem;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border: 1px solid transparent;
+    transition: all 0.25s ease;
+    text-align: left;
+}
+
+.bn-status-toggle.active {
+    background: rgba(0, 255, 136, 0.1);
+    color: var(--neon-green);
+    border-color: rgba(0, 255, 136, 0.2);
+}
+
+.bn-status-toggle.inactive {
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text-secondary);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.bn-modal-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    margin-top: 0.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.bn-btn-cancel {
+    padding: 0.6rem 1.2rem;
+    border-radius: 9px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+}
+
+.bn-btn-cancel:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-primary);
+}
+
+.bn-btn-save {
+    padding: 0.6rem 1.4rem;
+    border-radius: 9px;
+    border: 1px solid rgba(0, 255, 136, 0.25);
+    background: linear-gradient(135deg, rgba(0, 255, 136, 0.22), rgba(0, 230, 255, 0.15));
+    color: var(--neon-green);
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: all 0.25s ease;
+    box-shadow: 0 0 12px rgba(0, 255, 136, 0.08);
+}
+
+.bn-btn-save:hover {
+    background: linear-gradient(135deg, rgba(0, 255, 136, 0.32), rgba(0, 230, 255, 0.25));
+    box-shadow: 0 0 20px rgba(0, 255, 136, 0.15);
+}
+
+.bn-btn-save:disabled,
+.bn-btn-cancel:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .bn-top-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .bn-group-toggle-card {
+        min-width: 0;
+    }
+
+    .bn-table th,
+    .bn-table td {
+        padding: 0.7rem 0.85rem;
+    }
+
+    .bn-modal-card {
+        padding: 1.4rem;
+    }
+}
