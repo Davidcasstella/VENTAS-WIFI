@@ -259,4 +259,9 @@ whatsapp.on('message', async (m) => {
     }
 });
 
+// Catch-all: serve React app for any non-API route (enables React Router on refresh)
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/index.html'));
+});
+
 module.exports = { app, server, io };
