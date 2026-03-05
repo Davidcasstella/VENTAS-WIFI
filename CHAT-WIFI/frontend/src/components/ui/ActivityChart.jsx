@@ -45,12 +45,12 @@ const ActivityChart = () => {
             >
                 <defs>
                     <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#6366f1" stopOpacity="0.9" />
-                        <stop offset="100%" stopColor="#a855f7" stopOpacity="0.4" />
+                        <stop offset="0%" stopColor="#00ff00" stopOpacity="0.9" />
+                        <stop offset="100%" stopColor="#004400" stopOpacity="0.4" />
                     </linearGradient>
                     <linearGradient id="barGradHover" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#818cf8" stopOpacity="1" />
-                        <stop offset="100%" stopColor="#c084fc" stopOpacity="0.6" />
+                        <stop offset="0%" stopColor="#33ff33" stopOpacity="1" />
+                        <stop offset="100%" stopColor="#008800" stopOpacity="0.6" />
                     </linearGradient>
                 </defs>
 
@@ -111,7 +111,7 @@ const ActivityChart = () => {
     return (
         <div className="analytics-card activity-chart-card premium-card">
             <div className="analytics-card-header">
-                <div className="analytics-card-icon-wrap purple">
+                <div className="analytics-card-icon-wrap" style={{ backgroundColor: 'rgba(0, 255, 0, 0.1)', color: '#00ff00' }}>
                     <BarChart2 size={20} />
                 </div>
                 <div>

@@ -23,12 +23,15 @@ class EmbeddingService {
             const isGroq = providerName.includes('groq') || providerName.includes('grog') || provider.apiKey.startsWith('gsk_');
             const isOpenAI = providerName.includes('openai') || provider.apiKey.startsWith('sk-');
             const isGrok = providerName.includes('grok') && !isGroq;
+            const isGemini = providerName.includes('gemini') || provider.apiKey.startsWith('AIza');
 
             if (isOpenAI) {
                 return await this.openAIEmbedding(provider.apiKey, text);
             } else if (isGrok) {
                 // Grok (xAI) uses OpenAI-compatible API
                 return await this.grokEmbedding(provider.apiKey, text);
+            } else if (isGemini) {
+                return await this.geminiEmbedding(provider.apiKey, text);
             } else if (isGroq) {
                 // Groq.com does not support embeddings yet
                 console.warn(`⚠️ Provider ${provider.name} detected as Groq. Using local fallback.`);
@@ -72,6 +75,29 @@ class EmbeddingService {
         } catch (error) {
             // If Grok doesn't support embeddings, fallback
             console.warn('⚠️ Grok embedding failed, using local fallback.');
+            return this.localFallbackEmbedding(text);
+        }
+    }
+
+    /**
+     * Generate embedding via Google Gemini API.
+     */
+    async geminiEmbedding(apiKey, text) {
+        try {
+            const response = await axios.post(
+                `https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent?key=${apiKey}`,
+                {
+                    content: {
+                        parts: [{ text }]
+                    }
+                },
+                {
+                    headers: { 'Content-Type': 'application/json' }
+                }
+            );
+            return response.data.embedding.values;
+        } catch (error) {
+            console.warn('⚠️ Gemini embedding failed, using local fallback:', error.message);
             return this.localFallbackEmbedding(text);
         }
     }

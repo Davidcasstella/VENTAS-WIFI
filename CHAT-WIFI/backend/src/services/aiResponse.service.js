@@ -2,6 +2,7 @@ const aiProvidersService = require('./aiProviders.service');
 const knowledgeBaseService = require('./knowledgeBase.service');
 const axios = require('axios');
 const tokenUsageService = require('./tokenUsageService');
+const apiKeyRotation = require('./apiKeyRotation.service');
 
 class AIResponseService {
     /**
@@ -21,30 +22,67 @@ class AIResponseService {
         const { name, apiKey } = activeProvider;
         const providerName = name.toLowerCase();
 
+        // Build system prompt BEFORE try block so it's accessible in catch for fallback
+        const kbContext = await knowledgeBaseService.searchKnowledge(prompt);
+        let systemPrompt = 'Eres un asistente de atención al cliente. Responde de manera breve, clara y directa (máximo 2-3 oraciones).';
+
+        if (kbContext) {
+            console.log('📚 RAG context found, applying constraints...');
+            systemPrompt += '\nUsa SOLO la información del contexto proporcionado.\nSi no encuentras la respuesta en el contexto, o si no entiendes la pregunta, o si la pregunta no tiene sentido, responde EXACTAMENTE con esta palabra y NADA MÁS: FALLBACK_TRIGGER\nNo inventes respuestas. No digas "no entiendo". Si no estás 100% seguro de la respuesta, responde FALLBACK_TRIGGER\n\nContexto:\n' + kbContext;
+        } else {
+            console.log('🌐 No RAG context found, using generic AI response.');
+            systemPrompt += '\nIMPORTANTE: Si no puedes responder la pregunta con certeza, si no entiendes el mensaje, si el mensaje no tiene sentido, o si no tienes información útil que ofrecer, responde EXACTAMENTE con esta palabra y NADA MÁS: FALLBACK_TRIGGER\nNunca digas "no entiendo tu pregunta" ni pidas más contexto. Solo responde FALLBACK_TRIGGER';
+        }
+
         try {
-            // Search knowledge base for relevant context
-            const kbContext = await knowledgeBaseService.searchKnowledge(prompt);
-            let systemPrompt = 'Eres un asistente de atención al cliente. Responde de manera breve, clara y directa (máximo 2-3 oraciones).';
+            // Detection priority: use API key prefix as strongest signal,
+            // then fall back to provider name.
+            // This prevents misrouting (e.g. a gsk_ key named "Grok" going to xAI instead of Groq)
+            const isGroq = apiKey.startsWith('gsk_') || (providerName.includes('groq') || providerName.includes('grog'));
+            const isOpenAI = !isGroq && (apiKey.startsWith('sk-') || providerName.includes('openai'));
+            const isGemini = !isGroq && !isOpenAI && (apiKey.startsWith('AIza') || providerName.includes('gemini'));
+            const isGrok = !isGroq && !isOpenAI && !isGemini && providerName.includes('grok');
 
-            if (kbContext) {
-                console.log('📚 RAG context found, applying constraints...');
-                systemPrompt += '\nUsa SOLO la información del contexto proporcionado.\nSi no encuentras la respuesta en el contexto, o si no entiendes la pregunta, o si la pregunta no tiene sentido, responde EXACTAMENTE con esta palabra y NADA MÁS: FALLBACK_TRIGGER\nNo inventes respuestas. No digas "no entiendo". Si no estás 100% seguro de la respuesta, responde FALLBACK_TRIGGER\n\nContexto:\n' + kbContext;
-            } else {
-                console.log('🌐 No RAG context found, using generic AI response.');
-                systemPrompt += '\nIMPORTANTE: Si no puedes responder la pregunta con certeza, si no entiendes el mensaje, si el mensaje no tiene sentido, o si no tienes información útil que ofrecer, responde EXACTAMENTE con esta palabra y NADA MÁS: FALLBACK_TRIGGER\nNunca digas "no entiendo tu pregunta" ni pidas más contexto. Solo responde FALLBACK_TRIGGER';
-            }
-
-            // Detection by name or by API key prefix (Groq keys start with gsk_)
-            const isGroq = providerName.includes('groq') || providerName.includes('grog') || apiKey.startsWith('gsk_');
-            const isOpenAI = providerName.includes('openai') || apiKey.startsWith('sk-');
-            const isGrok = providerName.includes('grok') && !isGroq;
-
-            if (isOpenAI) {
-                return await this.callOpenAI(apiKey, systemPrompt, prompt);
-            } else if (isGroq) {
-                return await this.callGroq(apiKey, systemPrompt, prompt);
+            if (isGroq) {
+                console.log(`🔑 [AI] Provider "${name}" routed to GROQ (key prefix: ${apiKey.substring(0, 4)}...)`);
+                // Use key rotation for Groq — tries all available keys on rotatable errors
+                return await apiKeyRotation.callWithRotation(
+                    'groq',
+                    (key, sys, usr) => this.callGroq(key, sys, usr),
+                    systemPrompt,
+                    prompt,
+                    apiKey
+                );
+            } else if (isOpenAI) {
+                console.log(`🔑 [AI] Provider "${name}" routed to OPENAI`);
+                // Use key rotation for OpenAI — tries all available keys on rotatable errors
+                return await apiKeyRotation.callWithRotation(
+                    'openai',
+                    (key, sys, usr) => this.callOpenAI(key, sys, usr),
+                    systemPrompt,
+                    prompt,
+                    apiKey
+                );
             } else if (isGrok) {
-                return await this.callGrok(apiKey, systemPrompt, prompt);
+                console.log(`🔑 [AI] Provider "${name}" routed to GROK (xAI)`);
+                // Use key rotation for Grok — tries all available keys on rotatable errors
+                return await apiKeyRotation.callWithRotation(
+                    'grok',
+                    (key, sys, usr) => this.callGrok(key, sys, usr),
+                    systemPrompt,
+                    prompt,
+                    apiKey
+                );
+            } else if (isGemini) {
+                console.log(`🔑 [AI] Provider "${name}" routed to GEMINI`);
+                // Use key rotation for Gemini — tries all available keys on rotatable errors
+                return await apiKeyRotation.callWithRotation(
+                    'gemini',
+                    (key, sys, usr) => this.callGemini(key, sys, usr),
+                    systemPrompt,
+                    prompt,
+                    apiKey
+                );
             } else if (providerName.includes('z.ia')) {
                 // For Z.ia we still use the old complex prompt as it's a local extractor
                 const combinedPrompt = `Contexto:\n${kbContext || ''}\n\nPregunta del cliente:\n${prompt}`;
@@ -52,9 +90,73 @@ class AIResponseService {
             } else {
                 throw new Error(`Proveedor ${name} no soportado para generación.`);
             }
-        } catch (error) {
-            console.error(`❌ Error generando respuesta con ${name}:`, error.message);
-            return 'Hubo un error al procesar tu mensaje con la IA.';
+        } catch (primaryError) {
+            console.error(`❌ Error generando respuesta con ${name}:`, primaryError.message);
+
+            // Cross-provider fallback: try ALL other provider types that have available keys
+            console.log('🔄 [AI] Active provider failed. Trying cross-provider fallback...');
+
+            const fallbackProviders = [
+                { type: 'groq', callFn: (key, sys, usr) => this.callGroq(key, sys, usr) },
+                { type: 'openai', callFn: (key, sys, usr) => this.callOpenAI(key, sys, usr) },
+                { type: 'grok', callFn: (key, sys, usr) => this.callGrok(key, sys, usr) },
+                { type: 'gemini', callFn: (key, sys, usr) => this.callGemini(key, sys, usr) },
+            ];
+
+            // Determine which type the active provider was, to skip it
+            const activeType = apiKey.startsWith('gsk_') ? 'groq'
+                : apiKey.startsWith('sk-') ? 'openai'
+                    : apiKey.startsWith('AIza') ? 'gemini'
+                        : providerName.includes('grok') ? 'grok'
+                            : providerName.includes('groq') ? 'groq'
+                                : null;
+
+            for (const fb of fallbackProviders) {
+                if (fb.type === activeType) continue; // Skip the type that already failed
+
+                try {
+                    const keys = await aiProvidersService.getProvidersByType(fb.type);
+                    if (!keys || keys.length === 0) continue;
+
+                    console.log(`🔄 [AI] Fallback: trying ${fb.type.toUpperCase()} (${keys.length} key(s) available)`);
+
+                    const result = await apiKeyRotation.callWithRotation(
+                        fb.type,
+                        fb.callFn,
+                        systemPrompt,
+                        prompt,
+                        keys[0] // Start with the first key of this type
+                    );
+
+                    console.log(`✅ [AI] Fallback succeeded with ${fb.type.toUpperCase()}`);
+
+                    // Auto-activate the working provider so future requests go directly to it
+                    const workingKey = keys[0];
+                    const activated = await aiProvidersService.activateByDecryptedKey(workingKey);
+                    if (activated) {
+                        console.log(`🔄 [AI] Auto-switched active provider to "${activated.name}" (${activated.apiKey})`);
+                        // Emit Socket.io event so the frontend widget updates in real-time
+                        apiKeyRotation._emitRotationEvent('provider-switched', {
+                            providerType: fb.type,
+                            status: 'rotated',
+                            activeKeyMask: activated.apiKey,
+                            newProvider: activated.name,
+                            previousProvider: name,
+                            attempt: 1,
+                            totalKeys: keys.length
+                        });
+                    }
+
+                    return result;
+                } catch (fallbackErr) {
+                    console.warn(`⚠️ [AI] Fallback with ${fb.type.toUpperCase()} also failed: ${fallbackErr.message}`);
+                    continue;
+                }
+            }
+
+            // All providers exhausted — return internal marker for app.js to handle
+            console.error('❌ [AI] All providers exhausted. No AI response possible.');
+            return '__ALL_PROVIDERS_EXHAUSTED__';
         }
     }
 
@@ -122,6 +224,42 @@ ${userMessage}`;
         const usage = response.data.usage;
         if (usage) tokenUsageService.trackUsage(usage.total_tokens || 0);
         return response.data.choices[0].message.content;
+    }
+
+    async callGemini(apiKey, systemPrompt, userPrompt) {
+        // Google Gemini API (generativelanguage.googleapis.com)
+        try {
+            const response = await axios.post(
+                `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+                {
+                    system_instruction: {
+                        parts: [{ text: systemPrompt }]
+                    },
+                    contents: [
+                        { role: 'user', parts: [{ text: userPrompt }] }
+                    ],
+                    generationConfig: {
+                        temperature: 0.7,
+                        maxOutputTokens: 256
+                    }
+                },
+                {
+                    headers: { 'Content-Type': 'application/json' }
+                }
+            );
+            // Track token usage (Gemini reports in usageMetadata)
+            const usage = response.data.usageMetadata;
+            if (usage) tokenUsageService.trackUsage((usage.promptTokenCount || 0) + (usage.candidatesTokenCount || 0));
+            return response.data.candidates[0].content.parts[0].text;
+        } catch (error) {
+            // Log detailed error from Google API
+            const errData = error.response?.data?.error;
+            if (errData) {
+                console.error(`❌ Gemini API error [${errData.code}]: ${errData.message}`);
+                console.error(`   Status: ${errData.status || 'unknown'}`);
+            }
+            throw error;
+        }
     }
 
     async callZIA(apiKey, prompt) {

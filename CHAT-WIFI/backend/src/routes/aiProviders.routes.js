@@ -33,9 +33,12 @@ router.post('/', async (req, res) => {
 // DELETE /api/ai-providers/:id - Delete provider
 router.delete('/:id', async (req, res) => {
     try {
+        console.log(`🗑️ [Route] DELETE /api/ai-providers/${req.params.id}`);
         const providers = await aiProvidersService.deleteProvider(req.params.id);
+        console.log(`🗑️ [Route] Delete successful, ${providers.length} providers remaining`);
         res.json({ success: true, message: 'Proveedor eliminado', providers });
     } catch (error) {
+        console.error(`❌ [Route] Delete error:`, error.message);
         res.status(500).json({ success: false, message: error.message });
     }
 });

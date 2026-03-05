@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Users, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import api from '../../services/api';
 
-const ClientsMetricCard = () => {
+const ClientsMetricCard = ({ className = '' }) => {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -44,9 +44,9 @@ const ClientsMetricCard = () => {
     };
 
     return (
-        <div className="analytics-card clients-card premium-card">
+        <div className={`analytics-metric-card premium-card ${className}`}>
             <div className="analytics-card-header">
-                <div className="analytics-card-icon-wrap blue">
+                <div className="analytics-card-icon-wrap" style={{ backgroundColor: 'rgba(0, 255, 0, 0.1)', color: '#00ff00' }}>
                     <Users size={20} />
                 </div>
                 <div>

@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Plus, Info, RefreshCw, Cpu, BrainCircuit, Globe } from 'lucide-react';
 import useProvidersStore from '../features/ai-providers/store/useProvidersStore';
 import ProviderCard from '../features/ai-providers/components/ProviderCard';
+import KeyRotationStatus from '../features/ai-providers/components/KeyRotationStatus';
+import AIProviderDragDrop from '../features/ai-providers/components/AIProviderDragDrop';
 
 const AIProvidersPage = () => {
     const { providers, loading, error, fetchProviders, saveProvider } = useProvidersStore();
@@ -38,6 +40,10 @@ const AIProvidersPage = () => {
 
             {error && <div className="error-banner">{error}</div>}
 
+            <KeyRotationStatus />
+
+            <AIProviderDragDrop />
+
             {showForm && (
                 <div className="provider-form-container premium-card animate-fade-in">
                     <form onSubmit={handleSubmit} className="provider-form">
@@ -50,6 +56,7 @@ const AIProvidersPage = () => {
                             >
                                 <option value="OpenAI">OpenAI (ChatGPT)</option>
                                 <option value="Grok">Grok (xAI)</option>
+                                <option value="Gemini">Gemini (Google)</option>
                                 <option value="Z.ia">Z.ia (Propio)</option>
                             </select>
                         </div>
@@ -85,7 +92,7 @@ const AIProvidersPage = () => {
                     <div className="empty-state-card premium-card">
                         <BrainCircuit size={64} className="text-muted" />
                         <h2>No hay proveedores configurados</h2>
-                        <p>Agrega tu primer proveedor de IA (OpenAI o Grok) para comenzar a usar la inteligencia del chat.</p>
+                        <p>Agrega tu primer proveedor de IA (OpenAI, Grok o Gemini) para comenzar a usar la inteligencia del chat.</p>
                     </div>
                 ) : (
                     providers.map(provider => (

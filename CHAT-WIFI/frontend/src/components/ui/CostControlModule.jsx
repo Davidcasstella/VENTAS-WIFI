@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { DollarSign, TrendingUp } from 'lucide-react';
 import api from '../../services/api';
 
-const CostControlModule = () => {
+const CostControlModule = ({ className = '' }) => {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -33,9 +33,9 @@ const CostControlModule = () => {
     };
 
     return (
-        <div className="analytics-card cost-card premium-card">
+        <div className={`analytics-metric-card premium-card ${className}`}>
             <div className="analytics-card-header">
-                <div className="analytics-card-icon-wrap" style={{ background: 'rgba(16,185,129,0.1)', color: '#10b981' }}>
+                <div className="analytics-card-icon-wrap" style={{ backgroundColor: 'rgba(0, 255, 0, 0.1)', color: '#00ff00' }}>
                     <DollarSign size={20} />
                 </div>
                 <div>

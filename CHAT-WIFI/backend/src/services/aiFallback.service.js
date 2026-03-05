@@ -179,6 +179,38 @@ class AIFallbackService {
             console.error(`❌ Failed to send admin notification: ${err.message}`);
         }
     }
+
+    /**
+     * Sends a WhatsApp notification to the admin when ALL AI providers are exhausted.
+     * Includes client details, timestamp, and required action.
+     * Only sends to individual chats (adminJid), never groups or statuses.
+     * @param {object} sock - Baileys socket
+     * @param {string} clientJid - The client's JID who triggered the exhaustion
+     * @param {string} clientMessage - The client's last message
+     * @param {string} [clientName] - The client's WhatsApp push name
+     */
+    async sendExhaustionNotification(sock, clientJid, clientMessage, clientName) {
+        if (!sock) return;
+
+        const config = await this.getConfig();
+        if (!config.adminJid) {
+            console.warn('⚠️ No admin JID configured for exhaustion notifications');
+            return;
+        }
+
+        const clientNumber = clientJid.replace('@s.whatsapp.net', '');
+        const displayName = clientName || 'Sin nombre disponible';
+        const now = new Date().toLocaleString('es-CO', { timeZone: 'America/Bogota' });
+
+        const notification = `🚨 API KEYS AGOTADAS\n\n⚠️ Todas las API Keys de IA están agotadas o no disponibles.\nNingún proveedor pudo generar respuesta.\n\n📱 Cliente: ${displayName}\n📞 Número: ${clientNumber}\n💬 Último mensaje: "${clientMessage}"\n🕐 Hora: ${now}\n\n✅ Se respondió automáticamente "Ok 👍" al cliente.\n\n❗ Acción requerida: Recargar créditos o agregar nuevas API Keys desde el panel.`;
+
+        try {
+            await sock.sendMessage(config.adminJid, { text: notification });
+            console.log(`📢 Exhaustion notification sent to ${config.adminJid} about ${clientJid}`);
+        } catch (err) {
+            console.error(`❌ Failed to send exhaustion notification: ${err.message}`);
+        }
+    }
 }
 
 module.exports = new AIFallbackService();

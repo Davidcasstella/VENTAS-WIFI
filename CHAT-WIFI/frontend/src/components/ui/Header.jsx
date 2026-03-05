@@ -41,11 +41,6 @@ const Header = () => {
                     <BrainCircuit size={18} />
                     <span>IA Providers</span>
                 </NavLink>
-
-                <NavLink to="/settings" className="header-nav-item disabled">
-                    <Settings size={18} />
-                    <span>Ajustes</span>
-                </NavLink>
             </nav>
 
             <button className="logout-btn" onClick={logout} title="Cerrar Sesión">

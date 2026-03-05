@@ -135,16 +135,16 @@ class KnowledgeBaseService {
      */
     async searchKnowledge(query) {
         try {
+            // Search all embeddings (documents + Q&A pairs) via cosine similarity
             const results = await retriever.search(query, 5);
 
             if (results.length === 0) return null;
 
             // Filter out low-similarity results (threshold)
-            // Lowered to 0.02 for local fallback compatibility
             const relevant = results.filter(r => r.score > 0.02);
             if (relevant.length === 0) return null;
 
-            // Build context from top chunks — send full text so AI can extract the answer
+            // Build context from top chunks — includes both document and Q&A chunks
             const context = relevant
                 .slice(0, 3)
                 .map((r, i) => r.text)

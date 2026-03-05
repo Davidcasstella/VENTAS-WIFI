@@ -117,6 +117,70 @@ class AIProvidersService {
         };
     }
 
+    /**
+     * Activate a provider by its decrypted API key value.
+     * Used by the cross-provider fallback to auto-switch to the working provider.
+     * @param {string} decryptedKey - The decrypted API key
+     * @returns {object|null} - The activated provider info, or null if not found
+     */
+    async activateByDecryptedKey(decryptedKey) {
+        const providers = await fs.readJson(DATA_PATH);
+        const target = providers.find(p => {
+            try {
+                return this.decrypt(p.apiKey) === decryptedKey;
+            } catch { return false; }
+        });
+        if (!target) return null;
+
+        providers.forEach(p => { p.isActive = p.id === target.id; });
+        await fs.writeJson(DATA_PATH, providers, { spaces: 2 });
+        console.log(`🔄 [Providers] Auto-activated provider "${target.name}" (${this.maskKey(decryptedKey)})`);
+        return { id: target.id, name: target.name, apiKey: this.maskKey(decryptedKey) };
+    }
+
+    /**
+     * Returns all decrypted API keys for a given provider type.
+     * Used by the key rotation service to cycle through available keys.
+     * @param {string} type - Provider type: 'groq', 'openai', 'gemini', 'grok'
+     * @returns {Promise<string[]>} - Array of decrypted API keys
+     */
+    async getProvidersByType(type) {
+        const providers = await fs.readJson(DATA_PATH);
+        const typeLower = type.toLowerCase();
+
+        const matching = providers.filter(p => {
+            const name = p.name.toLowerCase();
+            const decryptedKey = this.decrypt(p.apiKey);
+
+            // Priority: key prefix is the strongest signal for provider type,
+            // overriding the user-given name (prevents misrouting like gsk_ key named "Grok")
+            if (typeLower === 'groq') {
+                // gsk_ prefix → always Groq, regardless of name
+                return decryptedKey.startsWith('gsk_') || (
+                    (name.includes('groq') || name.includes('grog')) && !decryptedKey.startsWith('sk-') && !decryptedKey.startsWith('AIza')
+                );
+            }
+            if (typeLower === 'openai') {
+                // sk- prefix → always OpenAI (unless it's a gsk_ key)
+                return !decryptedKey.startsWith('gsk_') && (
+                    decryptedKey.startsWith('sk-') || name.includes('openai')
+                );
+            }
+            if (typeLower === 'gemini') {
+                return !decryptedKey.startsWith('gsk_') && !decryptedKey.startsWith('sk-') && (
+                    decryptedKey.startsWith('AIza') || name.includes('gemini')
+                );
+            }
+            if (typeLower === 'grok') {
+                // Exclude gsk_ keys (they're Groq, not Grok/xAI)
+                return !decryptedKey.startsWith('gsk_') && name.includes('grok') && !name.includes('groq');
+            }
+            return false;
+        });
+
+        return matching.map(p => this.decrypt(p.apiKey));
+    }
+
     async testConnection(id) {
         const providers = await fs.readJson(DATA_PATH);
         const provider = providers.find(p => p.id === id);
@@ -131,6 +195,13 @@ class AIProvidersService {
                 const response = await fetch('https://api.openai.com/v1/models', {
                     headers: { 'Authorization': `Bearer ${apiKey}` }
                 });
+                return response.ok;
+            }
+            if (provider.name.toLowerCase().includes('gemini') || apiKey.startsWith('AIza')) {
+                // Gemini Test — list models endpoint
+                const response = await fetch(
+                    `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`
+                );
                 return response.ok;
             }
             // Add other providers (Grok, etc) as needed or just dummy OK for now

@@ -3,22 +3,19 @@
     top: 0;
     right: 0;
     left: 240px;
-    /* Aligned with sidebar width */
     height: 60px;
-    background: rgba(13, 17, 23, 0.8);
+    background: #000800;
     backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid #00ff00;
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    /* Aligned to left as requested */
     padding: 0 1.5rem;
     z-index: 90;
     transition: all 0.3s ease;
     gap: 1rem;
 }
 
-/* Cyber status badges container */
 .header-cyber-badges {
     display: flex;
     align-items: center;
@@ -32,11 +29,9 @@
     }
 }
 
-
 .header-nav {
     display: flex;
     gap: 0.5rem;
-    /* Tighter gap for SaaS look */
     align-items: center;
 }
 
@@ -44,7 +39,7 @@
     display: flex;
     align-items: center;
     gap: 0.6rem;
-    color: var(--text-secondary);
+    color: rgba(0, 255, 0, 0.45);
     text-decoration: none;
     font-size: 0.825rem;
     font-weight: 500;
@@ -55,13 +50,14 @@
 }
 
 .header-nav-item:hover {
-    color: white;
-    background: rgba(255, 255, 255, 0.05);
+    color: #00ff00;
+    background: rgba(0, 255, 0, 0.05);
 }
 
 .header-nav-item.active {
-    color: white;
-    background: rgba(99, 102, 241, 0.15);
+    color: #00ff00;
+    background: rgba(0, 255, 0, 0.08);
+    text-shadow: 0 0 6px #00ff00;
 }
 
 .header-nav-item.active::after {
@@ -71,8 +67,8 @@
     left: 20%;
     right: 20%;
     height: 2px;
-    background: var(--primary-color);
-    box-shadow: 0 -2px 10px var(--primary-color);
+    background: #00ff00;
+    box-shadow: 0 -2px 10px #00ff00;
 }
 
 .header-nav-item.disabled {
@@ -85,9 +81,9 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    background: rgba(239, 68, 68, 0.1);
-    border: 1px solid rgba(239, 68, 68, 0.2);
-    color: #ef4444;
+    background: rgba(255, 68, 68, 0.1);
+    border: 1px solid rgba(255, 68, 68, 0.2);
+    color: #ff4444;
     padding: 0.5rem 1rem;
     border-radius: 10px;
     font-size: 0.85rem;
@@ -96,12 +92,11 @@
 }
 
 .logout-btn:hover {
-    background: #ef4444;
-    color: white;
-    box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
+    background: #ff4444;
+    color: #000500;
+    box-shadow: 0 0 15px rgba(255, 68, 68, 0.3);
 }
 
-/* Responsividad */
 @media (max-width: 768px) {
     .logout-btn {
         position: absolute;
@@ -116,7 +111,6 @@
     }
 }
 
-/* Logo móvil (oculto en desktop) */
 .header-logo-mobile {
     display: none;
     align-items: center;
@@ -124,19 +118,16 @@
 
 .header-logo-img {
     height: 42px;
-    /* Más grande, de 32px a 42px */
     width: auto;
-    filter: drop-shadow(0 0 10px var(--accent-blue-glow));
+    filter: drop-shadow(0 0 10px rgba(0, 255, 0, 0.6));
     transition: transform 0.3s ease;
 }
 
-/* Responsividad */
 @media (max-width: 768px) {
     .top-header {
         left: 0;
         padding: 0 1rem;
         justify-content: center;
-        /* Centramos el contenido del header */
     }
 
     .header-logo-mobile {
@@ -147,6 +138,5 @@
 
     .header-nav {
         display: none !important;
-        /* Aseguramos que solo se vea el logo */
     }
 }

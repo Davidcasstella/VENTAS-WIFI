@@ -2,15 +2,19 @@ import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import socket from '../services/socket';
 import AIStatusModule from '../components/ui/AIStatusModule';
+import UserControlPanel from '../components/ui/UserControlPanel';
+import PendingAlertsPanel from '../components/ui/PendingAlertsPanel';
 import ClientsMetricCard from '../components/ui/ClientsMetricCard';
 import ActivityChart from '../components/ui/ActivityChart';
 import TokenUsageModule from '../components/ui/TokenUsageModule';
 import CostControlModule from '../components/ui/CostControlModule';
+import { UserCheck, AlertTriangle } from 'lucide-react';
 
 const DashboardPage = () => {
     // AI master switch state — kept identical to the original logic
     const [aiEnabled, setAiEnabled] = useState(true);
     const [aiLoading, setAiLoading] = useState(false);
+    const [dashboardTab, setDashboardTab] = useState('users');
 
     useEffect(() => {
         // Fetch current AI state on mount
@@ -66,21 +70,54 @@ const DashboardPage = () => {
                 </div>
             </header>
 
-            {/* ── Row 1: AI Status (full width) ── */}
-            <AIStatusModule
-                aiEnabled={aiEnabled}
-                aiLoading={aiLoading}
-                onToggle={toggleAI}
-            />
+            {/* ── Tabbed panels — Users / Alerts (TOP) ── */}
+            <div className="dashboard-tabs-section">
+                <div className="dashboard-tabs">
+                    <button
+                        className={`dashboard-tab-btn ${dashboardTab === 'users' ? 'active' : ''}`}
+                        onClick={() => setDashboardTab('users')}
+                    >
+                        <UserCheck size={18} />
+                        <span>Control de Usuarios</span>
+                    </button>
+                    <button
+                        className={`dashboard-tab-btn ${dashboardTab === 'alerts' ? 'active' : ''}`}
+                        onClick={() => setDashboardTab('alerts')}
+                    >
+                        <AlertTriangle size={18} />
+                        <span>Alertas Pendientes</span>
+                    </button>
+                </div>
 
-            {/* ── Row 2: Metrics grid (3 columns) ── */}
-            <div className="analytics-metrics-grid">
-                <ClientsMetricCard />
-                <TokenUsageModule />
-                <CostControlModule />
+                <div className="dashboard-tab-content">
+                    {dashboardTab === 'users' && <UserControlPanel />}
+                    {dashboardTab === 'alerts' && <PendingAlertsPanel className="card-warn" />}
+                </div>
             </div>
 
-            {/* ── Row 3: Activity Chart (full width) ── */}
+            <div className="metrics-grid">
+                <div className="metric-card-wrapper">
+                    <ClientsMetricCard className="card-blue" />
+                </div>
+                <div className="metric-card-wrapper">
+                    <AIStatusModule
+                        aiEnabled={aiEnabled}
+                        aiLoading={aiLoading}
+                        onToggle={toggleAI}
+                    />
+                </div>
+            </div>
+
+            <div className="stats-row">
+                <div className="stat-card-container">
+                    <TokenUsageModule className="card-blue" />
+                </div>
+                <div className="stat-card-container">
+                    <CostControlModule className="card-blue" />
+                </div>
+            </div>
+
+            {/* ── Activity Chart (full width) ── */}
             <ActivityChart />
         </div>
     );

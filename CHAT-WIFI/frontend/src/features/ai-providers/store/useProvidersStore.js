@@ -33,12 +33,19 @@ const useProvidersStore = create((set, get) => ({
     },
 
     deleteProvider: async (id) => {
-        if (!window.confirm('¿Estás seguro de eliminar este proveedor?')) return;
         set({ loading: true, error: null });
         try {
             const response = await api.delete(`/api/ai-providers/${id}`);
             if (response.data.success) {
-                set({ providers: response.data.providers, loading: false });
+                // Force a full re-fetch to guarantee UI sync
+                const refreshed = await api.get('/api/ai-providers');
+                if (refreshed.data.success) {
+                    set({ providers: refreshed.data.providers, loading: false });
+                } else {
+                    set({ providers: response.data.providers, loading: false });
+                }
+            } else {
+                set({ loading: false, error: 'No se pudo eliminar' });
             }
         } catch (error) {
             set({ error: error.response?.data?.message || 'Error al eliminar proveedor', loading: false });

@@ -30,6 +30,9 @@
         "watch": [
             "src/"
         ],
+        "ignore": [
+            "src/data/"
+        ],
         "ext": "js,json"
     }
 }

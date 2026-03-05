@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { ShieldCheck, ShieldAlert, Trash2, Power, Zap, RefreshCw } from 'lucide-react';
 import useProvidersStore from '../store/useProvidersStore';
+import api from '../../../services/api';
 
 const ProviderCard = ({ provider }) => {
-    const { deleteProvider, activateProvider, testProvider } = useProvidersStore();
+    const { activateProvider, testProvider } = useProvidersStore();
     const [testing, setTesting] = useState(false);
     const [testResult, setTestResult] = useState(null);
+    const [deleting, setDeleting] = useState(false);
 
     const handleTest = async () => {
         setTesting(true);
@@ -13,10 +15,21 @@ const ProviderCard = ({ provider }) => {
         const result = await testProvider(provider.id);
         setTestResult(result);
         setTesting(false);
-
-        // Hide result after 5 seconds
         if (result.success) {
             setTimeout(() => setTestResult(null), 5000);
+        }
+    };
+
+    // Direct delete — NO confirmation dialog, just delete and reload
+    const handleDelete = async () => {
+        if (deleting) return;
+        setDeleting(true);
+        try {
+            await api.delete(`/api/ai-providers/${provider.id}`);
+            window.location.reload();
+        } catch (error) {
+            console.error('Delete failed:', error);
+            setDeleting(false);
         }
     };
 
@@ -66,11 +79,12 @@ const ProviderCard = ({ provider }) => {
 
                     <button
                         className="btn-icon-text ghost-red"
-                        onClick={() => deleteProvider(provider.id)}
+                        onClick={handleDelete}
+                        disabled={deleting}
                         title="Eliminar"
                     >
-                        <Trash2 size={18} />
-                        <span>Eliminar</span>
+                        {deleting ? <RefreshCw className="spin" size={18} /> : <Trash2 size={18} />}
+                        <span>{deleting ? 'Eliminando...' : 'Eliminar'}</span>
                     </button>
                 </div>
             </div>

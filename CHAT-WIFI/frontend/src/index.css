@@ -1,26 +1,33 @@
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
 :root {
-    --bg-deep: #0b0f1a;
-    --bg-sidebar: #080b13;
-    --bg-panel: #121826;
-    --bg-main: #0b0f1a;
-    --bg-card: rgba(18, 24, 40, 0.65);
-    --accent-blue: #00e5ff;
-    --accent-blue-glow: rgba(0, 229, 255, 0.35);
-    --text-primary: #ffffff;
-    --text-secondary: #94a3b8;
-    --text-muted: #4a5568;
-    --border-light: rgba(255, 255, 255, 0.05);
-    --glass-bg: rgba(18, 24, 40, 0.6);
+    /* ── Green Neon Terminal Palette ── */
+    --bg-deep: #000500;
+    --bg-sidebar: #000800;
+    --bg-panel: #001000;
+    --bg-main: #000500;
+    --bg-card: #000a00;
+    --bg-secondary: #001500;
+    --accent-blue: #00ff00;
+    --accent-blue-glow: rgba(0, 255, 0, 0.35);
+    --text-primary: #00ff00;
+    --text-secondary: rgba(0, 255, 0, 0.45);
+    --text-muted: rgba(0, 255, 0, 0.25);
+    --border-light: rgba(0, 255, 0, 0.12);
+    --glass-bg: #000a00;
     --glass-blur: blur(14px);
     /* Neon palette */
-    --neon-cyan: #00e5ff;
-    --neon-purple: #bf5af2;
-    --neon-green: #00ff88;
-    --neon-yellow: #ffc800;
-    --neon-red: #ff3c5f;
+    --neon-cyan: #00ff00;
+    --neon-purple: #33ff33;
+    --neon-green: #00ff00;
+    --neon-yellow: #ffaa00;
+    --neon-red: #ff4444;
     /* Primary */
-    --primary-color: #6366f1;
-    --primary-gradient: linear-gradient(135deg, #6366f1, #a855f7);
+    --primary-color: #00ff00;
+    --primary-gradient: linear-gradient(135deg, #00ff00, #33ff33);
+    /* Glows */
+    --glow: rgba(0, 255, 0, 0.6);
+    --glow2: rgba(0, 255, 0, 0.15);
 }
 
 * {
@@ -30,24 +37,53 @@
 }
 
 body {
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    background-color: var(--bg-deep);
-    background: linear-gradient(135deg, #0b0f1a 0%, #0e1520 50%, #121826 100%);
-    color: var(--text-primary);
+    font-family: 'Share Tech Mono', monospace;
+    background-color: #000500;
+    color: #00ff00;
     height: 100vh;
     overflow: hidden;
     -webkit-font-smoothing: antialiased;
+    position: relative;
 }
 
+/* Dragon Background Container */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('./Logo/Dragon_on_mountains_breathing_fire_eb09e58a16.jpeg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 0.18;
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* Dark overlay overlay */
+.dragon-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 5, 0, 0.7);
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* Scanline removed per user request — dragon bg only */
 
 #root {
     height: 100%;
+    position: relative;
+    z-index: 1;
 }
 
 .premium-card {
-    background: var(--glass-bg);
+    background: #000a00;
     backdrop-filter: var(--glass-blur);
-    border: 1px solid var(--border-light);
+    border: 1px solid rgba(0, 255, 0, 0.25);
     border-radius: 24px;
 }
 
@@ -57,26 +93,32 @@ button {
     transition: all 0.2s ease;
 }
 
-input {
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid var(--border-light);
+input,
+textarea,
+select {
+    background: #001500;
+    border: 1px solid #00ff00;
     border-radius: 12px;
-    color: white;
+    color: #00ff00;
     padding: 0.75rem 1rem;
     transition: all 0.2s;
+    caret-color: #33ff33;
+    font-family: 'Share Tech Mono', monospace;
 }
 
-input:focus {
+input:focus,
+textarea:focus,
+select:focus {
     outline: none;
-    border-color: var(--accent-blue);
-    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+    border-color: #33ff33;
+    box-shadow: 0 0 0 2px rgba(0, 255, 0, 0.15), 0 0 12px rgba(0, 255, 0, 0.15);
 }
 
 .glow-blue {
-    box-shadow: 0 0 20px var(--accent-blue-glow);
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.35);
 }
 
-/* Scrollbar minimalista */
+/* Scrollbar */
 ::-webkit-scrollbar {
     width: 6px;
 }
@@ -86,10 +128,16 @@ input:focus {
 }
 
 ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(0, 255, 0, 0.2);
     border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(0, 255, 0, 0.4);
+}
+
+/* Firefox scrollbar */
+* {
+    scrollbar-color: rgba(0, 255, 0, 0.2) transparent;
+    scrollbar-width: thin;
 }

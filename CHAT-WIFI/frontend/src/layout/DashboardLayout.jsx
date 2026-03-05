@@ -40,6 +40,11 @@ const DashboardLayout = () => {
                         <span>Dashboard</span>
                     </NavLink>
 
+                    <NavLink to="/knowledge-base" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+                        <BookOpen size={18} />
+                        <span>Conocimiento</span>
+                    </NavLink>
+
                     <NavLink to="/whatsapp" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
                         <QrCode size={18} />
                         <span>WhatsApp</span>
@@ -48,11 +53,6 @@ const DashboardLayout = () => {
                     <NavLink to="/ai-providers" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
                         <BrainCircuit size={18} />
                         <span>IA Providers</span>
-                    </NavLink>
-
-                    <NavLink to="/knowledge-base" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-                        <BookOpen size={18} />
-                        <span>Conocimiento</span>
                     </NavLink>
 
                     <NavLink to="/blocked-numbers" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
@@ -76,26 +76,18 @@ const DashboardLayout = () => {
                         )}
                     </NavLink>
 
-                    <div className="nav-group-label">CONFIG</div>
-
-                    <NavLink to="/settings" className="nav-item disabled">
-                        <Settings size={18} />
-                        <span>Ajustes</span>
-                    </NavLink>
+                    <button onClick={handleLogout} className="nav-item logout-nav-link" style={{ width: '100%', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
+                        <LogOut size={18} />
+                        <span>Salir</span>
+                    </button>
                 </nav>
 
                 <div className="sidebar-footer">
                     <div className="user-info-side">
-                        <div className="user-avatar">
-                            {user?.email?.charAt(0).toUpperCase() || 'U'}
-                        </div>
                         <div className="user-details">
                             <span className="user-name">Admin</span>
                         </div>
                     </div>
-                    <button onClick={handleLogout} className="logout-btn">
-                        <LogOut size={18} />
-                    </button>
                 </div>
             </aside>
 
@@ -113,6 +105,11 @@ const DashboardLayout = () => {
                     <span>Inicio</span>
                 </NavLink>
 
+                <NavLink to="/knowledge-base" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}>
+                    <BookOpen size={20} />
+                    <span>Conocimiento</span>
+                </NavLink>
+
                 <NavLink to="/whatsapp" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}>
                     <QrCode size={20} />
                     <span>WhatsApp</span>
@@ -123,30 +120,15 @@ const DashboardLayout = () => {
                     <span>IA</span>
                 </NavLink>
 
-                <NavLink to="/knowledge-base" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}>
-                    <BookOpen size={20} />
-                    <span>Base</span>
-                </NavLink>
-
-                <NavLink to="/blocked-numbers" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}>
-                    <ShieldBan size={20} />
-                    <span>Bloqueados</span>
-                </NavLink>
-
-                <NavLink to="/welcome-automation" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}>
-                    <BellRing size={20} />
-                    <span>Bienvenida</span>
-                </NavLink>
-
                 <NavLink to="/pending-chats" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}>
                     <AlertTriangle size={20} />
                     <span>Pendientes</span>
                 </NavLink>
 
-                <NavLink to="/settings" className="mobile-nav-item disabled">
-                    <Settings size={20} />
-                    <span>Ajustes</span>
-                </NavLink>
+                <button onClick={handleLogout} className="mobile-nav-item" style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+                    <LogOut size={20} />
+                    <span>Salir</span>
+                </button>
             </nav>
         </div>
     );

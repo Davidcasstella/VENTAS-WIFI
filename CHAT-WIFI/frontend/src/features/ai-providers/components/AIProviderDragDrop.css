@@ -1,0 +1,307 @@
+/* ══════════════════════════════════════════════════
+   AI Provider Drag & Drop — Neon Terminal Theme
+   ══════════════════════════════════════════════════ */
+
+.dnd-container {
+    margin-bottom: 2rem;
+}
+
+.dnd-title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+}
+
+.dnd-title-row h3 {
+    font-size: 1rem;
+    color: var(--text-primary);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.dnd-title-row svg {
+    color: var(--neon-cyan);
+    filter: drop-shadow(0 0 4px var(--glow));
+}
+
+/* Layout: available providers on left, active drop zone on right */
+.dnd-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    min-height: 200px;
+}
+
+@media (max-width: 768px) {
+    .dnd-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ── Section panels ── */
+.dnd-section {
+    border-radius: 16px;
+    padding: 1.25rem;
+    min-height: 180px;
+    transition: all 0.3s ease;
+}
+
+.dnd-section-available {
+    background: rgba(0, 10, 0, 0.6);
+    border: 1px solid rgba(0, 255, 0, 0.15);
+}
+
+.dnd-section-active {
+    background: rgba(0, 20, 0, 0.5);
+    border: 2px dashed rgba(0, 255, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+}
+
+.dnd-section-active.drag-over {
+    border-color: #00ff00;
+    background: rgba(0, 40, 0, 0.6);
+    box-shadow: 0 0 30px rgba(0, 255, 0, 0.2), inset 0 0 30px rgba(0, 255, 0, 0.05);
+}
+
+.dnd-section-label {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 0.75rem;
+}
+
+.dnd-section-label svg {
+    opacity: 0.6;
+}
+
+/* ── Draggable provider cards ── */
+.dnd-card {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: rgba(0, 15, 0, 0.7);
+    border: 1px solid rgba(0, 255, 0, 0.18);
+    border-radius: 12px;
+    cursor: grab;
+    transition: all 0.25s ease;
+    margin-bottom: 0.5rem;
+    user-select: none;
+}
+
+.dnd-card:last-child {
+    margin-bottom: 0;
+}
+
+.dnd-card:hover {
+    border-color: rgba(0, 255, 0, 0.5);
+    box-shadow: 0 0 12px rgba(0, 255, 0, 0.15);
+    transform: translateY(-1px);
+}
+
+.dnd-card:active,
+.dnd-card.dragging {
+    cursor: grabbing;
+    opacity: 0.5;
+    transform: scale(0.95);
+}
+
+.dnd-card-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: bold;
+    flex-shrink: 0;
+    letter-spacing: 0.05em;
+}
+
+/* Provider-specific icon colors */
+.dnd-icon-openai {
+    background: rgba(0, 166, 126, 0.2);
+    color: #00a67e;
+    border: 1px solid rgba(0, 166, 126, 0.3);
+}
+
+.dnd-icon-gemini {
+    background: rgba(66, 133, 244, 0.2);
+    color: #4285f4;
+    border: 1px solid rgba(66, 133, 244, 0.3);
+}
+
+.dnd-icon-groq {
+    background: rgba(255, 106, 0, 0.2);
+    color: #ff6a00;
+    border: 1px solid rgba(255, 106, 0, 0.3);
+}
+
+.dnd-icon-grok {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dnd-icon-zia {
+    background: rgba(0, 255, 0, 0.1);
+    color: #00ff00;
+    border: 1px solid rgba(0, 255, 0, 0.2);
+}
+
+.dnd-icon-default {
+    background: rgba(0, 255, 0, 0.08);
+    color: var(--text-secondary);
+    border: 1px solid rgba(0, 255, 0, 0.15);
+}
+
+.dnd-card-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.dnd-card-name {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dnd-card-key {
+    display: block;
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dnd-card-grip {
+    color: var(--text-muted);
+    flex-shrink: 0;
+    opacity: 0.4;
+    transition: opacity 0.2s;
+}
+
+.dnd-card:hover .dnd-card-grip {
+    opacity: 0.8;
+}
+
+/* ── Active provider card (inside drop zone) ── */
+.dnd-active-card {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    background: rgba(0, 30, 0, 0.7);
+    border: 1px solid rgba(0, 255, 0, 0.4);
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.1), inset 0 0 15px rgba(0, 255, 0, 0.03);
+    animation: dnd-glow-in 0.5s ease;
+    flex: 1;
+}
+
+@keyframes dnd-glow-in {
+    0% {
+        box-shadow: 0 0 0 rgba(0, 255, 0, 0);
+        transform: scale(0.95);
+        opacity: 0;
+    }
+
+    50% {
+        box-shadow: 0 0 40px rgba(0, 255, 0, 0.3);
+    }
+
+    100% {
+        box-shadow: 0 0 20px rgba(0, 255, 0, 0.1);
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.dnd-active-card .dnd-card-icon {
+    width: 42px;
+    height: 42px;
+    font-size: 0.8rem;
+}
+
+.dnd-active-card .dnd-card-name {
+    font-size: 0.95rem;
+}
+
+.dnd-active-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.6rem;
+    color: #00ff00;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    flex-shrink: 0;
+}
+
+.dnd-active-pulse {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #00ff00;
+    animation: dnd-pulse 1.5s infinite;
+}
+
+@keyframes dnd-pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+        box-shadow: 0 0 4px #00ff00;
+    }
+
+    50% {
+        opacity: 0.4;
+        box-shadow: 0 0 8px #00ff00;
+    }
+}
+
+/* ── Empty drop zone placeholder ── */
+.dnd-drop-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    gap: 0.5rem;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 1rem;
+}
+
+.dnd-drop-empty svg {
+    opacity: 0.3;
+}
+
+.dnd-drop-empty span {
+    font-size: 0.75rem;
+    line-height: 1.4;
+}
+
+/* ── Available list empty state ── */
+.dnd-available-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 120px;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    text-align: center;
+}

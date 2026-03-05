@@ -161,21 +161,21 @@ const PendingChatsPage = () => {
             {/* ── Stats bar ── */}
             <div className="wa-stats-row" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
                 <div className="wa-stat-card premium-card">
-                    <AlertTriangle size={20} style={{ color: '#ef4444' }} />
+                    <AlertTriangle size={20} style={{ color: '#ff4444' }} />
                     <div>
                         <span className="wa-stat-value">{pendingCount}</span>
                         <span className="wa-stat-label">Pendientes</span>
                     </div>
                 </div>
                 <div className="wa-stat-card premium-card">
-                    <CheckCircle size={20} style={{ color: '#10b981' }} />
+                    <CheckCircle size={20} style={{ color: '#00ff00' }} />
                     <div>
                         <span className="wa-stat-value">{attendedCount}</span>
                         <span className="wa-stat-label">Atendidos</span>
                     </div>
                 </div>
                 <div className="wa-stat-card premium-card">
-                    <Phone size={20} style={{ color: '#6366f1' }} />
+                    <Phone size={20} style={{ color: '#00ff00' }} />
                     <div>
                         <span className="wa-stat-value" style={{ fontSize: '0.85rem' }}>
                             {adminNumber || 'Sin configurar'}
@@ -188,7 +188,7 @@ const PendingChatsPage = () => {
             {/* ── Admin config ── */}
             <div className="premium-card pc-config-card">
                 <div className="wa-card-header">
-                    <Settings2 size={18} style={{ color: '#6366f1' }} />
+                    <Settings2 size={18} style={{ color: '#00ff00' }} />
                     <span className="wa-card-title">Número del Administrador</span>
                 </div>
                 <p className="wa-card-desc">
@@ -235,7 +235,7 @@ const PendingChatsPage = () => {
             {/* ── Pending list ── */}
             {filtered.length === 0 ? (
                 <div className="wa-users-empty premium-card">
-                    <CheckCircle size={40} style={{ color: '#10b981', marginBottom: '0.5rem' }} />
+                    <CheckCircle size={40} style={{ color: '#00ff00', marginBottom: '0.5rem' }} />
                     <p>{searchTerm ? 'No se encontraron resultados' : '¡No hay chats pendientes!'}</p>
                     <span className="wa-users-empty-hint">
                         {searchTerm

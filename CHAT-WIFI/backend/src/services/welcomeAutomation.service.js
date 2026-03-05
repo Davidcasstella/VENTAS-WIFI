@@ -11,6 +11,8 @@ const DEFAULT_CONFIG = {
     isEnabled: false,
     messageText: '¡Hola! 👋 Gracias por contactarnos. ¿En qué podemos ayudarte hoy?',
     audioFilePath: null,   // absolute path to .ogg file on disk
+    videoFilePath: null,   // absolute path to .mp4 file on disk
+    videoEnabled: false,   // toggle video sending independently
     cooldownHours: 24,
     updatedAt: null
 };
@@ -55,6 +57,11 @@ class WelcomeAutomationService {
         const audioDest = this.getAudioDestPath();
         if (fs.existsSync(audioDest)) {
             await fs.remove(audioDest);
+        }
+        // Also delete the video file if it exists
+        const videoDest = this.getVideoDestPath();
+        if (fs.existsSync(videoDest)) {
+            await fs.remove(videoDest);
         }
         console.log('🔄 Welcome config reset to defaults');
         return reset;
@@ -230,7 +237,21 @@ class WelcomeAutomationService {
             }
         }
 
-        // 3. Persist timestamp — only after successful completion
+        // 3. Send video (if enabled and file exists on disk)
+        if (config.videoEnabled && config.videoFilePath && fs.existsSync(config.videoFilePath)) {
+            try {
+                this.markBotSent(jid);
+                await sock.sendMessage(jid, {
+                    video: { url: config.videoFilePath },
+                    mimetype: 'video/mp4'
+                });
+                console.log(`🎬 Welcome video sent to ${jid}`);
+            } catch (videoErr) {
+                console.error(`⚠️ Welcome video failed (continuing): ${videoErr.message}`);
+            }
+        }
+
+        // 4. Persist timestamp — only after successful completion
         await this.updateUserState(jid);
     }
 
@@ -258,6 +279,32 @@ class WelcomeAutomationService {
         }
         await this.saveConfig({ audioFilePath: null });
         console.log('🗑️ Welcome audio deleted');
+    }
+
+    // ── Video management ─────────────────────────────────────────────────
+
+    /** Returns the absolute destination path for the welcome video file. */
+    getVideoDestPath() {
+        return path.join(UPLOADS_DIR, 'welcome-video.mp4');
+    }
+
+    /** Moves an uploaded temp file to the permanent location and updates config. */
+    async saveVideoFile(tempPath) {
+        const dest = this.getVideoDestPath();
+        await fs.move(tempPath, dest, { overwrite: true });
+        await this.saveConfig({ videoFilePath: dest, videoEnabled: true });
+        console.log(`🎬 Welcome video saved: ${dest}`);
+        return dest;
+    }
+
+    /** Deletes the video file and clears config.videoFilePath. */
+    async deleteVideo() {
+        const dest = this.getVideoDestPath();
+        if (fs.existsSync(dest)) {
+            await fs.remove(dest);
+        }
+        await this.saveConfig({ videoFilePath: null, videoEnabled: false });
+        console.log('🗑️ Welcome video deleted');
     }
 
     // ── Stats ─────────────────────────────────────────────────────────────

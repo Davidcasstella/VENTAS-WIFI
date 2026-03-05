@@ -4,6 +4,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    background: #000500;
 }
 
 .login-card {
@@ -11,13 +12,15 @@
     max-width: 420px;
     padding: 3.5rem 2.5rem;
     text-align: center;
+    border: 1px solid #00ff00;
+    box-shadow: 0 0 15px rgba(0, 255, 0, 0.1);
 }
 
 .login-logo-img {
     width: 180px;
     height: auto;
     margin-bottom: 2rem;
-    filter: drop-shadow(0 0 10px rgba(79, 70, 229, 0.4));
+    filter: drop-shadow(0 0 10px rgba(0, 255, 0, 0.6));
 }
 
 .login-header h1 {
@@ -25,10 +28,12 @@
     letter-spacing: 2px;
     font-weight: 800;
     margin-bottom: 0.25rem;
+    color: #00ff00;
+    text-shadow: 0 0 10px #00ff00, 0 0 20px rgba(0, 255, 0, 0.4);
 }
 
 .login-header p {
-    color: var(--text-secondary);
+    color: rgba(0, 255, 0, 0.35);
     font-size: 0.875rem;
     margin-bottom: 2.5rem;
 }
@@ -48,7 +53,7 @@
 .input-field svg {
     position: absolute;
     left: 1rem;
-    color: #64748b;
+    color: rgba(0, 255, 0, 0.25);
 }
 
 .input-field input {
@@ -59,9 +64,9 @@
 
 .login-btn {
     height: 52px;
-    background: var(--accent-blue);
-    color: white;
-    border: none;
+    background: #001500;
+    color: #00ff00;
+    border: 1px solid #00ff00;
     border-radius: 12px;
     font-weight: 600;
     font-size: 1rem;
@@ -69,16 +74,19 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+    text-shadow: 0 0 6px #00ff00;
 }
 
 .login-btn:hover:not(:disabled) {
-    background: #4338ca;
+    background: #00ff00;
+    color: #000000;
+    box-shadow: 0 0 20px #00ff00, 0 0 40px rgba(0, 255, 0, 0.5);
+    text-shadow: none;
     transform: translateY(-2px);
 }
 
 .error-msg {
-    color: #ef4444;
+    color: #ff4444;
     font-size: 0.875rem;
     margin: 0.5rem 0;
 }
@@ -91,16 +99,17 @@
 }
 
 .login-footer a {
-    color: var(--text-secondary);
+    color: rgba(0, 255, 0, 0.35);
     font-size: 0.75rem;
     text-decoration: none;
 }
 
 .login-footer a:hover {
     text-decoration: underline;
+    color: #00ff00;
 }
 
 .version {
-    color: rgba(255, 255, 255, 0.1);
+    color: rgba(0, 255, 0, 0.12);
     font-size: 0.75rem;
 }

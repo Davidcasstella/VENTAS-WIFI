@@ -8,29 +8,51 @@ const { verifyToken } = require('../middleware/auth.middleware');
 // All routes require authentication
 router.use(verifyToken);
 
-// ── Multer: store audio temp file in memory, validate .ogg ─────────────────
-const storage = multer.diskStorage({
+// ── Multer: store audio temp file, validate .ogg ─────────────────────────────
+const audioStorage = multer.diskStorage({
     destination: (req, file, cb) => {
         const uploadsDir = path.join(__dirname, '../../public/uploads');
         cb(null, uploadsDir);
     },
     filename: (req, file, cb) => {
-        // Always overwrite with the same name
         cb(null, 'welcome-audio-temp.ogg');
     }
 });
 
-const upload = multer({
-    storage,
+const uploadAudio = multer({
+    storage: audioStorage,
     limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB max
     fileFilter: (req, file, cb) => {
         const allowed = ['audio/ogg', 'audio/oga', 'application/ogg', 'audio/opus'];
-        // Also allow by extension in case MIME is wrong
         const ext = path.extname(file.originalname).toLowerCase();
         if (allowed.includes(file.mimetype) || ext === '.ogg') {
             return cb(null, true);
         }
         cb(new Error('Solo se aceptan archivos .ogg'));
+    }
+});
+
+// ── Multer: store video temp file, validate .mp4 ─────────────────────────────
+const videoStorage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        const uploadsDir = path.join(__dirname, '../../public/uploads');
+        cb(null, uploadsDir);
+    },
+    filename: (req, file, cb) => {
+        cb(null, 'welcome-video-temp.mp4');
+    }
+});
+
+const uploadVideo = multer({
+    storage: videoStorage,
+    limits: { fileSize: 50 * 1024 * 1024 }, // 50 MB max
+    fileFilter: (req, file, cb) => {
+        const allowed = ['video/mp4', 'video/mpeg'];
+        const ext = path.extname(file.originalname).toLowerCase();
+        if (allowed.includes(file.mimetype) || ext === '.mp4') {
+            return cb(null, true);
+        }
+        cb(new Error('Solo se aceptan archivos .mp4'));
     }
 });
 
@@ -48,11 +70,12 @@ router.get('/config', async (req, res) => {
 // ── PUT /api/welcome-automation/config ─────────────────────────────────────
 router.put('/config', async (req, res) => {
     try {
-        const { isEnabled, messageText, cooldownHours } = req.body;
+        const { isEnabled, messageText, cooldownHours, videoEnabled } = req.body;
         const updated = await welcomeService.saveConfig({
             ...(isEnabled !== undefined && { isEnabled: Boolean(isEnabled) }),
             ...(messageText !== undefined && { messageText: String(messageText) }),
-            ...(cooldownHours !== undefined && { cooldownHours: Number(cooldownHours) })
+            ...(cooldownHours !== undefined && { cooldownHours: Number(cooldownHours) }),
+            ...(videoEnabled !== undefined && { videoEnabled: Boolean(videoEnabled) })
         });
         console.log(`⚙️ Welcome config updated: enabled=${updated.isEnabled}, cooldown=${updated.cooldownHours}h`);
         res.json({ success: true, data: updated });
@@ -75,7 +98,7 @@ router.post('/reset-config', async (req, res) => {
 });
 
 // ── POST /api/welcome-automation/audio  (upload .ogg) ──────────────────────
-router.post('/audio', upload.single('audio'), async (req, res) => {
+router.post('/audio', uploadAudio.single('audio'), async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ success: false, error: 'No se recibió archivo de audio' });
@@ -99,6 +122,34 @@ router.delete('/audio', async (req, res) => {
         res.status(500).json({ success: false, error: error.message });
     }
 });
+
+// ── POST /api/welcome-automation/video  (upload .mp4) ──────────────────────
+router.post('/video', uploadVideo.single('video'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ success: false, error: 'No se recibió archivo de video' });
+        }
+        const savedPath = await welcomeService.saveVideoFile(req.file.path);
+        console.log(`🎬 Welcome video uploaded: ${savedPath}`);
+        res.json({ success: true, message: 'Video guardado correctamente', path: savedPath });
+    } catch (error) {
+        console.error('Error saving video:', error.message);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ── DELETE /api/welcome-automation/video ───────────────────────────────────
+router.delete('/video', async (req, res) => {
+    try {
+        await welcomeService.deleteVideo();
+        res.json({ success: true, message: 'Video eliminado correctamente' });
+    } catch (error) {
+        console.error('Error deleting video:', error.message);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+
 
 // ── GET /api/welcome-automation/stats ──────────────────────────────────────
 router.get('/stats', async (req, res) => {

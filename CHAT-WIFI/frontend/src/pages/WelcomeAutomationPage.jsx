@@ -3,8 +3,9 @@ import api from '../services/api';
 import {
     BellRing, Power, Upload, Trash2, Clock, MessageSquare,
     CheckCircle, XCircle, Users, Calendar, AlertCircle, Save,
-    RotateCcw, Search, RefreshCw, Settings2, UserCheck
+    RotateCcw, Search, RefreshCw, Settings2, UserCheck, Video
 } from 'lucide-react';
+import UserControlPanel from '../components/ui/UserControlPanel';
 
 const WelcomeAutomationPage = () => {
     // ── Tab state ───────────────────────────────────────────────────────
@@ -17,6 +18,7 @@ const WelcomeAutomationPage = () => {
     const [saving, setSaving] = useState(false);
     const [resettingConfig, setResettingConfig] = useState(false);
     const [uploadingAudio, setUploadingAudio] = useState(false);
+    const [uploadingVideo, setUploadingVideo] = useState(false);
     const [toast, setToast] = useState(null);
 
     // Local editable fields
@@ -24,29 +26,24 @@ const WelcomeAutomationPage = () => {
     const [cooldownHours, setCooldownHours] = useState(24);
     const [isEnabled, setIsEnabled] = useState(false);
     const [audioFileName, setAudioFileName] = useState(null);
+    const [videoFileName, setVideoFileName] = useState(null);
+    const [videoEnabled, setVideoEnabled] = useState(false);
 
     const fileInputRef = useRef(null);
+    const videoInputRef = useRef(null);
     const dropRef = useRef(null);
+    const videoDropRef = useRef(null);
     const [dragging, setDragging] = useState(false);
+    const [draggingVideo, setDraggingVideo] = useState(false);
 
-    // ── Users state ─────────────────────────────────────────────────────
-    const [users, setUsers] = useState([]);
-    const [usersLoading, setUsersLoading] = useState(false);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [togglingUser, setTogglingUser] = useState(null); // "jid:field"
+    // ── Users state (now managed by UserControlPanel component) ────────
 
     // ── Load initial data ───────────────────────────────────────────────
     useEffect(() => {
         loadAll();
     }, []);
 
-    // Auto-refresh users every 10 seconds when on users tab
-    useEffect(() => {
-        if (activeTab !== 'users') return;
-        loadUsers();
-        const interval = setInterval(loadUsers, 10000);
-        return () => clearInterval(interval);
-    }, [activeTab]);
+    // Users auto-refresh now handled by UserControlPanel component
 
     const loadAll = async () => {
         setLoading(true);
@@ -61,6 +58,8 @@ const WelcomeAutomationPage = () => {
             setMessageText(cfg.messageText || '');
             setCooldownHours(cfg.cooldownHours || 24);
             setAudioFileName(cfg.audioFilePath ? 'welcome-audio.ogg' : null);
+            setVideoFileName(cfg.videoFilePath ? 'welcome-video.mp4' : null);
+            setVideoEnabled(cfg.videoEnabled || false);
             setStats(statsRes.data.data);
         } catch (err) {
             showToast('error', 'Error cargando configuración');
@@ -69,17 +68,7 @@ const WelcomeAutomationPage = () => {
         }
     };
 
-    const loadUsers = useCallback(async () => {
-        try {
-            setUsersLoading(true);
-            const { data } = await api.get('/api/welcome-automation/users');
-            setUsers(data.data || []);
-        } catch (err) {
-            console.error('Error loading users:', err);
-        } finally {
-            setUsersLoading(false);
-        }
-    }, []);
+    // loadUsers now handled by UserControlPanel component
 
     // ── Toast helper ────────────────────────────────────────────────────
     const showToast = (type, msg) => {
@@ -95,7 +84,8 @@ const WelcomeAutomationPage = () => {
             const { data } = await api.put('/api/welcome-automation/config', {
                 isEnabled,
                 messageText,
-                cooldownHours: Number(cooldownHours)
+                cooldownHours: Number(cooldownHours),
+                videoEnabled
             });
             setConfig(data.data);
             showToast('success', 'Configuración guardada correctamente');
@@ -119,6 +109,8 @@ const WelcomeAutomationPage = () => {
             setMessageText(cfg.messageText || '');
             setCooldownHours(cfg.cooldownHours || 24);
             setAudioFileName(null);
+            setVideoFileName(null);
+            setVideoEnabled(false);
             showToast('success', 'Configuración reseteada a valores por defecto');
         } catch {
             showToast('error', 'Error al resetear configuración');
@@ -176,7 +168,57 @@ const WelcomeAutomationPage = () => {
         }
     };
 
-    // ── Drag & drop ─────────────────────────────────────────────────────
+    // ── Video upload ─────────────────────────────────────────────────────
+    const uploadVideoFile = async (file) => {
+        if (!file) return;
+        if (!file.name.endsWith('.mp4')) {
+            showToast('error', 'Solo se aceptan archivos .mp4');
+            return;
+        }
+        setUploadingVideo(true);
+        try {
+            const form = new FormData();
+            form.append('video', file);
+            await api.post('/api/welcome-automation/video', form, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            setVideoFileName(file.name);
+            setVideoEnabled(true);
+            showToast('success', 'Video subido correctamente');
+            loadAll();
+        } catch (err) {
+            showToast('error', err.response?.data?.error || 'Error al subir video');
+        } finally {
+            setUploadingVideo(false);
+        }
+    };
+
+    const handleVideoInput = (e) => uploadVideoFile(e.target.files[0]);
+
+    const handleDeleteVideo = async () => {
+        try {
+            await api.delete('/api/welcome-automation/video');
+            setVideoFileName(null);
+            setVideoEnabled(false);
+            showToast('success', 'Video eliminado');
+        } catch {
+            showToast('error', 'Error al eliminar video');
+        }
+    };
+
+    const handleToggleVideo = async () => {
+        const newVal = !videoEnabled;
+        setVideoEnabled(newVal);
+        try {
+            await api.put('/api/welcome-automation/config', { videoEnabled: newVal });
+            showToast('success', newVal ? 'Video activado' : 'Video desactivado');
+        } catch {
+            setVideoEnabled(!newVal);
+            showToast('error', 'Error al cambiar estado del video');
+        }
+    };
+
+    // ── Drag & drop (audio) ──────────────────────────────────────────────
     const onDragOver = (e) => { e.preventDefault(); setDragging(true); };
     const onDragLeave = () => setDragging(false);
     const onDrop = (e) => {
@@ -186,76 +228,17 @@ const WelcomeAutomationPage = () => {
         uploadAudio(file);
     };
 
-    // ── Per-user actions ────────────────────────────────────────────────
-    const toggleUserAI = async (jid, currentVal) => {
-        const key = `${jid}:ai`;
-        setTogglingUser(key);
-        try {
-            await api.put(`/api/welcome-automation/users/${encodeURIComponent(jid)}/ai`, {
-                enabled: !currentVal
-            });
-            setUsers(prev => prev.map(u =>
-                u.jid === jid ? { ...u, aiEnabled: !currentVal } : u
-            ));
-            showToast('success', `IA ${!currentVal ? 'activada' : 'desactivada'} para ${jid.replace('@s.whatsapp.net', '')}`);
-        } catch {
-            showToast('error', 'Error al cambiar estado IA');
-        } finally {
-            setTogglingUser(null);
-        }
+    // ── Drag & drop (video) ──────────────────────────────────────────────
+    const onDragOverVideo = (e) => { e.preventDefault(); setDraggingVideo(true); };
+    const onDragLeaveVideo = () => setDraggingVideo(false);
+    const onDropVideo = (e) => {
+        e.preventDefault();
+        setDraggingVideo(false);
+        const file = e.dataTransfer.files[0];
+        uploadVideoFile(file);
     };
 
-    const toggleUserCooldown = async (jid, currentVal) => {
-        const key = `${jid}:cooldown`;
-        setTogglingUser(key);
-        try {
-            await api.put(`/api/welcome-automation/users/${encodeURIComponent(jid)}/cooldown`, {
-                enabled: !currentVal
-            });
-            setUsers(prev => prev.map(u =>
-                u.jid === jid ? { ...u, cooldownEnabled: !currentVal } : u
-            ));
-            showToast('success', `Cooldown ${!currentVal ? 'activado' : 'desactivado'} para ${jid.replace('@s.whatsapp.net', '')}`);
-        } catch {
-            showToast('error', 'Error al cambiar cooldown');
-        } finally {
-            setTogglingUser(null);
-        }
-    };
-
-    const resetUserCooldown = async (jid) => {
-        const key = `${jid}:reset`;
-        setTogglingUser(key);
-        try {
-            await api.post('/api/welcome-automation/reset-user', { jid });
-            setUsers(prev => prev.map(u =>
-                u.jid === jid ? { ...u, cooldownStatus: 'expired', lastWelcomeSentAt: null } : u
-            ));
-            showToast('success', `Cooldown reseteado para ${jid.replace('@s.whatsapp.net', '')}`);
-        } catch {
-            showToast('error', 'Error al resetear cooldown');
-        } finally {
-            setTogglingUser(null);
-        }
-    };
-
-    // ── Helpers ──────────────────────────────────────────────────────────
-    const formatDate = (isoStr) => {
-        if (!isoStr) return '—';
-        const d = new Date(isoStr);
-        return d.toLocaleDateString('es-ES', {
-            day: '2-digit', month: '2-digit', year: '2-digit',
-            hour: '2-digit', minute: '2-digit'
-        });
-    };
-
-    const filteredUsers = users.filter(u => {
-        if (!searchTerm) return true;
-        const term = searchTerm.toLowerCase();
-        return u.displayName.toLowerCase().includes(term) ||
-            u.jid.toLowerCase().includes(term) ||
-            (u.lastMessageText && u.lastMessageText.toLowerCase().includes(term));
-    });
+    // Per-user actions and helpers now handled by UserControlPanel component
 
     // ── Loading state ───────────────────────────────────────────────────
     if (loading) {
@@ -292,7 +275,7 @@ const WelcomeAutomationPage = () => {
 
                 {/* Master toggle (large) */}
                 <div className="wa-header-toggle">
-                    <span className="wa-toggle-label-text" style={{ color: isEnabled ? '#10b981' : 'var(--text-muted)' }}>
+                    <span className="wa-toggle-label-text" style={{ color: isEnabled ? '#00ff00' : 'var(--text-muted)' }}>
                         {isEnabled ? 'ACTIVO' : 'INACTIVO'}
                     </span>
                     <button
@@ -307,30 +290,30 @@ const WelcomeAutomationPage = () => {
             {/* ── Stats bar ── */}
             <div className="wa-stats-row">
                 <div className="wa-stat-card premium-card">
-                    <Users size={20} style={{ color: '#6366f1' }} />
+                    <Users size={20} style={{ color: '#00ff00' }} />
                     <div>
                         <span className="wa-stat-value">{stats?.totalUsers ?? 0}</span>
                         <span className="wa-stat-label">Clientes registrados</span>
                     </div>
                 </div>
                 <div className="wa-stat-card premium-card">
-                    <Calendar size={20} style={{ color: '#10b981' }} />
+                    <Calendar size={20} style={{ color: '#00ff00' }} />
                     <div>
                         <span className="wa-stat-value">{stats?.sentLast24h ?? 0}</span>
                         <span className="wa-stat-label">Enviados hoy</span>
                     </div>
                 </div>
                 <div className="wa-stat-card premium-card">
-                    <Clock size={20} style={{ color: '#f59e0b' }} />
+                    <Clock size={20} style={{ color: '#ffaa00' }} />
                     <div>
                         <span className="wa-stat-value">{cooldownHours}h</span>
                         <span className="wa-stat-label">Cooldown activo</span>
                     </div>
                 </div>
                 <div className={`wa-stat-card premium-card ${isEnabled ? 'wa-stat-on' : 'wa-stat-off'}`}>
-                    <Power size={20} style={{ color: isEnabled ? '#10b981' : '#ef4444' }} />
+                    <Power size={20} style={{ color: isEnabled ? '#00ff00' : '#ff4444' }} />
                     <div>
-                        <span className="wa-stat-value" style={{ color: isEnabled ? '#10b981' : '#ef4444' }}>
+                        <span className="wa-stat-value" style={{ color: isEnabled ? '#00ff00' : '#ff4444' }}>
                             {isEnabled ? 'ON' : 'OFF'}
                         </span>
                         <span className="wa-stat-label">Estado del módulo</span>
@@ -353,9 +336,6 @@ const WelcomeAutomationPage = () => {
                 >
                     <UserCheck size={16} />
                     Control de Usuarios
-                    {users.length > 0 && (
-                        <span className="wa-tab-badge">{users.length}</span>
-                    )}
                 </button>
             </div>
 
@@ -370,7 +350,7 @@ const WelcomeAutomationPage = () => {
                         {/* Message editor */}
                         <div className="premium-card wa-card">
                             <div className="wa-card-header">
-                                <MessageSquare size={20} style={{ color: '#6366f1' }} />
+                                <MessageSquare size={20} style={{ color: '#00ff00' }} />
                                 <span className="wa-card-title">Mensaje de Bienvenida</span>
                             </div>
                             <p className="wa-card-desc">
@@ -390,7 +370,7 @@ const WelcomeAutomationPage = () => {
                         {/* Cooldown */}
                         <div className="premium-card wa-card">
                             <div className="wa-card-header">
-                                <Clock size={20} style={{ color: '#f59e0b' }} />
+                                <Clock size={20} style={{ color: '#ffaa00' }} />
                                 <span className="wa-card-title">Cooldown (horas)</span>
                             </div>
                             <p className="wa-card-desc">
@@ -440,7 +420,7 @@ const WelcomeAutomationPage = () => {
                     <div className="wa-col">
                         <div className="premium-card wa-card">
                             <div className="wa-card-header">
-                                <BellRing size={20} style={{ color: '#a855f7' }} />
+                                <BellRing size={20} style={{ color: '#00ee00' }} />
                                 <span className="wa-card-title">Audio de Bienvenida (.ogg)</span>
                             </div>
                             <p className="wa-card-desc">
@@ -482,7 +462,7 @@ const WelcomeAutomationPage = () => {
                                     <div className="wa-upload-spinner" />
                                 ) : (
                                     <>
-                                        <Upload size={28} style={{ color: '#a855f7', marginBottom: 8 }} />
+                                        <Upload size={28} style={{ color: '#00ee00', marginBottom: 8 }} />
                                         <span className="wa-dropzone-text">
                                             {dragging ? 'Suelta el archivo aquí...' : 'Arrastra un .ogg o haz clic para seleccionar'}
                                         </span>
@@ -496,6 +476,82 @@ const WelcomeAutomationPage = () => {
                                 accept=".ogg,audio/ogg"
                                 style={{ display: 'none' }}
                                 onChange={handleFileInput}
+                            />
+                        </div>
+
+                        {/* Video card */}
+                        <div className="premium-card wa-card">
+                            <div className="wa-card-header" style={{ justifyContent: 'space-between' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                    <Video size={20} style={{ color: '#00ff00' }} />
+                                    <span className="wa-card-title">Video de Bienvenida (.mp4)</span>
+                                </div>
+                                {videoFileName && (
+                                    <button
+                                        className={`ai-toggle-btn ${videoEnabled ? 'toggle-on' : 'toggle-off'}`}
+                                        onClick={handleToggleVideo}
+                                        title={videoEnabled ? 'Desactivar video' : 'Activar video'}
+                                    >
+                                        <span className="ai-toggle-thumb" />
+                                    </button>
+                                )}
+                            </div>
+                            <p className="wa-card-desc">
+                                Se envía <strong>después del texto</strong> y <strong>antes de la respuesta IA</strong>. Puedes activar/desactivar sin eliminarlo.
+                            </p>
+
+                            {videoFileName ? (
+                                <div className="wa-audio-present">
+                                    <div className="wa-audio-info">
+                                        <div className="wa-audio-icon">🎬</div>
+                                        <div>
+                                            <span className="wa-audio-name">{videoFileName}</span>
+                                            <span className={`wa-audio-badge ${videoEnabled ? '' : 'wa-badge-off'}`}
+                                                style={!videoEnabled ? { background: '#374151', color: '#9ca3af' } : {}}
+                                            >
+                                                {videoEnabled ? 'Activo' : 'Desactivado'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <button className="wa-audio-delete-btn" onClick={handleDeleteVideo}>
+                                        <Trash2 size={16} />
+                                        Eliminar
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="wa-audio-empty">
+                                    <span className="wa-audio-empty-icon">📭</span>
+                                    <span>Sin video configurado — solo se enviará audio y texto</span>
+                                </div>
+                            )}
+
+                            {/* Video drop zone */}
+                            <div
+                                ref={videoDropRef}
+                                className={`wa-dropzone ${draggingVideo ? 'wa-dropzone-drag' : ''} ${uploadingVideo ? 'wa-dropzone-loading' : ''}`}
+                                onDragOver={onDragOverVideo}
+                                onDragLeave={onDragLeaveVideo}
+                                onDrop={onDropVideo}
+                                onClick={() => !uploadingVideo && videoInputRef.current?.click()}
+                            >
+                                {uploadingVideo ? (
+                                    <div className="wa-upload-spinner" />
+                                ) : (
+                                    <>
+                                        <Upload size={28} style={{ color: '#00ff00', marginBottom: 8 }} />
+                                        <span className="wa-dropzone-text">
+                                            {draggingVideo ? 'Suelta el archivo aquí...' : 'Arrastra un .mp4 o haz clic para seleccionar'}
+                                        </span>
+                                        <span className="wa-dropzone-hint">Máximo 50 MB · Solo formato .mp4</span>
+                                    </>
+                                )}
+                            </div>
+                            <input
+                                ref={videoInputRef}
+                                type="file"
+                                accept=".mp4,video/mp4"
+                                style={{ display: 'none' }}
+                                onChange={handleVideoInput}
                             />
                         </div>
 
@@ -523,9 +579,18 @@ const WelcomeAutomationPage = () => {
                                     <span>📝 Envía mensaje texto</span>
                                 </div>
                                 <div className="wa-flow-arrow">↓</div>
+                                <div className="wa-flow-step wa-flow-action">
+                                    <span>🎬 Envía video .mp4</span>
+                                </div>
+                                <div className="wa-flow-arrow">↓</div>
                                 <div className="wa-flow-step">
                                     <span className="wa-flow-num">3</span>
-                                    <span>Flujo normal continúa (IA responde)</span>
+                                    <span>IA responde la pregunta</span>
+                                </div>
+                                <div className="wa-flow-arrow">↓</div>
+                                <div className="wa-flow-step">
+                                    <span className="wa-flow-num">4</span>
+                                    <span>Si IA no sabe → "ok" + cooldown 24h</span>
                                 </div>
                             </div>
                         </div>
@@ -534,123 +599,10 @@ const WelcomeAutomationPage = () => {
             )}
 
             {/* ═══════════════════════════════════════════════════════════
-                TAB 2: USER CONTROL
+                TAB 2: USER CONTROL (extracted to reusable component)
                 ═══════════════════════════════════════════════════════════ */}
             {activeTab === 'users' && (
-                <div className="wa-users-panel">
-                    {/* Search & refresh bar */}
-                    <div className="wa-users-toolbar">
-                        <div className="wa-search-wrapper">
-                            <Search size={16} className="wa-search-icon" />
-                            <input
-                                type="text"
-                                className="wa-search-input"
-                                placeholder="Buscar por número o mensaje..."
-                                value={searchTerm}
-                                onChange={e => setSearchTerm(e.target.value)}
-                            />
-                        </div>
-                        <button
-                            className="wa-refresh-btn"
-                            onClick={loadUsers}
-                            disabled={usersLoading}
-                        >
-                            <RefreshCw size={16} className={usersLoading ? 'wa-spin' : ''} />
-                            Actualizar
-                        </button>
-                    </div>
-
-                    {/* User list */}
-                    {filteredUsers.length === 0 ? (
-                        <div className="wa-users-empty premium-card">
-                            <Users size={40} style={{ color: 'var(--text-muted)', marginBottom: '0.5rem' }} />
-                            <p>{searchTerm ? 'No se encontraron usuarios' : 'Aún no hay usuarios registrados'}</p>
-                            <span className="wa-users-empty-hint">
-                                {searchTerm
-                                    ? 'Intenta con otro término de búsqueda'
-                                    : 'Los usuarios aparecerán aquí cuando escriban al bot'
-                                }
-                            </span>
-                        </div>
-                    ) : (
-                        <div className="wa-users-list">
-                            {filteredUsers.map(user => (
-                                <div key={user.jid} className="wa-user-card premium-card">
-                                    {/* User info */}
-                                    <div className="wa-user-info">
-                                        <div className="wa-user-avatar">
-                                            {user.displayName.charAt(0).toUpperCase()}
-                                        </div>
-                                        <div className="wa-user-details">
-                                            <span className="wa-user-name">{user.displayName}</span>
-                                            <span className="wa-user-msg">
-                                                {user.lastMessageText
-                                                    ? (user.lastMessageText.length > 60
-                                                        ? user.lastMessageText.substring(0, 60) + '...'
-                                                        : user.lastMessageText)
-                                                    : 'Sin mensaje registrado'
-                                                }
-                                            </span>
-                                            <span className="wa-user-time">
-                                                {user.lastMessageAt ? formatDate(user.lastMessageAt) : '—'}
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    {/* Status badges */}
-                                    <div className="wa-user-badges">
-                                        <span className={`wa-badge ${user.cooldownStatus === 'active' ? 'wa-badge-active' : 'wa-badge-expired'}`}>
-                                            <Clock size={12} />
-                                            {user.cooldownStatus === 'active' ? 'Cooldown Activo' : 'Cooldown Expirado'}
-                                        </span>
-                                        <span className={`wa-badge ${user.aiEnabled ? 'wa-badge-ai-on' : 'wa-badge-ai-off'}`}>
-                                            <Power size={12} />
-                                            {user.aiEnabled ? 'IA Activa' : 'IA Desactivada'}
-                                        </span>
-                                    </div>
-
-                                    {/* Controls */}
-                                    <div className="wa-user-controls">
-                                        {/* AI toggle */}
-                                        <div className="wa-user-toggle-group">
-                                            <span className="wa-user-toggle-label">IA</span>
-                                            <button
-                                                className={`wa-toggle-sm ${user.aiEnabled ? 'wa-toggle-sm-on' : 'wa-toggle-sm-off'}`}
-                                                onClick={() => toggleUserAI(user.jid, user.aiEnabled)}
-                                                disabled={togglingUser === `${user.jid}:ai`}
-                                            >
-                                                <span className="wa-toggle-sm-thumb" />
-                                            </button>
-                                        </div>
-
-                                        {/* Cooldown toggle */}
-                                        <div className="wa-user-toggle-group">
-                                            <span className="wa-user-toggle-label">24H</span>
-                                            <button
-                                                className={`wa-toggle-sm ${user.cooldownEnabled ? 'wa-toggle-sm-on' : 'wa-toggle-sm-off'}`}
-                                                onClick={() => toggleUserCooldown(user.jid, user.cooldownEnabled)}
-                                                disabled={togglingUser === `${user.jid}:cooldown`}
-                                            >
-                                                <span className="wa-toggle-sm-thumb" />
-                                            </button>
-                                        </div>
-
-                                        {/* Reset cooldown button */}
-                                        <button
-                                            className="wa-user-reset-btn"
-                                            onClick={() => resetUserCooldown(user.jid)}
-                                            disabled={togglingUser === `${user.jid}:reset`}
-                                            title="Resetear cooldown"
-                                        >
-                                            <RotateCcw size={14} />
-                                            Reset
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
+                <UserControlPanel />
             )}
         </div>
     );

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Zap, AlertTriangle, AlertOctagon, CheckCircle } from 'lucide-react';
 import api from '../../services/api';
 
-const TokenUsageModule = () => {
+const TokenUsageModule = ({ className = '' }) => {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -32,21 +32,21 @@ const TokenUsageModule = () => {
             case 'critical': return {
                 icon: <AlertOctagon size={16} />,
                 label: 'Riesgo Crítico',
-                color: '#ef4444',
+                color: '#ff4444',
                 barColor: 'var(--token-critical)',
                 glowColor: 'rgba(239,68,68,0.3)'
             };
             case 'warning': return {
                 icon: <AlertTriangle size={16} />,
                 label: 'Advertencia',
-                color: '#f59e0b',
+                color: '#ffaa00',
                 barColor: 'var(--token-warning)',
                 glowColor: 'rgba(245,158,11,0.3)'
             };
             default: return {
                 icon: <CheckCircle size={16} />,
                 label: 'Seguro',
-                color: '#10b981',
+                color: '#00ff00',
                 barColor: 'var(--token-safe)',
                 glowColor: 'rgba(16,185,129,0.3)'
             };
@@ -62,9 +62,9 @@ const TokenUsageModule = () => {
     const risk = getRiskConfig(data?.riskLevel || 'safe');
 
     return (
-        <div className="analytics-card token-card premium-card">
+        <div className={`analytics-metric-card premium-card ${className}`}>
             <div className="analytics-card-header">
-                <div className="analytics-card-icon-wrap" style={{ background: `rgba(99,102,241,0.1)`, color: '#6366f1' }}>
+                <div className="analytics-card-icon-wrap" style={{ backgroundColor: 'rgba(0, 255, 0, 0.1)', color: '#00ff00' }}>
                     <Zap size={20} />
                 </div>
                 <div>
