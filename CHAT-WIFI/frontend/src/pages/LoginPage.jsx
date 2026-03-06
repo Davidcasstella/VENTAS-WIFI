@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { LogIn, Mail, Lock, Loader2, Zap } from 'lucide-react';
@@ -13,12 +13,30 @@ const LoginPage = () => {
     const { login } = useAuth();
     const [loading, setLoading] = useState(false);
 
+    // Remember user: load saved email from localStorage on mount
+    const [rememberUser, setRememberUser] = useState(() => {
+        return !!localStorage.getItem('rememberedUser');
+    });
+
+    useEffect(() => {
+        const savedEmail = localStorage.getItem('rememberedUser');
+        if (savedEmail) {
+            setEmail(savedEmail);
+        }
+    }, []);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         setError('');
         const result = await login(email, password);
         if (result.success) {
+            // Remember user: save or clear email in localStorage
+            if (rememberUser) {
+                localStorage.setItem('rememberedUser', email);
+            } else {
+                localStorage.removeItem('rememberedUser');
+            }
             navigate('/', { replace: true });
         } else {
             setError(result.message);
@@ -57,6 +75,17 @@ const LoginPage = () => {
                     </div>
 
                     {error && <p className="error-msg">{error}</p>}
+
+                    {/* Remember user checkbox */}
+                    <div className="remember-user">
+                        <input
+                            type="checkbox"
+                            id="rememberUser"
+                            checked={rememberUser}
+                            onChange={(e) => setRememberUser(e.target.checked)}
+                        />
+                        <label htmlFor="rememberUser">Recordar usuario</label>
+                    </div>
 
                     <button type="submit" className="login-btn" disabled={loading}>
                         {loading ? <Loader2 className="spin" /> : 'Ingresar'}

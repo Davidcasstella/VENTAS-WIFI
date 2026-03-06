@@ -76,6 +76,11 @@ const DashboardLayout = () => {
                         )}
                     </NavLink>
 
+                    <NavLink to="/ai-automations" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+                        <Zap size={18} />
+                        <span>Automatizaciones</span>
+                    </NavLink>
+
                     <button onClick={handleLogout} className="nav-item logout-nav-link" style={{ width: '100%', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
                         <LogOut size={18} />
                         <span>Salir</span>
@@ -123,6 +128,11 @@ const DashboardLayout = () => {
                 <NavLink to="/pending-chats" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}>
                     <AlertTriangle size={20} />
                     <span>Pendientes</span>
+                </NavLink>
+
+                <NavLink to="/ai-automations" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}>
+                    <Zap size={20} />
+                    <span>Auto</span>
                 </NavLink>
 
                 <button onClick={handleLogout} className="mobile-nav-item" style={{ background: 'none', border: 'none', cursor: 'pointer' }}>

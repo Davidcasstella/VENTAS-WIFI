@@ -13,6 +13,7 @@ const blockedNumbersRoutes = require('./routes/blockedNumbers.routes');
 const analyticsRoutes = require('./routes/analytics.routes');
 const welcomeAutomationRoutes = require('./routes/welcomeAutomation.routes');
 const aiFallbackRoutes = require('./routes/aiFallback.routes');
+const aiAutomationsRoutes = require('./routes/aiAutomations.routes');
 const blockedNumbersService = require('./services/blockedNumbers.service');
 const analyticsService = require('./services/analyticsService');
 const welcomeAutomationService = require('./services/welcomeAutomation.service');
@@ -43,6 +44,7 @@ app.use('/api/blocked-numbers', blockedNumbersRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/welcome-automation', welcomeAutomationRoutes);
 app.use('/api/ai-fallback', aiFallbackRoutes);
+app.use('/api/ai-automations', aiAutomationsRoutes);
 
 // API Status (Pública)
 app.get('/api/status', (req, res) => {
@@ -86,6 +88,9 @@ io.on('connection', (socket) => {
 
 const aiResponseService = require('./services/aiResponse.service');
 const apiKeyRotation = require('./services/apiKeyRotation.service');
+const audioTranscription = require('./services/audioTranscription.service');
+const aiAutomationsService = require('./services/aiAutomations.service');
+const paymentDetection = require('./services/paymentDetection.service');
 apiKeyRotation.setIo(io);
 
 // Escuchar eventos de WhatsApp y emitir vía Socket.io
@@ -163,16 +168,20 @@ whatsapp.on('message', async (m) => {
             msg.message?.interactiveResponseMessage?.body?.text ||
             '';
 
-        // === MEDIA-ONLY DETECTION (audio, image, video, sticker, document without text) ===
+        // === AUDIO DETECTION (voice notes and audio files) ===
         const msgContent = msg.message || {};
-        const isMediaOnly = !text && (
-            msgContent.audioMessage ||
-            msgContent.imageMessage ||
+        const isAudioMessage = !text && (msgContent.audioMessage || msgContent.ptvMessage);
+
+        // === IMAGE DETECTION (for payment receipt analysis) ===
+        const isImageMessage = !text && (msgContent.imageMessage);
+
+        // === MEDIA-ONLY DETECTION (video, sticker, document without text) ===
+        // NOTE: audio and image are excluded — they are handled separately
+        const isMediaOnly = !text && !isAudioMessage && !isImageMessage && (
             msgContent.videoMessage ||
             msgContent.stickerMessage ||
             msgContent.documentMessage ||
             msgContent.viewOnceMessage ||
-            msgContent.ptvMessage ||
             msgContent.contactMessage ||
             msgContent.locationMessage
         );
@@ -193,8 +202,137 @@ whatsapp.on('message', async (m) => {
             // Skip groups
             if (remoteJid.includes('@g.us')) return;
 
+            // === AUDIO MESSAGE HANDLER: transcribe and process with AI ===
+            if (isAudioMessage) {
+                // Check if voice processing is enabled
+                const automationsConfig = await aiAutomationsService.getConfig();
+                if (!automationsConfig.voiceProcessingEnabled) {
+                    console.log(`🔇 Voice processing disabled — ignoring audio from ${remoteJid}`);
+                    try { await welcomeAutomationService.updateUserMessage(remoteJid, '[audio]'); } catch (_) { }
+                    try { analyticsService.trackIncoming(remoteJid); } catch (_) { }
+                    return;
+                }
+
+                console.log(`🎤 Audio message received from ${remoteJid}`);
+                try { await welcomeAutomationService.updateUserMessage(remoteJid, '[audio]'); } catch (_) { }
+                try { analyticsService.trackIncoming(remoteJid); } catch (_) { }
+
+                // Check per-user AI status before processing
+                const userAIForAudio = await welcomeAutomationService.isAIEnabledForUser(remoteJid);
+                if (!userAIForAudio) {
+                    console.log(`🔇 AI disabled for user ${remoteJid} — skipping audio transcription`);
+                    return;
+                }
+
+                try {
+                    const transcribedText = await audioTranscription.processAudioMessage(msg);
+                    console.log(`🎤→📝 Audio transcribed from ${remoteJid}: "${transcribedText}"`);
+
+                    // Feed transcribed text into the existing AI response flow
+                    const response = await aiResponseService.generateResponse(transcribedText);
+                    console.log(`✅ AI response for audio: "${response}"`);
+
+                    // Handle all-providers-exhausted (same as text flow)
+                    if (response === '__ALL_PROVIDERS_EXHAUSTED__') {
+                        if (whatsapp.sock) {
+                            welcomeAutomationService.markBotSent(remoteJid);
+                            await whatsapp.sock.sendMessage(remoteJid, { text: 'Ok 👍' });
+                        }
+                        try { await aiFallbackService.sendExhaustionNotification(whatsapp.sock, remoteJid, transcribedText, msg.pushName); } catch (_) { }
+                        try { analyticsService.trackOutgoing(); } catch (_) { }
+                        return;
+                    }
+
+                    // Handle fallback (same as text flow)
+                    const isFallback = await aiFallbackService.isFallbackResponse(response);
+                    if (isFallback) {
+                        console.log(`⚠️ AI FALLBACK for audio from ${remoteJid}`);
+                        if (whatsapp.sock) {
+                            welcomeAutomationService.markBotSent(remoteJid);
+                            await whatsapp.sock.sendMessage(remoteJid, { text: 'ok' });
+                        }
+                        await welcomeAutomationService.disableUserAI(remoteJid);
+                        await welcomeAutomationService.updateUserState(remoteJid);
+                        await aiFallbackService.registerPending(remoteJid, transcribedText);
+                        try { await aiFallbackService.sendAdminNotification(whatsapp.sock, remoteJid, `[Audio] ${transcribedText}`, msg.pushName); } catch (_) { }
+                        try { analyticsService.trackOutgoing(); } catch (_) { }
+                        return;
+                    }
+
+                    // Send successful AI response
+                    if (whatsapp.sock) {
+                        welcomeAutomationService.markBotSent(remoteJid);
+                        await whatsapp.sock.sendMessage(remoteJid, { text: response });
+                        console.log(`🤖 Audio response sent to ${remoteJid}: ${response}`);
+                        try { analyticsService.trackOutgoing(); } catch (_) { }
+                    }
+                } catch (audioErr) {
+                    console.error(`❌ Audio transcription failed for ${remoteJid}: ${audioErr.message}`);
+                    // Send friendly error message to user
+                    if (whatsapp.sock) {
+                        welcomeAutomationService.markBotSent(remoteJid);
+                        await whatsapp.sock.sendMessage(remoteJid, {
+                            text: 'No pude entender el audio, ¿podrías enviarlo nuevamente o escribir tu mensaje?'
+                        });
+                        try { analyticsService.trackOutgoing(); } catch (_) { }
+                    }
+                }
+                return;
+            }
+
+            // === IMAGE PAYMENT DETECTION HANDLER ===
+            if (isImageMessage) {
+                const automationsConfig = await aiAutomationsService.getConfig();
+                if (automationsConfig.paymentDetectionEnabled) {
+                    console.log(`📸 Image received from ${remoteJid} — analyzing for payment receipt...`);
+                    try { await welcomeAutomationService.updateUserMessage(remoteJid, '[image]'); } catch (_) { }
+                    try { analyticsService.trackIncoming(remoteJid); } catch (_) { }
+
+                    try {
+                        const isPayment = await paymentDetection.analyzeMessage(msg);
+
+                        if (isPayment) {
+                            console.log(`💳 Payment receipt DETECTED from ${remoteJid}`);
+                            if (whatsapp.sock) {
+                                welcomeAutomationService.markBotSent(remoteJid);
+                                await whatsapp.sock.sendMessage(remoteJid, {
+                                    text: 'Perfecto 👍\nEstoy verificando tu pago.\n\nPara enviarte toda la información del curso, por favor envíame tu correo electrónico.'
+                                });
+                                console.log(`📤 Payment confirmation sent to ${remoteJid}`);
+                                try { analyticsService.trackOutgoing(); } catch (_) { }
+                            }
+                        } else {
+                            console.log(`📸 Image from ${remoteJid} is NOT a payment receipt — media-only flow`);
+                            // Fall through to media-only handler behavior
+                            if (whatsapp.sock) {
+                                welcomeAutomationService.markBotSent(remoteJid);
+                                await whatsapp.sock.sendMessage(remoteJid, { text: 'ok' });
+                            }
+                            await welcomeAutomationService.disableUserAI(remoteJid);
+                            await aiFallbackService.registerPending(remoteJid, '[imageMessage]');
+                            try { await aiFallbackService.sendAdminNotification(whatsapp.sock, remoteJid, '[Envió imagen]', msg.pushName); } catch (_) { }
+                            try { analyticsService.trackOutgoing(); } catch (_) { }
+                        }
+                    } catch (imgErr) {
+                        console.error(`❌ Payment detection failed for ${remoteJid}: ${imgErr.message}`);
+                        // On error, fall through to media-only behavior
+                        if (whatsapp.sock) {
+                            welcomeAutomationService.markBotSent(remoteJid);
+                            await whatsapp.sock.sendMessage(remoteJid, { text: 'ok' });
+                        }
+                        await welcomeAutomationService.disableUserAI(remoteJid);
+                        await aiFallbackService.registerPending(remoteJid, '[imageMessage]');
+                        try { await aiFallbackService.sendAdminNotification(whatsapp.sock, remoteJid, '[Envió imagen]', msg.pushName); } catch (_) { }
+                        try { analyticsService.trackOutgoing(); } catch (_) { }
+                    }
+                    return;
+                }
+                // If payment detection is OFF, image falls through to media-only below
+            }
+
             // === MEDIA-ONLY HANDLER: send "ok" and switch to manual mode ===
-            if (isMediaOnly) {
+            // Also catches images when payment detection is OFF (they fall through above)
+            if (isMediaOnly || isImageMessage) {
                 const mediaType = Object.keys(msgContent).find(k => k !== 'messageContextInfo') || 'unknown';
                 console.log(`📎 Media-only message received from ${remoteJid} (type: ${mediaType})`);
 

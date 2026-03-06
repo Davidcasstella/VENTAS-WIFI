@@ -160,4 +160,73 @@ router.post('/qa-pairs/reprocess', verifyToken, async (req, res) => {
     }
 });
 
+// ═══════════════════════════════════════════════════════════
+// MANUAL KNOWLEDGE — free-form text knowledge management
+// ═══════════════════════════════════════════════════════════
+const manualKnowledgeService = require('../services/manualKnowledge.service');
+
+// List all manual knowledge entries
+router.get('/manual-knowledge', verifyToken, async (req, res) => {
+    try {
+        const entries = await manualKnowledgeService.getAll();
+        res.json({ success: true, entries });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Create a new manual knowledge entry
+router.post('/manual-knowledge', verifyToken, async (req, res) => {
+    try {
+        const { title, content } = req.body;
+        if (!title || !content) {
+            return res.status(400).json({ success: false, message: 'title and content are required' });
+        }
+        const entry = await manualKnowledgeService.create(title, content);
+        res.json({ success: true, entry });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Re-vectorize all manual knowledge entries (must be BEFORE /:id routes)
+router.post('/manual-knowledge/reprocess', verifyToken, async (req, res) => {
+    try {
+        const count = await manualKnowledgeService.reprocessAll();
+        res.json({ success: true, message: `${count} entries re-vectorized`, count });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Update an existing manual knowledge entry
+router.put('/manual-knowledge/:id', verifyToken, async (req, res) => {
+    try {
+        const { title, content } = req.body;
+        if (!title || !content) {
+            return res.status(400).json({ success: false, message: 'title and content are required' });
+        }
+        const entry = await manualKnowledgeService.update(req.params.id, title, content);
+        if (!entry) {
+            return res.status(404).json({ success: false, message: 'Manual knowledge entry not found' });
+        }
+        res.json({ success: true, entry });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Delete a manual knowledge entry
+router.delete('/manual-knowledge/:id', verifyToken, async (req, res) => {
+    try {
+        const deleted = await manualKnowledgeService.delete(req.params.id);
+        if (!deleted) {
+            return res.status(404).json({ success: false, message: 'Manual knowledge entry not found' });
+        }
+        res.json({ success: true, message: 'Manual knowledge entry deleted' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 module.exports = router;

@@ -3660,3 +3660,322 @@
         padding: 10px 0 !important;
     }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   KNOWLEDGE BASE — TABS & EDITOR
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Tab bar */
+.kb-tabs-bar {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid rgba(0, 255, 0, 0.15);
+    margin: 0 -1.5rem;
+    padding: 0 1.5rem;
+}
+
+.kb-tab {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.85rem 1.5rem;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    position: relative;
+}
+
+.kb-tab:hover {
+    color: #00ff00;
+    background: rgba(0, 255, 0, 0.03);
+}
+
+.kb-tab.active {
+    color: #00ff00;
+    border-bottom-color: #00ff00;
+    text-shadow: 0 0 8px rgba(0, 255, 0, 0.5);
+}
+
+.kb-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: #00ff00;
+    box-shadow: 0 0 10px rgba(0, 255, 0, 0.6), 0 0 20px rgba(0, 255, 0, 0.3);
+}
+
+/* Tab content container */
+.kb-tab-content {
+    padding: 1.25rem 0 0.5rem;
+}
+
+/* Tab header row */
+.kb-tab-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(0, 255, 0, 0.08);
+}
+
+/* Editor form */
+.kb-editor-form {
+    background: var(--bg-secondary);
+    border-radius: 14px;
+    padding: 1.5rem;
+    border: 1px solid var(--border-light);
+    margin-bottom: 1rem;
+}
+
+.kb-editor-field {
+    margin-bottom: 1.25rem;
+}
+
+.kb-editor-field:last-of-type {
+    margin-bottom: 1rem;
+}
+
+.kb-editor-label {
+    display: block;
+    color: #00ff00;
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 0.5rem;
+}
+
+/* Title input — centered, half-width */
+.kb-title-input {
+    display: block;
+    width: 60%;
+    max-width: 500px;
+}
+
+/* Content textarea — full width, large */
+.kb-content-textarea {
+    display: block;
+    width: 100% !important;
+    min-height: 250px;
+    resize: vertical;
+    line-height: 1.6;
+    text-align: left;
+}
+
+/* Action buttons row */
+.kb-editor-actions {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.kb-editor-actions .btn-submit {
+    min-width: 180px;
+}
+
+/* Divider between form and entries */
+.kb-entries-divider {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 0 0.75rem;
+    margin-top: 0.5rem;
+    border-top: 1px solid rgba(0, 255, 0, 0.1);
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Entry card styling */
+.kb-entry-card {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 0.75rem;
+    border: 1px solid var(--border-light);
+    transition: border-color 0.2s ease;
+}
+
+.kb-entry-card:hover {
+    border-color: rgba(0, 255, 0, 0.25);
+}
+
+/* Upload tab */
+.kb-upload-tab .kb-upload-zone {
+    border-radius: 14px;
+    margin-bottom: 1rem;
+}
+
+.kb-docs-list-section {
+    margin-top: 0.5rem;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   AI AUTOMATIONS PAGE
+   ══════════════════════════════════════════════════════════════════════ */
+
+.automations-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.automation-card {
+    background: rgba(0, 20, 0, 0.6);
+    border: 1px solid rgba(0, 255, 65, 0.12);
+    border-radius: 16px;
+    padding: 1.8rem;
+    transition: all 0.3s ease;
+}
+
+.automation-card:hover {
+    border-color: rgba(0, 255, 65, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 255, 65, 0.08);
+}
+
+.automation-card.automation-active {
+    border-color: rgba(0, 255, 65, 0.4);
+    box-shadow: 0 0 25px rgba(0, 255, 65, 0.1), inset 0 0 30px rgba(0, 255, 65, 0.03);
+}
+
+.automation-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.2rem;
+}
+
+.automation-icon-wrap {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.automation-card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary, #e0e0e0);
+    margin-bottom: 0.5rem;
+}
+
+.automation-card-desc {
+    font-size: 0.85rem;
+    color: var(--text-secondary, #999);
+    line-height: 1.5;
+    margin-bottom: 1.2rem;
+}
+
+/* Toggle Switch */
+.automation-switch {
+    position: relative;
+    display: inline-block;
+    width: 52px;
+    height: 28px;
+    flex-shrink: 0;
+}
+
+.automation-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.automation-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 28px;
+    transition: all 0.35s ease;
+}
+
+.automation-slider::before {
+    content: '';
+    position: absolute;
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 50%;
+    transition: all 0.35s ease;
+}
+
+.automation-switch input:checked+.automation-slider {
+    background: rgba(0, 255, 65, 0.25);
+    border-color: rgba(0, 255, 65, 0.5);
+    box-shadow: 0 0 12px rgba(0, 255, 65, 0.2);
+}
+
+.automation-switch input:checked+.automation-slider::before {
+    transform: translateX(24px);
+    background: var(--neon-green, #00ff41);
+    box-shadow: 0 0 8px rgba(0, 255, 65, 0.6);
+}
+
+/* Status badges */
+.automation-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    font-weight: 500;
+    padding: 4px 12px;
+    border-radius: 20px;
+    letter-spacing: 0.03em;
+}
+
+.badge-active {
+    background: rgba(0, 255, 65, 0.1);
+    color: var(--neon-green, #00ff41);
+    border: 1px solid rgba(0, 255, 65, 0.2);
+}
+
+.badge-inactive {
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text-secondary, #999);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Spin animation for loader */
+.spin-animation {
+    animation: spin-auto 1s linear infinite;
+}
+
+@keyframes spin-auto {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (max-width: 768px) {
+    .automations-grid {
+        grid-template-columns: 1fr;
+    }
+}

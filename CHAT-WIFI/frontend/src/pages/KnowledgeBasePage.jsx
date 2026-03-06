@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import {
     Upload, FileText, Trash2, RefreshCw, Search,
     CheckCircle, AlertCircle, Clock, BookOpen, File, X,
-    Plus, Save, Edit3, MessageCircle
+    Plus, Save, Edit3, BookMarked
 } from 'lucide-react';
 import useKnowledgeStore from '../features/knowledge-base/store/useKnowledgeStore';
 import api from '../services/api';
@@ -19,21 +19,27 @@ const KnowledgeBasePage = () => {
     const [searching, setSearching] = useState(false);
     const fileInputRef = useRef(null);
 
-    // ── Q&A Pairs state ──────────────────────────────────────────────────
-    const [qaPairs, setQaPairs] = useState([]);
-    const [qaLoading, setQaLoading] = useState(false);
-    const [newQ, setNewQ] = useState('');
-    const [newA, setNewA] = useState('');
-    const [addingQA, setAddingQA] = useState(false);
-    const [editingId, setEditingId] = useState(null);
-    const [editQ, setEditQ] = useState('');
-    const [editA, setEditA] = useState('');
-    const [qaToast, setQaToast] = useState(null);
-    const [reprocessingQA, setReprocessingQA] = useState(false);
+    // ── Tab state ────────────────────────────────────────────────────
+    const [activeTab, setActiveTab] = useState('text');
+
+    // ── Toast state ───────────────────────────────────────────────────
+    const [toast, setToast] = useState(null);
+
+    // ── Manual Knowledge state ────────────────────────────────────────
+    const [mkEntries, setMkEntries] = useState([]);
+    const [mkLoading, setMkLoading] = useState(false);
+    const [newMkTitle, setNewMkTitle] = useState('');
+    const [newMkContent, setNewMkContent] = useState('');
+    const [addingMK, setAddingMK] = useState(false);
+    const [showMkForm, setShowMkForm] = useState(false);
+    const [editingMkId, setEditingMkId] = useState(null);
+    const [editMkTitle, setEditMkTitle] = useState('');
+    const [editMkContent, setEditMkContent] = useState('');
+    const [reprocessingMK, setReprocessingMK] = useState(false);
 
     useEffect(() => {
         fetchDocuments();
-        loadQAPairs();
+        loadManualKnowledge();
         const interval = setInterval(fetchDocuments, 5000);
         return () => clearInterval(interval);
     }, []);
@@ -45,82 +51,84 @@ const KnowledgeBasePage = () => {
         }
     }, [error]);
 
-    // ── Q&A Helpers ──────────────────────────────────────────────────────
-    const showQaToast = (type, msg) => {
-        setQaToast({ type, msg });
-        setTimeout(() => setQaToast(null), 3500);
+    // ── Toast helper ──────────────────────────────────────────────────
+    const showToast = (type, msg) => {
+        setToast({ type, msg });
+        setTimeout(() => setToast(null), 3500);
     };
 
-    const loadQAPairs = async () => {
-        setQaLoading(true);
+    // ── Manual Knowledge Helpers ──────────────────────────────────────
+    const loadManualKnowledge = async () => {
+        setMkLoading(true);
         try {
-            const { data } = await api.get('/api/knowledge-base/qa-pairs');
-            setQaPairs(data.pairs || []);
+            const { data } = await api.get('/api/knowledge-base/manual-knowledge');
+            setMkEntries(data.entries || []);
         } catch {
-            console.error('Error loading Q&A pairs');
+            console.error('Error loading manual knowledge');
         } finally {
-            setQaLoading(false);
+            setMkLoading(false);
         }
     };
 
-    const handleAddQA = async () => {
-        if (!newQ.trim() || !newA.trim()) return;
-        setAddingQA(true);
+    const handleAddMK = async () => {
+        if (!newMkTitle.trim() || !newMkContent.trim()) return;
+        setAddingMK(true);
         try {
-            await api.post('/api/knowledge-base/qa-pairs', { question: newQ, answer: newA });
-            setNewQ('');
-            setNewA('');
-            showQaToast('success', 'Pregunta añadida y vectorizada ✨');
-            loadQAPairs();
+            await api.post('/api/knowledge-base/manual-knowledge', { title: newMkTitle, content: newMkContent });
+            setNewMkTitle('');
+            setNewMkContent('');
+            setShowMkForm(false);
+            showToast('success', 'Conocimiento añadido y vectorizado ✨');
+            loadManualKnowledge();
         } catch {
-            showQaToast('error', 'Error al añadir');
+            showToast('error', 'Error al añadir conocimiento');
         } finally {
-            setAddingQA(false);
+            setAddingMK(false);
         }
     };
 
-    const handleUpdateQA = async (id) => {
-        if (!editQ.trim() || !editA.trim()) return;
+    const handleUpdateMK = async (id) => {
+        if (!editMkTitle.trim() || !editMkContent.trim()) return;
         try {
-            await api.put(`/api/knowledge-base/qa-pairs/${id}`, { question: editQ, answer: editA });
-            setEditingId(null);
-            showQaToast('success', 'Actualizado y re-vectorizado ✨');
-            loadQAPairs();
+            await api.put(`/api/knowledge-base/manual-knowledge/${id}`, { title: editMkTitle, content: editMkContent });
+            setEditingMkId(null);
+            showToast('success', 'Conocimiento actualizado y re-vectorizado ✨');
+            loadManualKnowledge();
         } catch {
-            showQaToast('error', 'Error al actualizar');
+            showToast('error', 'Error al actualizar');
         }
     };
 
-    const handleDeleteQA = async (id) => {
-        if (!window.confirm('¿Eliminar esta pregunta y respuesta?')) return;
+    const handleDeleteMK = async (id) => {
         try {
-            await api.delete(`/api/knowledge-base/qa-pairs/${id}`);
-            showQaToast('success', 'Eliminado correctamente');
-            loadQAPairs();
-        } catch {
-            showQaToast('error', 'Error al eliminar');
+            await api.delete(`/api/knowledge-base/manual-knowledge/${id}`);
+            showToast('success', 'Conocimiento eliminado');
+            loadManualKnowledge();
+        } catch (err) {
+            console.error('Delete error:', err);
+            showToast('error', 'Error al eliminar');
         }
     };
 
-    const handleReprocessQA = async () => {
-        setReprocessingQA(true);
+    const handleReprocessMK = async () => {
+        setReprocessingMK(true);
         try {
-            const { data } = await api.post('/api/knowledge-base/qa-pairs/reprocess');
-            showQaToast('success', `${data.count} Q&A re-vectorizadas ✨`);
+            const { data } = await api.post('/api/knowledge-base/manual-knowledge/reprocess');
+            showToast('success', `${data.count} conocimientos re-vectorizados ✨`);
         } catch {
-            showQaToast('error', 'Error al re-vectorizar');
+            showToast('error', 'Error al re-vectorizar');
         } finally {
-            setReprocessingQA(false);
+            setReprocessingMK(false);
         }
     };
 
-    const startEditing = (pair) => {
-        setEditingId(pair.id);
-        setEditQ(pair.question);
-        setEditA(pair.answer);
+    const startEditingMK = (entry) => {
+        setEditingMkId(entry.id);
+        setEditMkTitle(entry.title);
+        setEditMkContent(entry.content);
     };
 
-    // ── Document Handlers ────────────────────────────────────────────────
+    // ── Document Handlers ────────────────────────────────────────────
     const handleDrag = (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -191,13 +199,6 @@ const KnowledgeBasePage = () => {
 
     return (
         <div className="ai-providers-container">
-            <header className="page-header">
-                <div>
-                    <h1>Base de Conocimiento</h1>
-                    <p className="text-muted">Sube documentos PDF/TXT y añade preguntas y respuestas para entrenar el chatbot.</p>
-                </div>
-            </header>
-
             {error && (
                 <div className="kb-error-banner">
                     <AlertCircle size={18} />
@@ -206,267 +207,17 @@ const KnowledgeBasePage = () => {
                 </div>
             )}
 
-            {/* Q&A Toast */}
-            {qaToast && (
-                <div className={`wa-toast ${qaToast.type === 'success' ? 'wa-toast-ok' : 'wa-toast-err'}`}>
-                    {qaToast.type === 'success' ? <CheckCircle size={16} /> : <AlertCircle size={16} />}
-                    {qaToast.msg}
+            {/* Toast notifications */}
+            {toast && (
+                <div className={`wa-toast ${toast.type === 'success' ? 'wa-toast-ok' : 'wa-toast-err'}`}>
+                    {toast.type === 'success' ? <CheckCircle size={16} /> : <AlertCircle size={16} />}
+                    {toast.msg}
                 </div>
             )}
 
             {/* ═══════════════════════════════════════════════════════════════
-                Q&A PAIRS MANAGEMENT — FIRST SECTION
+                SEARCH TEST AREA — Quick RAG test
                 ═══════════════════════════════════════════════════════════════ */}
-            <div className="kb-documents-section premium-card">
-                <div className="kb-section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <MessageCircle size={20} style={{ color: '#00ff00' }} />
-                        <h3>Preguntas y Respuestas ({qaPairs.length})</h3>
-                    </div>
-                    {qaPairs.length > 0 && (
-                        <button
-                            className="btn-icon-text ghost-blue"
-                            onClick={handleReprocessQA}
-                            disabled={reprocessingQA}
-                            title="Re-vectorizar todas las Q&A"
-                        >
-                            <RefreshCw size={14} className={reprocessingQA ? 'spin' : ''} />
-                            {reprocessingQA ? 'Vectorizando...' : 'Re-vectorizar'}
-                        </button>
-                    )}
-                </div>
-                <p className="text-muted" style={{ margin: '0 0 1rem', padding: '0 0.5rem' }}>
-                    Añade preguntas frecuentes y sus respuestas. La IA usará esta información como prioridad al responder.
-                </p>
-
-                {/* Add new Q&A */}
-                <div style={{
-                    background: 'var(--bg-secondary)',
-                    borderRadius: 12,
-                    padding: '1rem',
-                    marginBottom: '1rem',
-                    border: '1px solid var(--border-light)'
-                }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
-                        <Plus size={18} style={{ color: '#00ff00' }} />
-                        <strong style={{ fontSize: '0.9rem' }}>Añadir nueva pregunta</strong>
-                    </div>
-                    <input
-                        type="text"
-                        value={newQ}
-                        onChange={e => setNewQ(e.target.value)}
-                        placeholder="Pregunta: ej. ¿Cuánto cuesta el servicio?"
-                        className="form-input"
-                        style={{ marginBottom: '0.5rem' }}
-                    />
-                    <textarea
-                        value={newA}
-                        onChange={e => setNewA(e.target.value)}
-                        placeholder="Respuesta: ej. Nuestro servicio cuesta $50.000 mensuales..."
-                        className="form-input"
-                        rows={3}
-                        style={{ marginBottom: '0.75rem', resize: 'vertical' }}
-                    />
-                    <button
-                        className="btn-submit"
-                        onClick={handleAddQA}
-                        disabled={addingQA || !newQ.trim() || !newA.trim()}
-                        style={{ width: '100%' }}
-                    >
-                        {addingQA ? <RefreshCw className="spin" size={16} /> : <Plus size={16} />}
-                        {addingQA ? 'Añadiendo...' : 'Añadir pregunta y respuesta'}
-                    </button>
-                </div>
-
-                {/* Q&A Pairs list */}
-                {qaLoading && <p className="text-muted" style={{ textAlign: 'center', padding: '1rem' }}>Cargando...</p>}
-
-                {!qaLoading && qaPairs.length === 0 && (
-                    <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--text-muted)' }}>
-                        <MessageCircle size={40} style={{ opacity: 0.3, marginBottom: 8 }} />
-                        <p>No hay preguntas y respuestas todavía. ¡Añade la primera!</p>
-                    </div>
-                )}
-
-                {!qaLoading && qaPairs.map(pair => (
-                    <div key={pair.id} style={{
-                        background: 'var(--bg-secondary)',
-                        borderRadius: 12,
-                        padding: '1rem',
-                        marginBottom: '0.75rem',
-                        border: '1px solid var(--border-light)',
-                        transition: 'border-color 0.2s'
-                    }}>
-                        {editingId === pair.id ? (
-                            /* Edit mode */
-                            <>
-                                <input
-                                    type="text"
-                                    value={editQ}
-                                    onChange={e => setEditQ(e.target.value)}
-                                    className="form-input"
-                                    style={{ marginBottom: '0.5rem' }}
-                                />
-                                <textarea
-                                    value={editA}
-                                    onChange={e => setEditA(e.target.value)}
-                                    className="form-input"
-                                    rows={3}
-                                    style={{ marginBottom: '0.5rem', resize: 'vertical' }}
-                                />
-                                <div style={{ display: 'flex', gap: '0.75rem' }}>
-                                    <button
-                                        className="btn-submit"
-                                        onClick={() => handleUpdateQA(pair.id)}
-                                        style={{ flex: 1 }}
-                                    >
-                                        <Save size={14} /> Guardar
-                                    </button>
-                                    <button
-                                        className="btn-icon-text ghost-red"
-                                        onClick={() => setEditingId(null)}
-                                        style={{ flex: 0.3 }}
-                                    >
-                                        Cancelar
-                                    </button>
-                                </div>
-                            </>
-                        ) : (
-                            /* View mode */
-                            <>
-                                <div style={{ marginBottom: '0.5rem' }}>
-                                    <span style={{ color: '#00ff00', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: 1 }}>
-                                        Pregunta
-                                    </span>
-                                    <p style={{ margin: '0.25rem 0 0', fontWeight: 500 }}>{pair.question}</p>
-                                </div>
-                                <div style={{ marginBottom: '0.75rem' }}>
-                                    <span style={{ color: '#00ff00', fontWeight: 600, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: 1 }}>
-                                        Respuesta
-                                    </span>
-                                    <p style={{ margin: '0.25rem 0 0', color: 'var(--text-muted)', whiteSpace: 'pre-wrap' }}>{pair.answer}</p>
-                                </div>
-                                <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
-                                    <button
-                                        className="btn-icon-text ghost-blue"
-                                        onClick={() => startEditing(pair)}
-                                        title="Editar"
-                                    >
-                                        <Edit3 size={14} /> Editar
-                                    </button>
-                                    <button
-                                        className="btn-icon-text ghost-red"
-                                        onClick={() => handleDeleteQA(pair.id)}
-                                        title="Eliminar"
-                                    >
-                                        <Trash2 size={14} /> Eliminar
-                                    </button>
-                                </div>
-                            </>
-                        )}
-                    </div>
-                ))}
-            </div>
-
-            {/* Upload Zone */}
-            <div
-                className={`kb-upload-zone premium-card ${dragActive ? 'kb-drag-active' : ''}`}
-                onDragEnter={handleDrag}
-                onDragOver={handleDrag}
-                onDragLeave={handleDrag}
-                onDrop={handleDrop}
-                onClick={() => fileInputRef.current?.click()}
-            >
-                <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".pdf,.txt"
-                    onChange={handleFileSelect}
-                    style={{ display: 'none' }}
-                />
-                {uploading ? (
-                    <div className="kb-upload-content">
-                        <RefreshCw size={40} className="spin" style={{ color: 'var(--primary-color)' }} />
-                        <h3>Subiendo documento...</h3>
-                        <p className="text-muted">Procesamiento iniciará automáticamente</p>
-                    </div>
-                ) : (
-                    <div className="kb-upload-content">
-                        <Upload size={40} style={{ color: 'var(--primary-color)' }} />
-                        <h3>Arrastra tu archivo aquí o haz clic</h3>
-                        <p className="text-muted">Soporta archivos PDF y TXT — Máximo 20MB</p>
-                    </div>
-                )}
-            </div>
-
-            {/* Documents Table */}
-            {documents.length > 0 && (
-                <div className="kb-documents-section premium-card">
-                    <div className="kb-section-header">
-                        <BookOpen size={20} />
-                        <h3>Documentos ({documents.length})</h3>
-                    </div>
-                    <div className="kb-table-wrapper">
-                        <table className="kb-table">
-                            <thead>
-                                <tr>
-                                    <th>Nombre</th>
-                                    <th>Tipo</th>
-                                    <th>Tamaño</th>
-                                    <th>Chunks</th>
-                                    <th>Estado</th>
-                                    <th>Fecha</th>
-                                    <th>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {documents.map(doc => (
-                                    <tr key={doc.id}>
-                                        <td className="kb-doc-name">
-                                            <FileText size={16} />
-                                            <span>{doc.name}</span>
-                                        </td>
-                                        <td>
-                                            <span className="kb-type-badge">{doc.type?.toUpperCase()}</span>
-                                        </td>
-                                        <td>{formatFileSize(doc.size)}</td>
-                                        <td>{doc.chunkCount || '—'}</td>
-                                        <td>{getStatusBadge(doc.status)}</td>
-                                        <td>{formatDate(doc.createdAt)}</td>
-                                        <td className="kb-actions">
-                                            <button
-                                                className="kb-action-btn kb-reprocess"
-                                                onClick={() => reprocessDocument(doc.id)}
-                                                title="Reprocesar"
-                                                disabled={doc.status === 'processing'}
-                                            >
-                                                <RefreshCw size={16} />
-                                            </button>
-                                            <button
-                                                className="kb-action-btn kb-delete"
-                                                onClick={() => deleteDocument(doc.id)}
-                                                title="Eliminar"
-                                            >
-                                                <Trash2 size={16} />
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            )}
-
-            {documents.length === 0 && !loading && (
-                <div className="kb-empty-state premium-card">
-                    <BookOpen size={64} className="text-muted" />
-                    <h2>Sin documentos</h2>
-                    <p>Sube tu primer documento para crear la base de conocimiento del chatbot.</p>
-                </div>
-            )}
-
-            {/* Search Test Area */}
             <div className="kb-search-section premium-card">
                 <div className="kb-section-header">
                     <Search size={20} />
@@ -490,6 +241,304 @@ const KnowledgeBasePage = () => {
                         <pre className="kb-context-preview">{searchResult.context}</pre>
                     </div>
                 )}
+            </div>
+
+            {/* ═══════════════════════════════════════════════════════════════
+                TABBED KNOWLEDGE SECTION
+                ═══════════════════════════════════════════════════════════════ */}
+            <div className="kb-documents-section premium-card">
+                {/* ── Tab Bar ── */}
+                <div className="kb-tabs-bar">
+                    <button
+                        className={`kb-tab ${activeTab === 'text' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('text')}
+                    >
+                        <Edit3 size={16} />
+                        Editor de texto
+                    </button>
+                    <button
+                        className={`kb-tab ${activeTab === 'upload' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('upload')}
+                    >
+                        <Upload size={16} />
+                        Subir documentos
+                    </button>
+                </div>
+
+                {/* ── Tab Content ── */}
+                <div className="kb-tab-content">
+
+                    {/* ════════════════════════════════════════════════════════
+                        TAB 1 — TEXT EDITOR
+                        ════════════════════════════════════════════════════════ */}
+                    {activeTab === 'text' && (
+                        <div className="kb-text-editor-tab">
+                            {/* Header with action buttons */}
+                            <div className="kb-tab-header">
+                                <p className="text-muted" style={{ margin: 0 }}>
+                                    Escribe o pega información extensa. El sistema la dividirá en fragmentos y la vectorizará automáticamente.
+                                </p>
+                                <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
+                                    {mkEntries.length > 0 && (
+                                        <button
+                                            className="btn-icon-text ghost-blue"
+                                            onClick={handleReprocessMK}
+                                            disabled={reprocessingMK}
+                                            title="Re-vectorizar todos los conocimientos"
+                                        >
+                                            <RefreshCw size={14} className={reprocessingMK ? 'spin' : ''} />
+                                            {reprocessingMK ? 'Vectorizando...' : 'Re-vectorizar'}
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Editor form — always visible */}
+                            <div className="kb-editor-form">
+                                <div className="kb-editor-field">
+                                    <label className="kb-editor-label">Título</label>
+                                    <input
+                                        type="text"
+                                        value={newMkTitle}
+                                        onChange={e => setNewMkTitle(e.target.value)}
+                                        placeholder="Ej: Información de planes WiFi, Horarios de atención..."
+                                        className="form-input kb-title-input"
+                                    />
+                                </div>
+                                <div className="kb-editor-field">
+                                    <label className="kb-editor-label">Contenido</label>
+                                    <textarea
+                                        value={newMkContent}
+                                        onChange={e => setNewMkContent(e.target.value)}
+                                        placeholder="Pega o escribe aquí toda la información que quieras agregar como conocimiento del sistema..."
+                                        className="form-input kb-content-textarea"
+                                        rows={12}
+                                    />
+                                </div>
+                                <div className="kb-editor-actions">
+                                    <button
+                                        className="btn-submit"
+                                        onClick={handleAddMK}
+                                        disabled={addingMK || !newMkTitle.trim() || !newMkContent.trim()}
+                                    >
+                                        {addingMK ? <RefreshCw className="spin" size={16} /> : <Save size={16} />}
+                                        {addingMK ? 'Guardando y vectorizando...' : 'Guardar'}
+                                    </button>
+                                    <button
+                                        className="btn-icon-text ghost-red"
+                                        onClick={() => { setNewMkTitle(''); setNewMkContent(''); }}
+                                        disabled={!newMkTitle && !newMkContent}
+                                    >
+                                        <X size={14} />
+                                        Cancelar
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Existing entries list */}
+                            {mkEntries.length > 0 && (
+                                <div className="kb-entries-divider">
+                                    <BookMarked size={16} style={{ color: '#00ff00' }} />
+                                    <span>Conocimientos guardados ({mkEntries.length})</span>
+                                </div>
+                            )}
+
+                            {mkLoading && <p className="text-muted" style={{ textAlign: 'center', padding: '1rem' }}>Cargando...</p>}
+
+                            {!mkLoading && mkEntries.length === 0 && (
+                                <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--text-muted)' }}>
+                                    <BookMarked size={40} style={{ opacity: 0.3, marginBottom: 8 }} />
+                                    <p>No hay conocimientos manuales todavía. ¡Escribe el primero arriba!</p>
+                                </div>
+                            )}
+
+                            {!mkLoading && mkEntries.map(entry => (
+                                <div key={entry.id} className="kb-entry-card">
+                                    {editingMkId === entry.id ? (
+                                        /* Edit mode */
+                                        <>
+                                            <input
+                                                type="text"
+                                                value={editMkTitle}
+                                                onChange={e => setEditMkTitle(e.target.value)}
+                                                className="form-input"
+                                                style={{ marginBottom: '0.75rem' }}
+                                            />
+                                            <textarea
+                                                value={editMkContent}
+                                                onChange={e => setEditMkContent(e.target.value)}
+                                                className="form-input kb-content-textarea"
+                                                rows={8}
+                                            />
+                                            <div className="kb-editor-actions" style={{ marginTop: '0.75rem' }}>
+                                                <button
+                                                    className="btn-submit"
+                                                    onClick={() => handleUpdateMK(entry.id)}
+                                                >
+                                                    <Save size={14} /> Guardar
+                                                </button>
+                                                <button
+                                                    className="btn-icon-text ghost-red"
+                                                    onClick={() => setEditingMkId(null)}
+                                                >
+                                                    Cancelar
+                                                </button>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        /* View mode */
+                                        <>
+                                            <div style={{ marginBottom: '0.5rem' }}>
+                                                <span className="kb-editor-label" style={{ fontSize: '0.75rem' }}>Título</span>
+                                                <p style={{ margin: '0.25rem 0 0', fontWeight: 500 }}>{entry.title}</p>
+                                            </div>
+                                            <div style={{ marginBottom: '0.75rem' }}>
+                                                <span className="kb-editor-label" style={{ fontSize: '0.75rem' }}>Contenido</span>
+                                                <p style={{
+                                                    margin: '0.25rem 0 0',
+                                                    color: 'var(--text-muted)',
+                                                    whiteSpace: 'pre-wrap',
+                                                    maxHeight: '150px',
+                                                    overflow: 'auto',
+                                                    fontSize: '0.85rem',
+                                                    lineHeight: '1.5'
+                                                }}>
+                                                    {entry.content}
+                                                </p>
+                                            </div>
+                                            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', opacity: 0.6 }}>
+                                                    {entry.updatedAt ? `Actualizado: ${new Date(entry.updatedAt).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}` : ''}
+                                                </span>
+                                                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                                                    <button
+                                                        className="btn-icon-text ghost-blue"
+                                                        onClick={() => startEditingMK(entry)}
+                                                        title="Editar"
+                                                    >
+                                                        <Edit3 size={14} /> Editar
+                                                    </button>
+                                                    <button
+                                                        className="btn-icon-text ghost-red"
+                                                        onClick={() => handleDeleteMK(entry.id)}
+                                                        title="Eliminar"
+                                                    >
+                                                        <Trash2 size={14} /> Eliminar
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* ════════════════════════════════════════════════════════
+                        TAB 2 — UPLOAD DOCUMENTS
+                        ════════════════════════════════════════════════════════ */}
+                    {activeTab === 'upload' && (
+                        <div className="kb-upload-tab">
+                            {/* Upload zone */}
+                            <div
+                                className={`kb-upload-zone ${dragActive ? 'kb-drag-active' : ''}`}
+                                onDragEnter={handleDrag}
+                                onDragOver={handleDrag}
+                                onDragLeave={handleDrag}
+                                onDrop={handleDrop}
+                                onClick={() => fileInputRef.current?.click()}
+                            >
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept=".pdf,.txt"
+                                    onChange={handleFileSelect}
+                                    style={{ display: 'none' }}
+                                />
+                                {uploading ? (
+                                    <div className="kb-upload-content">
+                                        <RefreshCw size={40} className="spin" style={{ color: 'var(--primary-color)' }} />
+                                        <h3>Subiendo documento...</h3>
+                                        <p className="text-muted">Procesamiento iniciará automáticamente</p>
+                                    </div>
+                                ) : (
+                                    <div className="kb-upload-content">
+                                        <Upload size={40} style={{ color: 'var(--primary-color)' }} />
+                                        <h3>Arrastra tu archivo aquí o haz clic</h3>
+                                        <p className="text-muted">Soporta archivos PDF y TXT — Máximo 20MB</p>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Documents table */}
+                            {documents.length > 0 && (
+                                <div className="kb-docs-list-section">
+                                    <div className="kb-entries-divider">
+                                        <BookOpen size={16} />
+                                        <span>Documentos subidos ({documents.length})</span>
+                                    </div>
+                                    <div className="kb-table-wrapper">
+                                        <table className="kb-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Nombre</th>
+                                                    <th>Tipo</th>
+                                                    <th>Tamaño</th>
+                                                    <th>Chunks</th>
+                                                    <th>Estado</th>
+                                                    <th>Fecha</th>
+                                                    <th>Acciones</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {documents.map(doc => (
+                                                    <tr key={doc.id}>
+                                                        <td className="kb-doc-name">
+                                                            <FileText size={16} />
+                                                            <span>{doc.name}</span>
+                                                        </td>
+                                                        <td>
+                                                            <span className="kb-type-badge">{doc.type?.toUpperCase()}</span>
+                                                        </td>
+                                                        <td>{formatFileSize(doc.size)}</td>
+                                                        <td>{doc.chunkCount || '—'}</td>
+                                                        <td>{getStatusBadge(doc.status)}</td>
+                                                        <td>{formatDate(doc.createdAt)}</td>
+                                                        <td className="kb-actions">
+                                                            <button
+                                                                className="kb-action-btn kb-reprocess"
+                                                                onClick={() => reprocessDocument(doc.id)}
+                                                                title="Reprocesar"
+                                                                disabled={doc.status === 'processing'}
+                                                            >
+                                                                <RefreshCw size={16} />
+                                                            </button>
+                                                            <button
+                                                                className="kb-action-btn kb-delete"
+                                                                onClick={() => deleteDocument(doc.id)}
+                                                                title="Eliminar"
+                                                            >
+                                                                <Trash2 size={16} />
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            )}
+
+                            {documents.length === 0 && !loading && (
+                                <div style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--text-muted)' }}>
+                                    <BookOpen size={48} style={{ opacity: 0.3, marginBottom: 12 }} />
+                                    <p>No hay documentos subidos todavía.</p>
+                                    <p style={{ fontSize: '0.8rem', opacity: 0.6 }}>Arrastra un archivo PDF o TXT a la zona de arriba.</p>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );

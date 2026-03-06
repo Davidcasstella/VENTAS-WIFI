@@ -58,7 +58,6 @@ const useKnowledgeStore = create((set) => ({
     },
 
     deleteDocument: async (id) => {
-        if (!window.confirm('¿Estás seguro de eliminar este documento y toda su información?')) return false;
         set({ loading: true, error: null });
         try {
             await api.delete(`/api/knowledge-base/documents/${id}`);
