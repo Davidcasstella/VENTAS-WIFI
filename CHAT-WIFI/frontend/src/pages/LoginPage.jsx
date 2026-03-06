@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LogIn, Mail, Lock, Loader2, Zap } from 'lucide-react';
+import { LogIn, Mail, Lock, Loader2, Zap, Eye, EyeOff } from 'lucide-react';
 import logo from '../Logo/logo.png';
 import './LoginPage.css';
 
@@ -12,6 +12,7 @@ const LoginPage = () => {
     const [error, setError] = useState('');
     const { login } = useAuth();
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     // Remember user: load saved email from localStorage on mount
     const [rememberUser, setRememberUser] = useState(() => {
@@ -20,8 +21,12 @@ const LoginPage = () => {
 
     useEffect(() => {
         const savedEmail = localStorage.getItem('rememberedUser');
+        const savedPassword = localStorage.getItem('rememberedPass');
         if (savedEmail) {
             setEmail(savedEmail);
+        }
+        if (savedPassword) {
+            setPassword(savedPassword);
         }
     }, []);
 
@@ -31,11 +36,13 @@ const LoginPage = () => {
         setError('');
         const result = await login(email, password);
         if (result.success) {
-            // Remember user: save or clear email in localStorage
+            // Remember user: save or clear credentials in localStorage
             if (rememberUser) {
                 localStorage.setItem('rememberedUser', email);
+                localStorage.setItem('rememberedPass', password);
             } else {
                 localStorage.removeItem('rememberedUser');
+                localStorage.removeItem('rememberedPass');
             }
             navigate('/', { replace: true });
         } else {
@@ -66,12 +73,20 @@ const LoginPage = () => {
                     <div className="input-field">
                         <Lock size={18} />
                         <input
-                            type="password"
+                            type={showPassword ? 'text' : 'password'}
                             placeholder="Contraseña"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
                         />
+                        <button
+                            type="button"
+                            className="password-toggle"
+                            onClick={() => setShowPassword(!showPassword)}
+                            tabIndex={-1}
+                        >
+                            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
                     </div>
 
                     {error && <p className="error-msg">{error}</p>}
@@ -93,7 +108,6 @@ const LoginPage = () => {
                 </form>
 
                 <div className="login-footer">
-                    <a href="#">¿Olvidaste tu contraseña?</a>
                     <span className="version">Chat WiFi v1.0</span>
                 </div>
             </div>

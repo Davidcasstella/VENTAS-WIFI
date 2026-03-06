@@ -59,7 +59,26 @@
 .input-field input {
     width: 100%;
     padding-left: 3rem;
+    padding-right: 3rem;
     height: 52px;
+}
+
+/* Password visibility toggle */
+.password-toggle {
+    position: absolute;
+    right: 0.75rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    color: rgba(0, 255, 0, 0.25);
+    transition: color 0.2s ease;
+}
+
+.password-toggle:hover {
+    color: #00ff00;
 }
 
 .login-btn {
