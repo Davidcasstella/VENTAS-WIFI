@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, MessageSquare, Trash2, Check } from 'lucide-react';
+import { Search, MessageSquare, Trash2, Check, CheckCheck } from 'lucide-react';
 
 const ConversationList = ({ conversations, activeJid, onSelect, onDelete, searchTerm, onSearchChange }) => {
     const [confirmDelete, setConfirmDelete] = useState(null);
@@ -80,7 +80,7 @@ const ConversationList = ({ conversations, activeJid, onSelect, onDelete, search
                                 </div>
                                 <div className="conv-info-bottom">
                                     <span className="conv-last-msg">
-                                        {conv.lastMessageFromMe && <span className="conv-check">✓ </span>}
+                                        {conv.lastMessageFromMe && <span className="conv-check"><CheckCheck size={14} /> </span>}
                                         {conv.lastMessage
                                             ? (conv.lastMessage.length > 45
                                                 ? conv.lastMessage.substring(0, 45) + '...'

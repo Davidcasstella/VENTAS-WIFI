@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ArrowLeft, Send, Loader2, Power, RotateCcw, Clock } from 'lucide-react';
+import { ArrowLeft, Send, Loader2, Power, RotateCcw, Clock, CheckCheck } from 'lucide-react';
 import api from '../../../services/api';
 
 const ChatWindow = ({ jid, pushName, messages, loading, onSend, onBack }) => {
@@ -123,7 +123,7 @@ const ChatWindow = ({ jid, pushName, messages, loading, onSend, onBack }) => {
         groupedMessages.push({ type: 'message', ...msg });
     });
 
-    const phoneNumber = jid.replace('@s.whatsapp.net', '');
+    const phoneNumber = jid ? jid.replace(/@.*$/, '').replace(/:\d+$/, '') : '';
 
     return (
         <div className="chat-window">
@@ -199,7 +199,7 @@ const ChatWindow = ({ jid, pushName, messages, loading, onSend, onBack }) => {
                                 <span className="chat-bubble-text">{item.text}</span>
                                 <span className="chat-bubble-time">
                                     {formatTime(item.timestamp)}
-                                    {item.fromMe && <span className="chat-bubble-check"> ✓</span>}
+                                    {item.fromMe && <span className="chat-bubble-check"> <CheckCheck size={14} /></span>}
                                 </span>
                             </div>
                         );

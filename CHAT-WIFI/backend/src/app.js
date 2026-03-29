@@ -217,7 +217,19 @@ whatsapp.on('message', async (m) => {
             return;
         }
 
-        // Ignorar mensajes propios y mensajes que no sean notificaciones directas
+        // === SYNC NATIVE OUTGOING MESSAGES (Sent from linked phone/web) ===
+        if (msg.key.fromMe && m.type === 'notify') {
+            if (remoteJid.includes('@g.us')) return;
+            try {
+                // Save explicitly as outgoing
+                const savedMsg = await chatHistoryService.addMessage(remoteJid, text || '[media]', true, msg.pushName);
+                io.emit('chat:message', { jid: remoteJid, message: savedMsg });
+            } catch (_) { }
+            // Do not run AI or welcome flows for outgoing messages
+            return;
+        }
+
+        // Ignorar mensajes propios ya procesados y mensajes que no sean notificaciones directas
         if (!msg.key.fromMe && m.type === 'notify') {
 
             // Skip groups
