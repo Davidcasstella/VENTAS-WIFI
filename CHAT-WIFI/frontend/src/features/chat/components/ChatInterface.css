@@ -5,6 +5,7 @@
 /* ── Container ── */
 .chat-interface {
     display: flex;
+    position: relative;
     height: 520px;
     border-radius: 12px;
     overflow: hidden;

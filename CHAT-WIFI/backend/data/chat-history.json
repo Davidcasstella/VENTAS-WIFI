@@ -66,6 +66,12 @@
         "text": "hola",
         "fromMe": true,
         "timestamp": "2026-03-29T00:42:21.676Z"
+      },
+      {
+        "id": "3bab5e03a85a55f7",
+        "text": "ds",
+        "fromMe": true,
+        "timestamp": "2026-03-29T04:07:53.942Z"
       }
     ]
   },
@@ -128,6 +134,12 @@
         "text": "Cualquier cosa me dices.",
         "fromMe": true,
         "timestamp": "2026-03-29T00:45:02.175Z"
+      },
+      {
+        "id": "47323bf5b6aa5df9",
+        "text": "das",
+        "fromMe": true,
+        "timestamp": "2026-03-29T04:08:01.077Z"
       }
     ]
   }
