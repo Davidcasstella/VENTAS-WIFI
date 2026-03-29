@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import api from '../../../services/api';
 import socket from '../../../services/socket';
 import ConversationList from './ConversationList';
@@ -12,12 +12,18 @@ const ChatInterface = () => {
     const [loading, setLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
 
+    // Ref to track activeJid without re-creating socket listener
+    const activeJidRef = useRef(null);
+    useEffect(() => {
+        activeJidRef.current = activeJid;
+    }, [activeJid]);
+
     // Load conversations on mount
     useEffect(() => {
         loadConversations();
     }, []);
 
-    // Socket.io real-time message listener
+    // Socket.io real-time message listener — mounted ONCE, uses ref for activeJid
     useEffect(() => {
         const handleNewMessage = ({ jid, message }) => {
             // Update conversations list (move to top)
@@ -31,7 +37,7 @@ const ChatInterface = () => {
                                 lastMessage: message.text,
                                 lastMessageTime: message.timestamp,
                                 lastMessageFromMe: message.fromMe,
-                                unreadCount: c.jid === activeJid ? 0 : c.unreadCount + (message.fromMe ? 0 : 1)
+                                unreadCount: c.jid === activeJidRef.current ? 0 : c.unreadCount + (message.fromMe ? 0 : 1)
                             }
                             : c
                     ).sort((a, b) => {
@@ -53,15 +59,21 @@ const ChatInterface = () => {
                 }
             });
 
-            // Add message to active chat if it matches
-            if (jid === activeJid) {
-                setMessages(prev => [...prev, message]);
+            // Add message to active chat if it matches — with deduplication by ID
+            if (jid === activeJidRef.current) {
+                setMessages(prev => {
+                    // Deduplicate: skip if message with same ID already exists
+                    if (message.id && prev.some(m => m.id === message.id)) {
+                        return prev;
+                    }
+                    return [...prev, message];
+                });
             }
         };
 
         socket.on('chat:message', handleNewMessage);
         return () => socket.off('chat:message', handleNewMessage);
-    }, [activeJid]);
+    }, []); // Empty deps: listener is stable, uses refs
 
     const loadConversations = async () => {
         try {

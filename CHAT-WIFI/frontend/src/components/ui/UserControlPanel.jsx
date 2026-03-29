@@ -81,9 +81,9 @@ const UserControlPanel = () => {
         try {
             await api.post('/api/welcome-automation/reset-user', { jid });
             setUsers(prev => prev.map(u =>
-                u.jid === jid ? { ...u, cooldownStatus: 'expired', lastWelcomeSentAt: null } : u
+                u.jid === jid ? { ...u, cooldownStatus: 'expired', lastWelcomeSentAt: null, aiEnabled: true } : u
             ));
-            showToast('success', `Cooldown reseteado para ${jid.replace('@s.whatsapp.net', '')}`);
+            showToast('success', `Reset exitoso para ${jid.replace('@s.whatsapp.net', '')}`);
         } catch {
             showToast('error', 'Error al resetear cooldown');
         } finally {

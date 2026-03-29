@@ -22,20 +22,26 @@ class AIResponseService {
         const { name, apiKey } = activeProvider;
         const providerName = name.toLowerCase();
 
-        // Build system prompt BEFORE try block so it's accessible in catch for fallback
         const kbContext = await knowledgeBaseService.searchKnowledge(prompt);
-        let systemPrompt = 'Eres un asistente de ventas por WhatsApp. Responde como una persona REAL en un chat, no como un bot. ' +
-            'REGLA DE FORMATO OBLIGATORIA: Tu respuesta DEBE tener EXACTAMENTE 3 frases cortas separadas por ||| ' +
-            'Estructura: Frase1 casual de apertura ||| Frase2 respuesta principal ||| Frase3 cierre breve. ' +
-            'Ejemplo: Claro mira ||| El plan basico cuesta 15 dolares al mes con acceso ilimitado ||| Cualquier cosa me dices. ' +
-            'Reglas: Cada frase maximo 1 oracion CORTA. No emojis. No listas. Se directo y casual. Habla natural tipo mira, vale, es asi.';
-        if (kbContext) {
-            console.log('📚 RAG context found, applying constraints...');
-            systemPrompt += '\nUsa SOLO la información del contexto proporcionado.\nSi no encuentras la respuesta en el contexto, o si no entiendes la pregunta, o si la pregunta no tiene sentido, responde EXACTAMENTE con esta palabra y NADA MÁS: FALLBACK_TRIGGER\nNo inventes respuestas. No digas "no entiendo". Si no estás 100% seguro de la respuesta, responde FALLBACK_TRIGGER\n\nContexto:\n' + kbContext;
-        } else {
-            console.log('🌐 No RAG context found, using generic AI response.');
-            systemPrompt += '\nIMPORTANTE: Si no puedes responder la pregunta con certeza, si no entiendes el mensaje, si el mensaje no tiene sentido, o si no tienes información útil que ofrecer, responde EXACTAMENTE con esta palabra y NADA MÁS: FALLBACK_TRIGGER\nNunca digas "no entiendo tu pregunta" ni pidas más contexto. Solo responde FALLBACK_TRIGGER';
+        if (!kbContext) {
+            console.log('🌐 No RAG context found, short-circuiting to FALLBACK_TRIGGER to enforce strict KB usage.');
+            return 'FALLBACK_TRIGGER';
         }
+
+        console.log('📚 RAG context found, applying strict constraints...');
+        const systemPrompt = `CRITICAL SYSTEM INSTRUCTION:
+1. Analiza cuidadosamente la intención del usuario y el "Contexto" proporcionado.
+2. El Contexto puede contener DATOS INFORMATIVOS o REGLAS CONDICIONALES (ej. "Si el cliente dice X, responde Y").
+3. Si la intención del usuario ENCAJA con alguna regla condicional (flujo) o si la respuesta exacta a su duda se encuentra en los datos informativos del contexto, responde basándote ÚNICAMENTE en eso.
+4. Si el mensaje del usuario no tiene relación, es incomprensible, o la respuesta/regla NO está en el Contexto, DEBES emitir ESTRICTAMENTE la palabra: FALLBACK_TRIGGER
+5. NUNCA inventes información, no asumas cosas, ni des respuestas genéricas.
+
+REGLA DE FORMATO (solo si NO es FALLBACK_TRIGGER):
+Formatea tu respuesta final en EXACTAMENTE 3 frases o renglones cortos, separados por el delimitador ||| (ejemplo: frase 1 ||| frase 2 ||| frase 3). Usa un tono muy natural, casual y humano. No uses saludos excesivos, no uses emojis.
+
+Contexto proporcionado:
+${kbContext}
+`;
 
         try {
             // Detection priority: use API key prefix as strongest signal,

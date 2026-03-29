@@ -27,12 +27,17 @@ const ChatWindow = ({ jid, pushName, messages, loading, onSend, onBack }) => {
         loadUserState();
     }, [jid]);
 
-    // Auto-scroll to bottom on new messages without jumping the page
+    // Auto-scroll to bottom on new messages and when opening chat
     useEffect(() => {
         if (messagesContainerRef.current) {
-            messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+            // Use requestAnimationFrame or a slight timeout to ensure DOM has updated sizes
+            setTimeout(() => {
+                if (messagesContainerRef.current) {
+                    messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+                }
+            }, 50);
         }
-    }, [messages]);
+    }, [messages, jid]);
 
     // Focus input when chat opens
     useEffect(() => {

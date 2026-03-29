@@ -3,35 +3,726 @@
     "pushName": "David Castella",
     "messages": [
       {
-        "id": "385a7922d05e2149",
-        "text": "cuanto vale el curso ?",
+        "id": "eb25a943237c7f72",
+        "text": "Ihi",
         "fromMe": false,
-        "timestamp": "2026-03-29T00:44:54.080Z",
+        "sender": "client",
+        "timestamp": "2026-03-29T06:16:25.270Z",
         "read": true
       },
       {
-        "id": "7474433d94b20e98",
-        "text": "Mira",
+        "id": "015bea9013690c7d",
+        "text": "Mira que raro",
         "fromMe": true,
-        "timestamp": "2026-03-29T00:44:57.738Z"
+        "sender": "bot",
+        "timestamp": "2026-03-29T06:16:29.746Z"
       },
       {
-        "id": "46e16e0b65d51147",
-        "text": "El curso vale 15.000 pesos",
+        "id": "bb0fff113e8eb220",
+        "text": "No parece que hayas enviado un mensaje claro",
         "fromMe": true,
-        "timestamp": "2026-03-29T00:45:00.148Z"
+        "sender": "bot",
+        "timestamp": "2026-03-29T06:16:32.421Z"
       },
       {
-        "id": "88afbc663087b613",
+        "id": "61d3e52eefc00cb8",
+        "text": "Vale dime que onda.",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-03-29T06:16:34.448Z"
+      },
+      {
+        "id": "6cd663fe603f86c6",
+        "text": "jhgv",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-03-29T06:16:44.597Z",
+        "read": true
+      },
+      {
+        "id": "f11666e5411ed1f6",
+        "text": "Mira, no tengo idea",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-03-29T06:16:45.962Z"
+      },
+      {
+        "id": "1b32a2050fb430ca",
+        "text": "No se que significa eso",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-03-29T06:16:48.333Z"
+      },
+      {
+        "id": "dfc825df84985f06",
+        "text": "Adios.",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-03-29T06:16:50.354Z"
+      },
+      {
+        "id": "6c79909e5cfa24b3",
+        "text": "estoy interesado",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-03-29T06:21:54.563Z",
+        "read": true
+      },
+      {
+        "id": "2adcbe860a1b57ad",
+        "text": "Mira el producto que te interesa",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-03-29T06:21:56.083Z"
+      },
+      {
+        "id": "c141a355a04b0cba",
+        "text": "El precio es de 200 dolares con envio gratis",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-03-29T06:21:58.769Z"
+      },
+      {
+        "id": "cfebde953142ff95",
         "text": "Cualquier cosa me dices.",
         "fromMe": true,
-        "timestamp": "2026-03-29T00:45:02.175Z"
+        "sender": "bot",
+        "timestamp": "2026-03-29T06:22:00.791Z"
       },
       {
-        "id": "47323bf5b6aa5df9",
-        "text": "das",
+        "id": "33bf62cf695ca929",
+        "text": "jkjfgkygli",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-03-29T06:22:14.653Z",
+        "read": true
+      },
+      {
+        "id": "05098191a07d01b4",
+        "text": "Mira",
         "fromMe": true,
-        "timestamp": "2026-03-29T04:08:01.077Z"
+        "sender": "bot",
+        "timestamp": "2026-03-29T06:22:16.135Z"
+      },
+      {
+        "id": "a1f77a811e77f83e",
+        "text": "No tengo idea de qué significa eso",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-03-29T06:22:18.668Z"
+      },
+      {
+        "id": "b7068b5a24b200d4",
+        "text": "Cualquier cosa me dices.",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-03-29T06:22:20.695Z"
+      },
+      {
+        "id": "6a6a3ac77239249c",
+        "text": "uuurueirueir",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-03-29T06:22:27.215Z",
+        "read": true
+      },
+      {
+        "id": "78891db834621819",
+        "text": "Mira no tengo idea",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-03-29T06:22:28.731Z"
+      },
+      {
+        "id": "4ef13e7d59d023df",
+        "text": "No puedo entender lo que decis",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-03-29T06:22:31.209Z"
+      },
+      {
+        "id": "63877fe51d8789cf",
+        "text": "Cualquier cosa me avisas",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-03-29T06:22:33.225Z"
+      },
+      {
+        "id": "0f786fe2dd42d36c",
+        "text": "hola",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-03-29T06:28:41.116Z",
+        "read": true
+      },
+      {
+        "id": "26216b61654ca205",
+        "text": "[Welcome Audio]",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-03-29T06:28:55.774Z"
+      },
+      {
+        "id": "0e2529ef5ff0f1bd",
+        "text": "🚨 PACK PREMIUM DE CIBERSEGURIDAD Y HACKING 2026 🚨\nBro, gracias por tu interés. Esto es lo que te lleva el pack definitivo:\n\n🔥 ¿Qué vas a aprender?\n\n✅ A protegerte de ciberataques como un profesional\n✅ A auditar sistemas y encontrar vulnerabilidades\n✅ A usar herramientas de hacking ético paso a paso\n✅ A realizar búsquedas avanzadas con Google Hacking\n✅ A automatizar tareas y extraer datos con Web Scraping\n✅ A asegurar redes y proteger tu información\n✅ Más de 15 cursos 100% prácticos, sin teoría aburrida\n✅ Explicaciones para que domines el mundo digital al toque\n\n🎯 ¿Para quién es?\n✅ Para ti, que quieres convertirte en un experto digital\n✅ Para quien busca conocimientos con demanda laboral\n✅ Para el que quiere aprender algo útil y potente\n✅ Para el que está listo para dominar la tecnología\n⏱ Duración:\nMás de 15 cursos completos con acceso de por vida\nAcceso 100% grabado para que lo veas cuando quieras\nLo estudias desde tu celu o la compu\n💰 Inversión:\nSolo $15.000 pesos. Antes $60 mil",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-03-29T06:28:56.801Z"
+      },
+      {
+        "id": "3cd5dcd5c44f460d",
+        "text": "estoy interesado",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-03-29T06:29:05.504Z",
+        "read": true
+      },
+      {
+        "id": "e6240acf96d878cc",
+        "text": "[Welcome Audio]",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-03-29T06:31:24.597Z"
+      },
+      {
+        "id": "8da2078beb0c6fbd",
+        "text": "🚨 PACK PREMIUM DE CIBERSEGURIDAD Y HACKING 2026 🚨\nBro, gracias por tu interés. Esto es lo que te lleva el pack definitivo:\n\n🔥 ¿Qué vas a aprender?\n\n✅ A protegerte de ciberataques como un profesional\n✅ A auditar sistemas y encontrar vulnerabilidades\n✅ A usar herramientas de hacking ético paso a paso\n✅ A realizar búsquedas avanzadas con Google Hacking\n✅ A automatizar tareas y extraer datos con Web Scraping\n✅ A asegurar redes y proteger tu información\n✅ Más de 15 cursos 100% prácticos, sin teoría aburrida\n✅ Explicaciones para que domines el mundo digital al toque\n\n🎯 ¿Para quién es?\n✅ Para ti, que quieres convertirte en un experto digital\n✅ Para quien busca conocimientos con demanda laboral\n✅ Para el que quiere aprender algo útil y potente\n✅ Para el que está listo para dominar la tecnología\n⏱ Duración:\nMás de 15 cursos completos con acceso de por vida\nAcceso 100% grabado para que lo veas cuando quieras\nLo estudias desde tu celu o la compu\n💰 Inversión:\nSolo $15.000 pesos. Antes $60 mil",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-03-29T06:31:25.612Z"
+      },
+      {
+        "id": "c65bb3c98bbea0fd",
+        "text": "estoy interesado",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-03-29T06:31:39.064Z",
+        "read": true
+      },
+      {
+        "id": "6def43ba973021af",
+        "text": "que precio?",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-03-29T06:32:09.959Z",
+        "read": true
+      },
+      {
+        "id": "418f5914dda5d677",
+        "text": "El curso cuesta 15.000 pesos",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-03-29T06:32:12.736Z"
+      },
+      {
+        "id": "2cbaee4d5a3f0ac5",
+        "text": "es un pago único sin costo adicional",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-03-29T06:32:15.302Z"
+      },
+      {
+        "id": "6a0ba2c9bd9eb8cf",
+        "text": "no hay devoluciones una vez realizado el pago",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-03-29T06:32:17.331Z"
+      },
+      {
+        "id": "e90db2b750ae3243",
+        "text": "chao",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-03-29T06:32:31.621Z",
+        "read": true
+      },
+      {
+        "id": "818fe8e62f00a874",
+        "text": "hola",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-03-29T06:34:15.889Z",
+        "read": true
+      },
+      {
+        "id": "210cb1f341fc978e",
+        "text": "[Welcome Audio]",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-03-29T06:39:30.176Z"
+      },
+      {
+        "id": "fa4cf52c350a8b46",
+        "text": "🚨 PACK PREMIUM DE CIBERSEGURIDAD Y HACKING 2026 🚨\nBro, gracias por tu interés. Esto es lo que te lleva el pack definitivo:\n\n🔥 ¿Qué vas a aprender?\n\n✅ A protegerte de ciberataques como un profesional\n✅ A auditar sistemas y encontrar vulnerabilidades\n✅ A usar herramientas de hacking ético paso a paso\n✅ A realizar búsquedas avanzadas con Google Hacking\n✅ A automatizar tareas y extraer datos con Web Scraping\n✅ A asegurar redes y proteger tu información\n✅ Más de 15 cursos 100% prácticos, sin teoría aburrida\n✅ Explicaciones para que domines el mundo digital al toque\n\n🎯 ¿Para quién es?\n✅ Para ti, que quieres convertirte en un experto digital\n✅ Para quien busca conocimientos con demanda laboral\n✅ Para el que quiere aprender algo útil y potente\n✅ Para el que está listo para dominar la tecnología\n⏱ Duración:\nMás de 15 cursos completos con acceso de por vida\nAcceso 100% grabado para que lo veas cuando quieras\nLo estudias desde tu celu o la compu\n💰 Inversión:\nSolo $15.000 pesos. Antes $60 mil",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-03-29T06:39:31.201Z"
+      },
+      {
+        "id": "6219ff59a7967af6",
+        "text": "estoy interesado",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-03-29T06:39:42.850Z",
+        "read": true
+      },
+      {
+        "id": "734a20d47f21bd9c",
+        "text": "Aprenderás a auditar la seguridad de dispositivos móviles",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-03-29T06:39:44.459Z"
+      },
+      {
+        "id": "6f23a3171af2c9a3",
+        "text": "Entenderás cómo funcionan las aplicaciones de monitoreo",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-03-29T06:39:47.306Z"
+      },
+      {
+        "id": "9c183343660ed9a2",
+        "text": "Aprenderás a identificar vulnerabilidades para proteger dispositivos",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-03-29T06:39:49.327Z"
+      },
+      {
+        "id": "2c2ccd72f56342ab",
+        "text": "cuanto vale ? y puedo pagar con nequi ?",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-03-29T06:40:03.874Z",
+        "read": true
+      },
+      {
+        "id": "edf2832c29ba721f",
+        "text": "Son 15.000 pesos únicos",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-03-29T06:40:05.648Z"
+      },
+      {
+        "id": "81aebdca13c6c668",
+        "text": "Puedes realizar tu pago por Nequi o Daviplata",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-03-29T06:40:08.354Z"
+      },
+      {
+        "id": "61add2ed35e6279f",
+        "text": "al número 3028599105",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-03-29T06:40:10.378Z"
+      },
+      {
+        "id": "0c1a1669a3936ead",
+        "text": "[Welcome Audio]",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-03-29T06:46:46.596Z"
+      },
+      {
+        "id": "5ef3ae34c47db82f",
+        "text": "🚨 PACK PREMIUM DE CIBERSEGURIDAD Y HACKING 2026 🚨\nBro, gracias por tu interés. Esto es lo que te lleva el pack definitivo:\n\n🔥 ¿Qué vas a aprender?\n\n✅ A protegerte de ciberataques como un profesional\n✅ A auditar sistemas y encontrar vulnerabilidades\n✅ A usar herramientas de hacking ético paso a paso\n✅ A realizar búsquedas avanzadas con Google Hacking\n✅ A automatizar tareas y extraer datos con Web Scraping\n✅ A asegurar redes y proteger tu información\n✅ Más de 15 cursos 100% prácticos, sin teoría aburrida\n✅ Explicaciones para que domines el mundo digital al toque\n\n🎯 ¿Para quién es?\n✅ Para ti, que quieres convertirte en un experto digital\n✅ Para quien busca conocimientos con demanda laboral\n✅ Para el que quiere aprender algo útil y potente\n✅ Para el que está listo para dominar la tecnología\n⏱ Duración:\nMás de 15 cursos completos con acceso de por vida\nAcceso 100% grabado para que lo veas cuando quieras\nLo estudias desde tu celu o la compu\n💰 Inversión:\nSolo $15.000 pesos. Antes $60 mil",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-03-29T06:46:47.660Z"
+      },
+      {
+        "id": "0f2a4b4663c3f597",
+        "text": "tienes alguna duda?",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-03-29T06:46:49.687Z"
+      },
+      {
+        "id": "e08d057c643699e4",
+        "text": "ya sabes algo sobre hacking o ciberseguridad??",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-03-29T06:46:51.713Z"
+      },
+      {
+        "id": "7b3066b4c08eb493",
+        "text": "me gustaría aprender",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-03-29T06:47:14.000Z",
+        "read": true
+      },
+      {
+        "id": "9904e7e6429b19a9",
+        "text": "Aprenderás a auditar la seguridad de dispositivos móviles",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-03-29T06:47:16.304Z"
+      },
+      {
+        "id": "8ba48accc01b26a8",
+        "text": "Te enseñarán a usar herramientas de monitoreo y a encontrar vulnerabilidades",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-03-29T06:47:19.476Z"
+      },
+      {
+        "id": "202d7eef904b3515",
+        "text": "El curso es práctico y directo, enfocado en la ejecución real paso a paso",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-03-29T06:47:21.507Z"
+      },
+      {
+        "id": "e86d8e38f3b4564f",
+        "text": "[Welcome Audio]",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-03-29T06:47:28.694Z"
+      },
+      {
+        "id": "11b7c5adcea7ca7d",
+        "text": "🚨 PACK PREMIUM DE CIBERSEGURIDAD Y HACKING 2026 🚨\nBro, gracias por tu interés. Esto es lo que te lleva el pack definitivo:\n\n🔥 ¿Qué vas a aprender?\n\n✅ A protegerte de ciberataques como un profesional\n✅ A auditar sistemas y encontrar vulnerabilidades\n✅ A usar herramientas de hacking ético paso a paso\n✅ A realizar búsquedas avanzadas con Google Hacking\n✅ A automatizar tareas y extraer datos con Web Scraping\n✅ A asegurar redes y proteger tu información\n✅ Más de 15 cursos 100% prácticos, sin teoría aburrida\n✅ Explicaciones para que domines el mundo digital al toque\n\n🎯 ¿Para quién es?\n✅ Para ti, que quieres convertirte en un experto digital\n✅ Para quien busca conocimientos con demanda laboral\n✅ Para el que quiere aprender algo útil y potente\n✅ Para el que está listo para dominar la tecnología\n⏱ Duración:\nMás de 15 cursos completos con acceso de por vida\nAcceso 100% grabado para que lo veas cuando quieras\nLo estudias desde tu celu o la compu\n💰 Inversión:\nSolo $15.000 pesos. Antes $60 mil",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-03-29T06:47:29.721Z"
+      },
+      {
+        "id": "60ffd53935bd46ca",
+        "text": "tienes alguna duda?",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-03-29T06:47:31.751Z"
+      },
+      {
+        "id": "30f912d614b3474e",
+        "text": "ya sabes algo sobre hacking o ciberseguridad??",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-03-29T06:47:33.777Z"
+      },
+      {
+        "id": "388c9300765b70d8",
+        "text": "no se nada",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-03-29T06:47:40.291Z",
+        "read": true
+      },
+      {
+        "id": "7eff041e6d23ebdd",
+        "text": "[Welcome Audio]",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-03-29T06:48:39.789Z"
+      },
+      {
+        "id": "23882d0225bca648",
+        "text": "🚨 PACK PREMIUM DE CIBERSEGURIDAD Y HACKING 2026 🚨\nBro, gracias por tu interés. Esto es lo que te lleva el pack definitivo:\n\n🔥 ¿Qué vas a aprender?\n\n✅ A protegerte de ciberataques como un profesional\n✅ A auditar sistemas y encontrar vulnerabilidades\n✅ A usar herramientas de hacking ético paso a paso\n✅ A realizar búsquedas avanzadas con Google Hacking\n✅ A automatizar tareas y extraer datos con Web Scraping\n✅ A asegurar redes y proteger tu información\n✅ Más de 15 cursos 100% prácticos, sin teoría aburrida\n✅ Explicaciones para que domines el mundo digital al toque\n\n🎯 ¿Para quién es?\n✅ Para ti, que quieres convertirte en un experto digital\n✅ Para quien busca conocimientos con demanda laboral\n✅ Para el que quiere aprender algo útil y potente\n✅ Para el que está listo para dominar la tecnología\n⏱ Duración:\nMás de 15 cursos completos con acceso de por vida\nAcceso 100% grabado para que lo veas cuando quieras\nLo estudias desde tu celu o la compu\n💰 Inversión:\nSolo $15.000 pesos. Antes $60 mil",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-03-29T06:48:40.819Z"
+      },
+      {
+        "id": "0f355264297fe855",
+        "text": "tienes alguna duda?",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-03-29T06:48:42.835Z"
+      },
+      {
+        "id": "a685d2cc42ac7c86",
+        "text": "ya sabes algo sobre hacking o ciberseguridad??",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-03-29T06:48:44.856Z"
+      },
+      {
+        "id": "d8d99881f04b4f49",
+        "text": "no se nada",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-03-29T06:48:52.774Z",
+        "read": true
+      },
+      {
+        "id": "ab1455c3d36dd5fb",
+        "text": "[Welcome Audio]",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-03-29T06:49:54.015Z"
+      },
+      {
+        "id": "2574214ecb407464",
+        "text": "🚨 PACK PREMIUM DE CIBERSEGURIDAD Y HACKING 2026 🚨\nBro, gracias por tu interés. Esto es lo que te lleva el pack definitivo:\n\n🔥 ¿Qué vas a aprender?\n\n✅ A protegerte de ciberataques como un profesional\n✅ A auditar sistemas y encontrar vulnerabilidades\n✅ A usar herramientas de hacking ético paso a paso\n✅ A realizar búsquedas avanzadas con Google Hacking\n✅ A automatizar tareas y extraer datos con Web Scraping\n✅ A asegurar redes y proteger tu información\n✅ Más de 15 cursos 100% prácticos, sin teoría aburrida\n✅ Explicaciones para que domines el mundo digital al toque\n\n🎯 ¿Para quién es?\n✅ Para ti, que quieres convertirte en un experto digital\n✅ Para quien busca conocimientos con demanda laboral\n✅ Para el que quiere aprender algo útil y potente\n✅ Para el que está listo para dominar la tecnología\n⏱ Duración:\nMás de 15 cursos completos con acceso de por vida\nAcceso 100% grabado para que lo veas cuando quieras\nLo estudias desde tu celu o la compu\n💰 Inversión:\nSolo $15.000 pesos. Antes $60 mil",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-03-29T06:49:55.038Z"
+      },
+      {
+        "id": "59db0b2abc3a1e01",
+        "text": "tienes alguna duda?",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-03-29T06:49:57.062Z"
+      },
+      {
+        "id": "21b7e9f25c731187",
+        "text": "ya sabes algo sobre hacking o ciberseguridad??",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-03-29T06:49:59.088Z"
+      },
+      {
+        "id": "d7b9e5d1bfb89bf9",
+        "text": "no se nada",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-03-29T06:50:03.481Z",
+        "read": true
+      },
+      {
+        "id": "11e7bba104dbb069",
+        "text": "Aprenderás a auditar la seguridad de dispositivos móviles",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-03-29T06:50:05.286Z"
+      },
+      {
+        "id": "ab26050e490f5e25",
+        "text": "Entenderás cómo funcionan las aplicaciones de monitoreo",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-03-29T06:50:08.128Z"
+      },
+      {
+        "id": "d002c75d2c3d8d56",
+        "text": "Identificarás vulnerabilidades para proteger tus dispositivos",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-03-29T06:50:10.151Z"
+      },
+      {
+        "id": "079836a1787b3162",
+        "text": "[Welcome Audio]",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-03-29T06:50:17.252Z"
+      },
+      {
+        "id": "c862e1d4753272ce",
+        "text": "🚨 PACK PREMIUM DE CIBERSEGURIDAD Y HACKING 2026 🚨\nBro, gracias por tu interés. Esto es lo que te lleva el pack definitivo:\n\n🔥 ¿Qué vas a aprender?\n\n✅ A protegerte de ciberataques como un profesional\n✅ A auditar sistemas y encontrar vulnerabilidades\n✅ A usar herramientas de hacking ético paso a paso\n✅ A realizar búsquedas avanzadas con Google Hacking\n✅ A automatizar tareas y extraer datos con Web Scraping\n✅ A asegurar redes y proteger tu información\n✅ Más de 15 cursos 100% prácticos, sin teoría aburrida\n✅ Explicaciones para que domines el mundo digital al toque\n\n🎯 ¿Para quién es?\n✅ Para ti, que quieres convertirte en un experto digital\n✅ Para quien busca conocimientos con demanda laboral\n✅ Para el que quiere aprender algo útil y potente\n✅ Para el que está listo para dominar la tecnología\n⏱ Duración:\nMás de 15 cursos completos con acceso de por vida\nAcceso 100% grabado para que lo veas cuando quieras\nLo estudias desde tu celu o la compu\n💰 Inversión:\nSolo $15.000 pesos. Antes $60 mil",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-03-29T06:50:18.280Z"
+      },
+      {
+        "id": "cecb9ccab79e852b",
+        "text": "tienes alguna duda?",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-03-29T06:50:20.310Z"
+      },
+      {
+        "id": "d024812d2fee7cc2",
+        "text": "ya sabes algo sobre hacking o ciberseguridad??",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-03-29T06:50:22.341Z"
+      },
+      {
+        "id": "68fcc2feca4d7e78",
+        "text": "[media]",
+        "fromMe": true,
+        "sender": "agent",
+        "timestamp": "2026-03-29T06:50:55.951Z"
+      },
+      {
+        "id": "35e887dd4b5607ee",
+        "text": "[Welcome Audio]",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-03-29T06:52:03.152Z"
+      },
+      {
+        "id": "384e3870c5ceb090",
+        "text": "🚨 PACK PREMIUM DE CIBERSEGURIDAD Y HACKING 2026 🚨\nBro, gracias por tu interés. Esto es lo que te lleva el pack definitivo:\n\n🔥 ¿Qué vas a aprender?\n\n✅ A protegerte de ciberataques como un profesional\n✅ A auditar sistemas y encontrar vulnerabilidades\n✅ A usar herramientas de hacking ético paso a paso\n✅ A realizar búsquedas avanzadas con Google Hacking\n✅ A automatizar tareas y extraer datos con Web Scraping\n✅ A asegurar redes y proteger tu información\n✅ Más de 15 cursos 100% prácticos, sin teoría aburrida\n✅ Explicaciones para que domines el mundo digital al toque\n\n🎯 ¿Para quién es?\n✅ Para ti, que quieres convertirte en un experto digital\n✅ Para quien busca conocimientos con demanda laboral\n✅ Para el que quiere aprender algo útil y potente\n✅ Para el que está listo para dominar la tecnología\n⏱ Duración:\nMás de 15 cursos completos con acceso de por vida\nAcceso 100% grabado para que lo veas cuando quieras\nLo estudias desde tu celu o la compu\n💰 Inversión:\nSolo $15.000 pesos. Antes $60 mil",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-03-29T06:52:04.188Z"
+      },
+      {
+        "id": "65c9b4b317505849",
+        "text": "tienes alguna duda?",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-03-29T06:52:06.209Z"
+      },
+      {
+        "id": "ce72ec13fd289d1a",
+        "text": "ya sabes algo sobre hacking o ciberseguridad??",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-03-29T06:52:08.229Z"
+      },
+      {
+        "id": "904a8c0911356578",
+        "text": "no",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-03-29T06:52:13.234Z",
+        "read": true
+      },
+      {
+        "id": "b31547fac285ebfa",
+        "text": "ds",
+        "fromMe": true,
+        "sender": "agent",
+        "timestamp": "2026-03-29T06:52:41.742Z"
+      },
+      {
+        "id": "82031c24a55bb112",
+        "text": "[Welcome Audio]",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-03-29T06:52:52.805Z"
+      },
+      {
+        "id": "0896243e8fdd56fa",
+        "text": "🚨 PACK PREMIUM DE CIBERSEGURIDAD Y HACKING 2026 🚨\nBro, gracias por tu interés. Esto es lo que te lleva el pack definitivo:\n\n🔥 ¿Qué vas a aprender?\n\n✅ A protegerte de ciberataques como un profesional\n✅ A auditar sistemas y encontrar vulnerabilidades\n✅ A usar herramientas de hacking ético paso a paso\n✅ A realizar búsquedas avanzadas con Google Hacking\n✅ A automatizar tareas y extraer datos con Web Scraping\n✅ A asegurar redes y proteger tu información\n✅ Más de 15 cursos 100% prácticos, sin teoría aburrida\n✅ Explicaciones para que domines el mundo digital al toque\n\n🎯 ¿Para quién es?\n✅ Para ti, que quieres convertirte en un experto digital\n✅ Para quien busca conocimientos con demanda laboral\n✅ Para el que quiere aprender algo útil y potente\n✅ Para el que está listo para dominar la tecnología\n⏱ Duración:\nMás de 15 cursos completos con acceso de por vida\nAcceso 100% grabado para que lo veas cuando quieras\nLo estudias desde tu celu o la compu\n💰 Inversión:\nSolo $15.000 pesos. Antes $60 mil",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-03-29T06:52:53.829Z"
+      },
+      {
+        "id": "0dd283f1bce37c50",
+        "text": "tienes alguna duda?",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-03-29T06:52:55.851Z"
+      },
+      {
+        "id": "969a41961fd95c08",
+        "text": "ya sabes algo sobre hacking o ciberseguridad??",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-03-29T06:52:57.881Z"
+      },
+      {
+        "id": "c8d697ce0cc8593a",
+        "text": "no",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-03-29T06:53:01.225Z",
+        "read": true
+      },
+      {
+        "id": "41b7891f14813c08",
+        "text": "[Welcome Audio]",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-03-29T06:53:07.052Z"
+      },
+      {
+        "id": "3df5de8c7f355952",
+        "text": "🚨 PACK PREMIUM DE CIBERSEGURIDAD Y HACKING 2026 🚨\nBro, gracias por tu interés. Esto es lo que te lleva el pack definitivo:\n\n🔥 ¿Qué vas a aprender?\n\n✅ A protegerte de ciberataques como un profesional\n✅ A auditar sistemas y encontrar vulnerabilidades\n✅ A usar herramientas de hacking ético paso a paso\n✅ A realizar búsquedas avanzadas con Google Hacking\n✅ A automatizar tareas y extraer datos con Web Scraping\n✅ A asegurar redes y proteger tu información\n✅ Más de 15 cursos 100% prácticos, sin teoría aburrida\n✅ Explicaciones para que domines el mundo digital al toque\n\n🎯 ¿Para quién es?\n✅ Para ti, que quieres convertirte en un experto digital\n✅ Para quien busca conocimientos con demanda laboral\n✅ Para el que quiere aprender algo útil y potente\n✅ Para el que está listo para dominar la tecnología\n⏱ Duración:\nMás de 15 cursos completos con acceso de por vida\nAcceso 100% grabado para que lo veas cuando quieras\nLo estudias desde tu celu o la compu\n💰 Inversión:\nSolo $15.000 pesos. Antes $60 mil",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-03-29T06:53:08.088Z"
+      },
+      {
+        "id": "81bff7a21066e624",
+        "text": "tienes alguna duda?",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-03-29T06:53:10.107Z"
+      },
+      {
+        "id": "1d5ed46b3d31af86",
+        "text": "ya sabes algo sobre hacking o ciberseguridad??",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-03-29T06:53:12.124Z"
+      },
+      {
+        "id": "a6eeed1b60e2453e",
+        "text": "nose",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-03-29T06:53:13.580Z",
+        "read": true
+      },
+      {
+        "id": "0864e3af052cde82",
+        "text": "[Welcome Audio]",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-03-29T06:54:09.910Z"
+      },
+      {
+        "id": "5d8ff8d3f4a3683a",
+        "text": "🚨 PACK PREMIUM DE CIBERSEGURIDAD Y HACKING 2026 🚨\nBro, gracias por tu interés. Esto es lo que te lleva el pack definitivo:\n\n🔥 ¿Qué vas a aprender?\n\n✅ A protegerte de ciberataques como un profesional\n✅ A auditar sistemas y encontrar vulnerabilidades\n✅ A usar herramientas de hacking ético paso a paso\n✅ A realizar búsquedas avanzadas con Google Hacking\n✅ A automatizar tareas y extraer datos con Web Scraping\n✅ A asegurar redes y proteger tu información\n✅ Más de 15 cursos 100% prácticos, sin teoría aburrida\n✅ Explicaciones para que domines el mundo digital al toque\n\n🎯 ¿Para quién es?\n✅ Para ti, que quieres convertirte en un experto digital\n✅ Para quien busca conocimientos con demanda laboral\n✅ Para el que quiere aprender algo útil y potente\n✅ Para el que está listo para dominar la tecnología\n⏱ Duración:\nMás de 15 cursos completos con acceso de por vida\nAcceso 100% grabado para que lo veas cuando quieras\nLo estudias desde tu celu o la compu\n💰 Inversión:\nSolo $15.000 pesos. Antes $60 mil",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-03-29T06:54:10.929Z"
+      },
+      {
+        "id": "396b295fee0a8d29",
+        "text": "tienes alguna duda?",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-03-29T06:54:12.956Z"
+      },
+      {
+        "id": "89ea8b927d8eaaa9",
+        "text": "ya sabes algo sobre hacking o ciberseguridad??",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-03-29T06:54:14.978Z"
+      },
+      {
+        "id": "67966338f4bb297d",
+        "text": "no",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-03-29T06:54:16.552Z",
+        "read": true
+      },
+      {
+        "id": "e980615ca6b9c842",
+        "text": "[Welcome Audio]",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-03-29T06:58:15.424Z"
+      },
+      {
+        "id": "098394a7354001e7",
+        "text": "🚨 PACK PREMIUM DE CIBERSEGURIDAD Y HACKING 2026 🚨\nBro, gracias por tu interés. Esto es lo que te lleva el pack definitivo:\n\n🔥 ¿Qué vas a aprender?\n\n✅ A protegerte de ciberataques como un profesional\n✅ A auditar sistemas y encontrar vulnerabilidades\n✅ A usar herramientas de hacking ético paso a paso\n✅ A realizar búsquedas avanzadas con Google Hacking\n✅ A automatizar tareas y extraer datos con Web Scraping\n✅ A asegurar redes y proteger tu información\n✅ Más de 15 cursos 100% prácticos, sin teoría aburrida\n✅ Explicaciones para que domines el mundo digital al toque\n\n🎯 ¿Para quién es?\n✅ Para ti, que quieres convertirte en un experto digital\n✅ Para quien busca conocimientos con demanda laboral\n✅ Para el que quiere aprender algo útil y potente\n✅ Para el que está listo para dominar la tecnología\n⏱ Duración:\nMás de 15 cursos completos con acceso de por vida\nAcceso 100% grabado para que lo veas cuando quieras\nLo estudias desde tu celu o la compu\n💰 Inversión:\nSolo $15.000 pesos. Antes $60 mil",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-03-29T06:58:16.469Z"
+      },
+      {
+        "id": "0ec895ab4f010fde",
+        "text": "tienes alguna duda?",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-03-29T06:58:18.509Z"
+      },
+      {
+        "id": "ac06d718bbb1d9a1",
+        "text": "ya sabes algo sobre hacking o ciberseguridad??",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-03-29T06:58:20.537Z"
+      },
+      {
+        "id": "cf87f1eee1cde9b1",
+        "text": "no",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-03-29T06:58:46.122Z",
+        "read": true
       }
     ]
   },
@@ -87,6 +778,58 @@
         "text": "Dime si necesitas ayuda con algo más.",
         "fromMe": true,
         "timestamp": "2026-03-29T04:35:54.780Z"
+      }
+    ]
+  },
+  "91401299706110@lid": {
+    "pushName": "ruedajuanmanuel41",
+    "messages": [
+      {
+        "id": "474c3fc0bb943d82",
+        "text": "Listo ya entré",
+        "fromMe": false,
+        "timestamp": "2026-03-29T05:02:20.672Z",
+        "read": true
+      }
+    ]
+  },
+  "20723686989999@lid": {
+    "pushName": "Wifi",
+    "messages": [
+      {
+        "id": "8677236c1d95ff0e",
+        "text": "🚨 PACK PREMIUM DE CIBERSEGURIDAD Y HACKING 2026 🚨\nBro, gracias por tu interés. Esto es lo que te lleva el pack definitivo:\n\n🔥 ¿Qué vas a aprender?\n\n✅ A protegerte de ciberataques como un profesional\n✅ A auditar sistemas y encontrar vulnerabilidades\n✅ A usar herramientas de hacking ético paso a paso\n✅ A realizar búsquedas avanzadas con Google Hacking\n✅ A automatizar tareas y extraer datos con Web Scraping\n✅ A asegurar redes y proteger tu información\n✅ Más de 15 cursos 100% prácticos, sin teoría aburrida\n✅ Explicaciones para que domines el mundo digital al toque\n\n🎯 ¿Para quién es?\n✅ Para ti, que quieres convertirte en un experto digital\n✅ Para quien busca conocimientos con demanda laboral\n✅ Para el que quiere aprender algo útil y potente\n✅ Para el que está listo para dominar la tecnología\n⏱ Duración:\nMás de 15 cursos completos con acceso de por vida\nAcceso 100% grabado para que lo veas cuando quieras\nLo estudias desde tu celu o la compu\n💰 Inversión:\nSolo $15.000 pesos. Antes $60 mil",
+        "fromMe": true,
+        "sender": "agent",
+        "timestamp": "2026-03-29T06:34:53.851Z"
+      },
+      {
+        "id": "c68b69e155e709b5",
+        "text": "[media]",
+        "fromMe": true,
+        "sender": "agent",
+        "timestamp": "2026-03-29T06:35:10.442Z"
+      },
+      {
+        "id": "49b9d83f1ea6f930",
+        "text": "Buenas noches bro",
+        "fromMe": true,
+        "sender": "agent",
+        "timestamp": "2026-03-29T06:35:22.930Z"
+      },
+      {
+        "id": "4ba7dafb2456ac01",
+        "text": "Cuesta 15 mil pesos",
+        "fromMe": true,
+        "sender": "agent",
+        "timestamp": "2026-03-29T06:35:29.169Z"
+      },
+      {
+        "id": "748e7ac21ba83db3",
+        "text": "Hay va todo el de wifi y muchos más que hay en el bajo mundo tú sabes hay buen material",
+        "fromMe": true,
+        "sender": "agent",
+        "timestamp": "2026-03-29T06:35:55.432Z"
       }
     ]
   }

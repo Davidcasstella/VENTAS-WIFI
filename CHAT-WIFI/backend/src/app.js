@@ -98,6 +98,7 @@ const aiAutomationsService = require('./services/aiAutomations.service');
 const paymentDetection = require('./services/paymentDetection.service');
 const humanResponse = require('./services/humanResponse.service');
 const chatHistoryService = require('./services/chatHistory.service');
+const sentTracker = require('./utils/sentTracker');
 apiKeyRotation.setIo(io);
 humanResponse.setDependencies(io, chatHistoryService);
 
@@ -130,19 +131,62 @@ whatsapp.on('message', async (m) => {
         const msg = m.messages[0];
         if (!msg) return;
 
-        const remoteJid = msg.key?.remoteJid || '';
+        const rawJid = msg.key?.remoteJid || '';
+        // Normalize JID: strip device suffix (e.g. "573028599105:42@s.whatsapp.net" → "573028599105@s.whatsapp.net")
+        let remoteJid = rawJid.replace(/:\d+@/, '@');
 
-        // === DETECT MANUAL INTERVENTION (fromMe = true, not sent by bot) ===
+        // MAP KNOWN LIDs TO REAL NUMBER TO MERGE CHATS
+        // As requested: the client's PC shows 254468541157383@lid instead of their root 573028599105
+        const LID_MAPPINGS = {
+            '254468541157383@lid': '573028599105@s.whatsapp.net'
+        };
+        if (LID_MAPPINGS[remoteJid]) {
+            remoteJid = LID_MAPPINGS[remoteJid];
+        }
+
+        // === EARLY TEXT EXTRACTION (needed by outgoing handler below) ===
+        const text = msg.message?.conversation ||
+            msg.message?.extendedTextMessage?.text ||
+            msg.message?.imageMessage?.caption ||
+            msg.message?.videoMessage?.caption ||
+            msg.message?.templateMessage?.hydratedTemplate?.hydratedContentText ||
+            msg.message?.templateMessage?.hydratedTemplate?.hydratedTitleText ||
+            msg.message?.buttonsResponseMessage?.selectedDisplayText ||
+            msg.message?.listResponseMessage?.title ||
+            msg.message?.viewOnceMessage?.message?.imageMessage?.caption ||
+            msg.message?.viewOnceMessage?.message?.videoMessage?.caption ||
+            msg.message?.documentWithCaptionMessage?.message?.documentMessage?.caption ||
+            msg.message?.interactiveResponseMessage?.body?.text ||
+            '';
+
+        // === OUTGOING MESSAGE HANDLER (fromMe = true) ===
+        // Handles: bot messages (skip), dashboard messages (skip, already saved),
+        //          and native phone/web messages (save + detect manual intervention)
         if (msg.key.fromMe && m.type === 'notify') {
-            // Check if this was sent by the bot (tracked via markBotSent)
+            if (remoteJid.includes('@g.us')) return;
+
+            // 1. Bot-sent messages: already saved by humanResponse or direct send — skip
             const wasBot = welcomeAutomationService.wasBotSent(remoteJid);
-            if (!wasBot && remoteJid && !remoteJid.includes('@g.us')) {
+            if (wasBot) return;
+
+            // 2. Dashboard-sent messages: already saved by chat.routes — skip
+            if (sentTracker.wasSentRecently(remoteJid)) return;
+
+            // 3. Native phone/web message (true manual intervention)
+            // Save to chat history for dashboard sync
+            try {
+                const savedMsg = await chatHistoryService.addMessage(remoteJid, text || '[media]', true, msg.pushName, 'agent');
+                io.emit('chat:message', { jid: remoteJid, message: savedMsg });
+            } catch (_) { }
+
+            // Disable AI for this chat (agent took over manually)
+            if (remoteJid && !remoteJid.includes('@g.us')) {
                 console.log(`✋ Manual intervention detected for ${remoteJid} — disabling AI for this chat`);
                 try {
                     await welcomeAutomationService.disableUserAI(remoteJid);
                 } catch (_) { }
             }
-            return; // Don't process own messages further
+            return;
         }
 
         // === BLOCKED NUMBERS GUARD (runs before AI) ===
@@ -161,33 +205,18 @@ whatsapp.on('message', async (m) => {
         // === WELCOME 24H AUTOMATION (runs before AI, non-blocking) ===
         let welcomeWasSent = false;
         try {
-            welcomeWasSent = await welcomeAutomationService.runIfNeeded(whatsapp.sock, remoteJid);
+            welcomeWasSent = await welcomeAutomationService.runIfNeeded(whatsapp.sock, remoteJid, chatHistoryService, io);
         } catch (welcomeErr) {
             console.error(`⚠️ Welcome automation error: ${welcomeErr.message}`);
         }
 
         // If the welcome flow was just sent, skip AI response entirely.
-        // The welcome messages already contain the full course info — sending
-        // an additional AI-generated greeting would break conversation continuity.
         if (welcomeWasSent) {
             console.log(`🔔 Welcome flow sent to ${remoteJid} — skipping AI response to avoid duplicate greeting`);
             return;
         }
 
-        // === EXPANDED TEXT EXTRACTION (covers ads, templates, buttons, etc.) ===
-        const text = msg.message?.conversation ||
-            msg.message?.extendedTextMessage?.text ||
-            msg.message?.imageMessage?.caption ||
-            msg.message?.videoMessage?.caption ||
-            msg.message?.templateMessage?.hydratedTemplate?.hydratedContentText ||
-            msg.message?.templateMessage?.hydratedTemplate?.hydratedTitleText ||
-            msg.message?.buttonsResponseMessage?.selectedDisplayText ||
-            msg.message?.listResponseMessage?.title ||
-            msg.message?.viewOnceMessage?.message?.imageMessage?.caption ||
-            msg.message?.viewOnceMessage?.message?.videoMessage?.caption ||
-            msg.message?.documentWithCaptionMessage?.message?.documentMessage?.caption ||
-            msg.message?.interactiveResponseMessage?.body?.text ||
-            '';
+        // (text already extracted above)
 
         // === AUDIO DETECTION (voice notes and audio files) ===
         const msgContent = msg.message || {};
@@ -197,7 +226,6 @@ whatsapp.on('message', async (m) => {
         const isImageMessage = !text && (msgContent.imageMessage);
 
         // === MEDIA-ONLY DETECTION (video, sticker, document without text) ===
-        // NOTE: audio and image are excluded — they are handled separately
         const isMediaOnly = !text && !isAudioMessage && !isImageMessage && (
             msgContent.videoMessage ||
             msgContent.stickerMessage ||
@@ -210,22 +238,9 @@ whatsapp.on('message', async (m) => {
         // === MASTER AI SWITCH CHECK ===
         if (!global.aiEnabled) {
             console.log('🔴 IA apagada — mensaje ignorado');
-            // Still track the message even if AI is off
             if (!msg.key.fromMe && m.type === 'notify') {
                 try { await welcomeAutomationService.updateUserMessage(remoteJid, text || '[media]'); } catch (_) { }
             }
-            return;
-        }
-
-        // === SYNC NATIVE OUTGOING MESSAGES (Sent from linked phone/web) ===
-        if (msg.key.fromMe && m.type === 'notify') {
-            if (remoteJid.includes('@g.us')) return;
-            try {
-                // Save explicitly as outgoing
-                const savedMsg = await chatHistoryService.addMessage(remoteJid, text || '[media]', true, msg.pushName);
-                io.emit('chat:message', { jid: remoteJid, message: savedMsg });
-            } catch (_) { }
-            // Do not run AI or welcome flows for outgoing messages
             return;
         }
 
@@ -237,7 +252,7 @@ whatsapp.on('message', async (m) => {
 
             // ── Record incoming message in chat history ──
             try {
-                const savedMsg = await chatHistoryService.addMessage(remoteJid, text || '[media]', false, msg.pushName);
+                const savedMsg = await chatHistoryService.addMessage(remoteJid, text || '[media]', false, msg.pushName, 'client');
                 io.emit('chat:message', { jid: remoteJid, message: savedMsg });
             } catch (_) { }
 
@@ -464,11 +479,6 @@ whatsapp.on('message', async (m) => {
             // === FORCED FALLBACK TEST TRIGGER ===
             if (text.trim().toLowerCase() === 'prueba_fallback') {
                 console.log(`🧪 FORCED FALLBACK TEST triggered by ${remoteJid}`);
-                if (whatsapp.sock) {
-                    welcomeAutomationService.markBotSent(remoteJid);
-                    await whatsapp.sock.sendMessage(remoteJid, { text: 'ok' });
-                    console.log(`📤 "ok" sent to ${remoteJid}`);
-                }
                 await welcomeAutomationService.disableUserAI(remoteJid);
                 console.log(`🔒 AI disabled for ${remoteJid}`);
                 await aiFallbackService.registerPending(remoteJid, text);
@@ -489,12 +499,8 @@ whatsapp.on('message', async (m) => {
             // When every AI provider has failed, send a neutral response to the user
             // and notify the admin with full details. No technical error shown to client.
             if (response === '__ALL_PROVIDERS_EXHAUSTED__') {
-                console.log(`🚨 All AI providers exhausted. Sending neutral response to ${remoteJid}`);
-                if (whatsapp.sock) {
-                    welcomeAutomationService.markBotSent(remoteJid);
-                    await whatsapp.sock.sendMessage(remoteJid, { text: 'Ok 👍' });
-                    console.log(`📤 Neutral "Ok 👍" sent to ${remoteJid} (all providers exhausted)`);
-                }
+                console.log(`🚨 All AI providers exhausted. Setting fallback state for ${remoteJid}`);
+                
                 // Notify admin with full client details
                 try {
                     await aiFallbackService.sendExhaustionNotification(
@@ -511,11 +517,7 @@ whatsapp.on('message', async (m) => {
             const isFallback = await aiFallbackService.isFallbackResponse(response);
             if (isFallback) {
                 console.log(`⚠️ AI FALLBACK TRIGGERED for ${remoteJid}: "${response}"`);
-                if (whatsapp.sock) {
-                    welcomeAutomationService.markBotSent(remoteJid);
-                    await whatsapp.sock.sendMessage(remoteJid, { text: 'ok' });
-                    console.log(`📤 "ok" sent to ${remoteJid}`);
-                }
+                
                 // Disable AI for this chat
                 await welcomeAutomationService.disableUserAI(remoteJid);
                 console.log(`🔒 AI disabled for ${remoteJid}`);

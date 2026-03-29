@@ -97,6 +97,12 @@ class WelcomeAutomationService {
         if (states[jid]) {
             // Keep the user entry but clear welcome timestamp
             delete states[jid].lastWelcomeSentAt;
+            // Also re-enable AI when a full reset is requested
+            states[jid].aiEnabled = true;
+
+            // Optional: try to clear pending fallback from aiFallback if needed
+            // Since this runs in welcomeAutomation, and we just enabled AI, 
+            // the AI will answer next time anyway.
         }
         await this._writeStates(states);
     }
@@ -201,9 +207,11 @@ class WelcomeAutomationService {
      * Sends audio first (if available), then text message, then updates state.
      * @param {object} sock   - Baileys socket
      * @param {string} jid    - WhatsApp JID of the sender
+     * @param {object} chatHistoryService - Service to log messages
+     * @param {object} io - Socket.io instance to emit to dashboard
      * @returns {Promise<boolean>} true if the welcome was actually sent, false otherwise
      */
-    async runIfNeeded(sock, jid) {
+    async runIfNeeded(sock, jid, chatHistoryService, io) {
         if (!sock) return false;
 
         const config = await this.getConfig();
@@ -222,6 +230,12 @@ class WelcomeAutomationService {
                     ptt: true   // voice note
                 });
                 console.log(`🔊 Welcome audio sent to ${jid}`);
+                if (chatHistoryService && io) {
+                    try {
+                        const savedMsg = await chatHistoryService.addMessage(jid, '[Welcome Audio]', true, 'System', 'system');
+                        io.emit('chat:message', { jid, message: savedMsg });
+                    } catch (e) { console.error('Error saving welcome audio to history:', e.message); }
+                }
             } catch (audioErr) {
                 console.error(`⚠️ Welcome audio failed (continuing): ${audioErr.message}`);
             }
@@ -252,6 +266,12 @@ class WelcomeAutomationService {
                     this.markBotSent(jid);
                     await sock.sendMessage(jid, { text: messageParts[i] });
                     console.log(`📝 Welcome message ${i + 1}/${messageParts.length} sent to ${jid}`);
+                    if (chatHistoryService && io) {
+                        try {
+                            const savedMsg = await chatHistoryService.addMessage(jid, messageParts[i], true, 'System', 'system');
+                            io.emit('chat:message', { jid, message: savedMsg });
+                        } catch (e) { console.error('Error saving welcome text to history:', e.message); }
+                    }
                 } catch (textErr) {
                     console.error(`⚠️ Welcome text part ${i + 1} failed: ${textErr.message}`);
                 }
@@ -272,6 +292,12 @@ class WelcomeAutomationService {
                     mimetype: 'video/mp4'
                 });
                 console.log(`🎬 Welcome video sent to ${jid}`);
+                if (chatHistoryService && io) {
+                    try {
+                        const savedMsg = await chatHistoryService.addMessage(jid, '[Welcome Video]', true, 'System', 'system');
+                        io.emit('chat:message', { jid, message: savedMsg });
+                    } catch (e) { console.error('Error saving welcome video to history:', e.message); }
+                }
             } catch (videoErr) {
                 console.error(`⚠️ Welcome video failed (continuing): ${videoErr.message}`);
             }

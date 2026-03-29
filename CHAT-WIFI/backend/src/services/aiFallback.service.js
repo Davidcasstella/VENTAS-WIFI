@@ -202,7 +202,7 @@ class AIFallbackService {
         const displayName = clientName || 'Sin nombre disponible';
         const now = new Date().toLocaleString('es-CO', { timeZone: 'America/Bogota' });
 
-        const notification = `🚨 API KEYS AGOTADAS\n\n⚠️ Todas las API Keys de IA están agotadas o no disponibles.\nNingún proveedor pudo generar respuesta.\n\n📱 Cliente: ${displayName}\n📞 Número: ${clientNumber}\n💬 Último mensaje: "${clientMessage}"\n🕐 Hora: ${now}\n\n✅ Se respondió automáticamente "Ok 👍" al cliente.\n\n❗ Acción requerida: Recargar créditos o agregar nuevas API Keys desde el panel.`;
+        const notification = `🚨 API KEYS AGOTADAS\n\n⚠️ Todas las API Keys de IA están agotadas o no disponibles.\nNingún proveedor pudo generar respuesta.\n\n📱 Cliente: ${displayName}\n📞 Número: ${clientNumber}\n💬 Último mensaje: "${clientMessage}"\n🕐 Hora: ${now}\n\n❗ Acción requerida: Recargar créditos o agregar nuevas API Keys desde el panel.`;
 
         try {
             await sock.sendMessage(config.adminJid, { text: notification });

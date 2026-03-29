@@ -1,10 +1,9 @@
 {
   "573028599105@s.whatsapp.net": {
-    "lastMessageText": "cuanto vale el curso ?",
-    "lastMessageAt": "2026-03-29T00:44:54.085Z",
+    "lastMessageText": "no",
+    "lastMessageAt": "2026-03-29T06:58:46.131Z",
     "aiEnabled": true,
-    "cooldownEnabled": true,
-    "lastWelcomeSentAt": "2026-03-29T00:21:41.840Z"
+    "cooldownEnabled": true
   },
   "151771427143897@lid": {
     "lastMessageText": "Que es la vida ?",
@@ -20,9 +19,9 @@
     "cooldownEnabled": true
   },
   "254468541157383@lid": {
-    "lastMessageText": "Uvuv",
-    "lastMessageAt": "2026-03-29T00:43:08.642Z",
-    "aiEnabled": true,
+    "lastMessageText": "Chevere",
+    "lastMessageAt": "2026-03-29T06:10:24.196Z",
+    "aiEnabled": false,
     "cooldownEnabled": true,
     "lastWelcomeSentAt": "2026-03-29T00:43:30.088Z"
   },
@@ -100,5 +99,15 @@
     "lastMessageAt": "2026-03-29T04:35:47.733Z",
     "aiEnabled": false,
     "cooldownEnabled": true
+  },
+  "91401299706110@lid": {
+    "lastWelcomeSentAt": "2026-03-29T04:45:28.551Z",
+    "aiEnabled": false,
+    "lastMessageText": "Listo ya entré",
+    "lastMessageAt": "2026-03-29T05:02:20.674Z",
+    "cooldownEnabled": true
+  },
+  "20723686989999@lid": {
+    "aiEnabled": false
   }
 }

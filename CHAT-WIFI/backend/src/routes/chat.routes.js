@@ -4,6 +4,7 @@ const { verifyToken } = require('../middleware/auth.middleware');
 const chatHistoryService = require('../services/chatHistory.service');
 const whatsapp = require('../core/WhatsApp');
 const welcomeAutomationService = require('../services/welcomeAutomation.service');
+const sentTracker = require('../utils/sentTracker');
 
 // All routes require authentication
 router.use(verifyToken);
@@ -46,23 +47,27 @@ router.get('/messages/:jid', async (req, res) => {
  */
 router.post('/send', async (req, res) => {
     try {
-        const { jid, text } = req.body;
-        if (!jid || !text) {
+        const { jid: inputJid, text } = req.body;
+        if (!inputJid || !text) {
             return res.status(400).json({ success: false, message: 'jid and text are required' });
         }
+
+        // Normalize JID: strip device suffix (e.g. "573028599105:42@s.whatsapp.net" → "573028599105@s.whatsapp.net")
+        const jid = inputJid.replace(/:\d+@/, '@');
 
         if (!whatsapp.sock) {
             return res.status(503).json({ success: false, message: 'WhatsApp not connected' });
         }
 
-        // Mark as bot-sent to avoid triggering manual intervention detection
-        welcomeAutomationService.markBotSent(jid);
+        // Disable AI for this chat since an agent took over manually via the dashboard
+        await welcomeAutomationService.disableUserAI(jid);
 
         // Send via WhatsApp
         await whatsapp.sock.sendMessage(jid, { text });
 
-        // Store in chat history
-        const message = await chatHistoryService.addMessage(jid, text, true);
+        // Store in chat history with sender='agent'
+        const message = await chatHistoryService.addMessage(jid, text, true, undefined, 'agent');
+        sentTracker.markSent(jid);
 
         // Emit Socket.io event for real-time update
         const io = req.app.get('io');

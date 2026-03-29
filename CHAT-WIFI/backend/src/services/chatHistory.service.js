@@ -54,9 +54,10 @@ class ChatHistoryService {
      * @param {string} text - Message text
      * @param {boolean} fromMe - true if sent by bot/admin, false if from client
      * @param {string} [pushName] - Client display name (only for incoming)
+     * @param {string} [sender] - 'client' | 'agent' | 'bot' (defaults based on fromMe)
      * @returns {object} The saved message object
      */
-    async addMessage(rawJid, text, fromMe, pushName) {
+    async addMessage(rawJid, text, fromMe, pushName, sender) {
         const jid = this._normalizeJid(rawJid);
         const data = await this._read();
 
@@ -76,6 +77,7 @@ class ChatHistoryService {
             id: crypto.randomBytes(8).toString('hex'),
             text: text || '',
             fromMe,
+            sender: sender || (fromMe ? 'agent' : 'client'),
             timestamp: new Date().toISOString()
         };
 

@@ -353,18 +353,29 @@ const WelcomeAutomationPage = () => {
                                 <MessageSquare size={20} style={{ color: '#00ff00' }} />
                                 <span className="wa-card-title">Mensaje de Bienvenida</span>
                             </div>
-                            <p className="wa-card-desc">
-                                Este texto se enviará <strong>después del audio</strong> cuando un cliente contacte por primera vez (o después del cooldown).
+                            <p className="wa-card-desc" style={{ marginBottom: '1rem' }}>
+                                Este texto se enviará <strong>después del audio</strong>. <br/>
+                                <span style={{ color: '#00ff00', fontSize: '0.85rem' }}>💡 Tip: Si quieres mandar múltiples mensajes separados, usa la opción "+ Añadir otro globo de mensaje".</span>
                             </p>
                             <textarea
                                 className="wa-textarea"
                                 value={messageText}
                                 onChange={e => setMessageText(e.target.value)}
                                 placeholder="Escribe tu mensaje de bienvenida aquí..."
-                                rows={6}
-                                maxLength={1000}
+                                rows={10}
+                                maxLength={10000}
                             />
-                            <div className="wa-char-count">{messageText.length} / 1000</div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem' }}>
+                                <button 
+                                    className="wa-refresh-btn" 
+                                    style={{ margin: 0, padding: '6px 12px', fontSize: '0.85rem', background: 'rgba(0, 255, 0, 0.1)', color: '#00ff00', border: '1px solid rgba(0, 255, 0, 0.2)' }}
+                                    onClick={() => setMessageText(prev => prev + '\n\n---MSG---\n\n')}
+                                    title="Separa el texto en múltiples globos de mensaje"
+                                >
+                                    + Añadir otro globo de mensaje
+                                </button>
+                                <div className="wa-char-count" style={{ marginTop: 0 }}>{messageText.length} / 10000</div>
+                            </div>
                         </div>
 
                         {/* Cooldown */}

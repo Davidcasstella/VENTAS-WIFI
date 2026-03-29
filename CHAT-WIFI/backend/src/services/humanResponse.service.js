@@ -16,6 +16,7 @@
  * and emitted via Socket.io for real-time dashboard updates.
  */
 
+const sentTracker = require('../utils/sentTracker');
 const RESPONSE_DELAY = parseInt(process.env.RESPONSE_DELAY, 10) || 2000;
 
 const FALLBACK_INTROS = [
@@ -88,10 +89,12 @@ class HumanResponseService {
     /**
      * Records a sent message in chat history and emits via Socket.io.
      */
-    async _recordSentMessage(jid, text) {
+    async _recordSentMessage(rawJid, text) {
         if (!this._chatHistory) return;
+        const jid = rawJid.replace(/:\d+@/, '@');
         try {
-            const savedMsg = await this._chatHistory.addMessage(jid, text, true);
+            const savedMsg = await this._chatHistory.addMessage(jid, text, true, undefined, 'bot');
+            sentTracker.markSent(jid);
             if (this._io) {
                 this._io.emit('chat:message', { jid, message: savedMsg });
             }
