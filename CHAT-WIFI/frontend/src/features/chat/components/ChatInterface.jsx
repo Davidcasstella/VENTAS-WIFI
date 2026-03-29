@@ -102,7 +102,6 @@ const ChatInterface = () => {
     const goBack = () => setActiveJid(null);
 
     const handleDeleteConversation = async (jid) => {
-        if (!window.confirm('¿Seguro que deseas eliminar el historial de este chat?')) return;
         try {
             await api.delete(`/api/chat/${encodeURIComponent(jid)}`);
             setConversations(prev => prev.filter(c => c.jid !== jid));

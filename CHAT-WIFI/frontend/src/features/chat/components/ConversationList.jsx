@@ -1,6 +1,8 @@
-import { Search, MessageSquare, Trash2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { Search, MessageSquare, Trash2, Check } from 'lucide-react';
 
 const ConversationList = ({ conversations, activeJid, onSelect, onDelete, searchTerm, onSearchChange }) => {
+    const [confirmDelete, setConfirmDelete] = useState(null);
 
     const formatTime = (isoStr) => {
         if (!isoStr) return '';
@@ -91,13 +93,20 @@ const ConversationList = ({ conversations, activeJid, onSelect, onDelete, search
                                     )}
                                     <button
                                         className="conv-delete-btn"
-                                        title="Eliminar chat"
+                                        title={confirmDelete === conv.jid ? "Click para confirmar" : "Eliminar chat"}
+                                        style={confirmDelete === conv.jid ? { color: '#f15c6d', background: 'rgba(241, 92, 109, 0.1)' } : {}}
                                         onClick={(e) => {
                                             e.stopPropagation();
-                                            onDelete(conv.jid);
+                                            if (confirmDelete === conv.jid) {
+                                                onDelete(conv.jid);
+                                                setConfirmDelete(null);
+                                            } else {
+                                                setConfirmDelete(conv.jid);
+                                                setTimeout(() => setConfirmDelete(null), 3000);
+                                            }
                                         }}
                                     >
-                                        <Trash2 size={13} />
+                                        {confirmDelete === conv.jid ? <Check size={13} /> : <Trash2 size={13} />}
                                     </button>
                                 </div>
                             </div>
