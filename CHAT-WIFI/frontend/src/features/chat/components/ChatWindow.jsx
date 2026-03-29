@@ -8,7 +8,7 @@ const ChatWindow = ({ jid, pushName, messages, loading, onSend, onBack }) => {
     const [aiEnabled, setAiEnabled] = useState(true);
     const [toggling, setToggling] = useState(null);
     const [toast, setToast] = useState(null);
-    const messagesEndRef = useRef(null);
+    const messagesContainerRef = useRef(null);
     const inputRef = useRef(null);
 
     // Load user state when JID changes
@@ -27,9 +27,11 @@ const ChatWindow = ({ jid, pushName, messages, loading, onSend, onBack }) => {
         loadUserState();
     }, [jid]);
 
-    // Auto-scroll to bottom on new messages
+    // Auto-scroll to bottom on new messages without jumping the page
     useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        if (messagesContainerRef.current) {
+            messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+        }
     }, [messages]);
 
     // Focus input when chat opens
@@ -170,7 +172,7 @@ const ChatWindow = ({ jid, pushName, messages, loading, onSend, onBack }) => {
             </div>
 
             {/* Messages area */}
-            <div className="chat-messages">
+            <div className="chat-messages" ref={messagesContainerRef}>
                 {loading ? (
                     <div className="chat-loading">
                         <Loader2 size={24} className="chat-spin" />
@@ -203,7 +205,6 @@ const ChatWindow = ({ jid, pushName, messages, loading, onSend, onBack }) => {
                         );
                     })
                 )}
-                <div ref={messagesEndRef} />
             </div>
 
             {/* Input area */}
