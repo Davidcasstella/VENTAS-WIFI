@@ -560,7 +560,7 @@
 
 @media (max-width: 768px) {
     .chat-interface {
-        height: calc(100dvh - 150px);
+        height: calc(100vh - 240px);
         min-height: 400px;
         border-radius: 8px;
     }
