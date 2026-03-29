@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import socket from '../services/socket';
 import AIStatusModule from '../components/ui/AIStatusModule';
-import UserControlPanel from '../components/ui/UserControlPanel';
+import ChatInterface from '../features/chat/components/ChatInterface';
 import PendingAlertsPanel from '../components/ui/PendingAlertsPanel';
 import ClientsMetricCard from '../components/ui/ClientsMetricCard';
 import ActivityChart from '../components/ui/ActivityChart';
 import TokenUsageModule from '../components/ui/TokenUsageModule';
 import CostControlModule from '../components/ui/CostControlModule';
-import { UserCheck, AlertTriangle } from 'lucide-react';
+import { MessageSquare, AlertTriangle } from 'lucide-react';
 
 const DashboardPage = () => {
     // AI master switch state — kept identical to the original logic
@@ -77,8 +77,8 @@ const DashboardPage = () => {
                         className={`dashboard-tab-btn ${dashboardTab === 'users' ? 'active' : ''}`}
                         onClick={() => setDashboardTab('users')}
                     >
-                        <UserCheck size={18} />
-                        <span>Control de Usuarios</span>
+                        <MessageSquare size={18} />
+                        <span>Chats</span>
                     </button>
                     <button
                         className={`dashboard-tab-btn ${dashboardTab === 'alerts' ? 'active' : ''}`}
@@ -90,7 +90,7 @@ const DashboardPage = () => {
                 </div>
 
                 <div className="dashboard-tab-content">
-                    {dashboardTab === 'users' && <UserControlPanel />}
+                    {dashboardTab === 'users' && <ChatInterface />}
                     {dashboardTab === 'alerts' && <PendingAlertsPanel className="card-warn" />}
                 </div>
             </div>

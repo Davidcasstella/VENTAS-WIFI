@@ -14,6 +14,7 @@ const analyticsRoutes = require('./routes/analytics.routes');
 const welcomeAutomationRoutes = require('./routes/welcomeAutomation.routes');
 const aiFallbackRoutes = require('./routes/aiFallback.routes');
 const aiAutomationsRoutes = require('./routes/aiAutomations.routes');
+const chatRoutes = require('./routes/chat.routes');
 const blockedNumbersService = require('./services/blockedNumbers.service');
 const analyticsService = require('./services/analyticsService');
 const welcomeAutomationService = require('./services/welcomeAutomation.service');
@@ -32,6 +33,9 @@ const io = new Server(server, {
     cors: { origin: '*' }
 });
 
+// Expose io to routes via app.set
+app.set('io', io);
+
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../public')));
 
@@ -45,6 +49,7 @@ app.use('/api/analytics', analyticsRoutes);
 app.use('/api/welcome-automation', welcomeAutomationRoutes);
 app.use('/api/ai-fallback', aiFallbackRoutes);
 app.use('/api/ai-automations', aiAutomationsRoutes);
+app.use('/api/chat', chatRoutes);
 
 // API Status (Pública)
 app.get('/api/status', (req, res) => {
@@ -91,7 +96,14 @@ const apiKeyRotation = require('./services/apiKeyRotation.service');
 const audioTranscription = require('./services/audioTranscription.service');
 const aiAutomationsService = require('./services/aiAutomations.service');
 const paymentDetection = require('./services/paymentDetection.service');
+const humanResponse = require('./services/humanResponse.service');
+const chatHistoryService = require('./services/chatHistory.service');
 apiKeyRotation.setIo(io);
+humanResponse.setDependencies(io, chatHistoryService);
+
+// Wire Socket.io to AI Providers for real-time status events (pool system)
+const aiProvidersService = require('./services/aiProviders.service');
+aiProvidersService.setIo(io);
 
 // Escuchar eventos de WhatsApp y emitir vía Socket.io
 whatsapp.on('status-update', (data) => {
@@ -147,10 +159,19 @@ whatsapp.on('message', async (m) => {
         }
 
         // === WELCOME 24H AUTOMATION (runs before AI, non-blocking) ===
+        let welcomeWasSent = false;
         try {
-            await welcomeAutomationService.runIfNeeded(whatsapp.sock, remoteJid);
+            welcomeWasSent = await welcomeAutomationService.runIfNeeded(whatsapp.sock, remoteJid);
         } catch (welcomeErr) {
             console.error(`⚠️ Welcome automation error: ${welcomeErr.message}`);
+        }
+
+        // If the welcome flow was just sent, skip AI response entirely.
+        // The welcome messages already contain the full course info — sending
+        // an additional AI-generated greeting would break conversation continuity.
+        if (welcomeWasSent) {
+            console.log(`🔔 Welcome flow sent to ${remoteJid} — skipping AI response to avoid duplicate greeting`);
+            return;
         }
 
         // === EXPANDED TEXT EXTRACTION (covers ads, templates, buttons, etc.) ===
@@ -201,6 +222,12 @@ whatsapp.on('message', async (m) => {
 
             // Skip groups
             if (remoteJid.includes('@g.us')) return;
+
+            // ── Record incoming message in chat history ──
+            try {
+                const savedMsg = await chatHistoryService.addMessage(remoteJid, text || '[media]', false, msg.pushName);
+                io.emit('chat:message', { jid: remoteJid, message: savedMsg });
+            } catch (_) { }
 
             // === AUDIO MESSAGE HANDLER: transcribe and process with AI ===
             if (isAudioMessage) {
@@ -259,11 +286,16 @@ whatsapp.on('message', async (m) => {
                         return;
                     }
 
-                    // Send successful AI response
+                    // Send successful AI response (human-like 3-part)
                     if (whatsapp.sock) {
-                        welcomeAutomationService.markBotSent(remoteJid);
-                        await whatsapp.sock.sendMessage(remoteJid, { text: response });
-                        console.log(`🤖 Audio response sent to ${remoteJid}: ${response}`);
+                        await humanResponse.sendHumanLike(
+                            whatsapp.sock,
+                            remoteJid,
+                            response,
+                            (jid) => welcomeAutomationService.markBotSent(jid),
+                            { isPostWelcomeFlow: welcomeWasSent }
+                        );
+                        console.log(`🤖 Audio response sent to ${remoteJid} (human-like)`);
                         try { analyticsService.trackOutgoing(); } catch (_) { }
                     }
                 } catch (audioErr) {
@@ -381,7 +413,7 @@ whatsapp.on('message', async (m) => {
                 /a\s*que\s*numero\s*(consigno|pago|transfiero)/,
                 /cual\s*es\s*(la|el)\s*(cuenta|numero)/,
                 /me\s*pasas?\s*(el|tu|un)\s*numero/,
-                /donde\s*(consigno|pago|transfiero)/,
+                /donde\s*(puedo\s*|debo\s*|hago\s*para\s*)?(consignar|pagar|transferir|pago|consigno|transfiero)/,
                 /numero\s*(para|de)\s*(pagar|pago|consignar|transferir)/,
                 /cual\s*es\s*(el\s*)?nequi/,
                 /cual\s*es\s*(el\s*|la\s*)?daviplata/,
@@ -389,7 +421,14 @@ whatsapp.on('message', async (m) => {
                 /numero\s*(de\s*)?(nequi|daviplata)/,
                 /pasame\s*(el|la|tu)\s*(nequi|daviplata|cuenta|numero)/,
                 /datos?\s*(de|para)\s*(pago|consignar|transferir|transferencia)/,
-                /a\s*donde\s*(le\s*)?(consigno|pago)/,
+                /metodo(s)?\s*(de\s*)?pago/,
+                /forma(s)?\s*(de\s*)?pago/,
+                /medio(s)?\s*(de\s*)?pago/,
+                /como\s*(le\s*)?(puedo\s*|debo\s*|hago\s*para\s*)?(pagar|consignar|transferir|pago|consigno|transfiero)/,
+                /quiero\s*pagar/,
+                /para\s*pagar/,
+                /info(rmacion)?\s*(de|del|para)\s*pago/,
+                /a\s*donde\s*(le\s*)?(puedo\s*|debo\s*|hago\s*para\s*)?(pagar|consignar|transferir|pago|consigno|transfiero)/,
             ];
             const isPaymentAccountQuery = PAYMENT_ACCOUNT_PATTERNS.some(p => p.test(textLower));
             if (isPaymentAccountQuery) {
@@ -482,11 +521,16 @@ whatsapp.on('message', async (m) => {
                 return;
             }
 
-            // Enviar respuesta
+            // Send AI response in human-like 3-part format
             if (whatsapp.sock) {
-                welcomeAutomationService.markBotSent(remoteJid);
-                await whatsapp.sock.sendMessage(remoteJid, { text: response });
-                console.log(`🤖 Respuesta enviada con IA: ${response}`);
+                await humanResponse.sendHumanLike(
+                    whatsapp.sock,
+                    remoteJid,
+                    response,
+                    (jid) => welcomeAutomationService.markBotSent(jid),
+                    { isPostWelcomeFlow: welcomeWasSent }
+                );
+                console.log(`🤖 Respuesta enviada con IA (human-like): ${response}`);
                 // Track outgoing response for analytics
                 try { analyticsService.trackOutgoing(); } catch (_) { }
             }

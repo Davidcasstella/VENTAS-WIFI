@@ -1,13 +1,23 @@
 import React, { useState } from 'react';
-import { ShieldCheck, ShieldAlert, Trash2, Power, Zap, RefreshCw } from 'lucide-react';
+import { ShieldCheck, ShieldAlert, Trash2, Power, Zap, RefreshCw, XCircle } from 'lucide-react';
 import useProvidersStore from '../store/useProvidersStore';
 import api from '../../../services/api';
 
+const STATUS_CONFIG = {
+    active: { label: 'Activo', className: 'active' },
+    available: { label: 'Disponible', className: 'available' },
+    exhausted: { label: 'Agotada', className: 'exhausted' }
+};
+
 const ProviderCard = ({ provider }) => {
-    const { activateProvider, testProvider } = useProvidersStore();
+    const { activateProvider, exhaustProvider, testProvider } = useProvidersStore();
     const [testing, setTesting] = useState(false);
     const [testResult, setTestResult] = useState(null);
     const [deleting, setDeleting] = useState(false);
+
+    const statusConfig = STATUS_CONFIG[provider.status] || STATUS_CONFIG.available;
+    const isActive = provider.status === 'active';
+    const isExhausted = provider.status === 'exhausted';
 
     const handleTest = async () => {
         setTesting(true);
@@ -20,7 +30,6 @@ const ProviderCard = ({ provider }) => {
         }
     };
 
-    // Direct delete — NO confirmation dialog, just delete and reload
     const handleDelete = async () => {
         if (deleting) return;
         setDeleting(true);
@@ -34,7 +43,7 @@ const ProviderCard = ({ provider }) => {
     };
 
     return (
-        <div className={`provider-card premium-card ${provider.isActive ? 'active' : ''}`}>
+        <div className={`provider-card premium-card ${statusConfig.className}`}>
             <div className="provider-card-header">
                 <div className="provider-info">
                     <div className="provider-icon-wrapper">
@@ -49,8 +58,8 @@ const ProviderCard = ({ provider }) => {
                         <p className="provider-key">{provider.apiKey}</p>
                     </div>
                 </div>
-                <div className={`status-badge ${provider.isActive ? 'active' : ''}`}>
-                    {provider.isActive ? 'Activo' : 'Inactivo'}
+                <div className={`status-badge ${statusConfig.className}`}>
+                    {statusConfig.label}
                 </div>
             </div>
 
@@ -59,14 +68,14 @@ const ProviderCard = ({ provider }) => {
                     <button
                         className="btn-icon-text ghost-blue"
                         onClick={handleTest}
-                        disabled={testing}
+                        disabled={testing || isExhausted}
                         title="Probar conexión"
                     >
                         {testing ? <RefreshCw className="spin" size={18} /> : <Zap size={18} />}
                         <span>Probar</span>
                     </button>
 
-                    {!provider.isActive && (
+                    {!isActive && !isExhausted && (
                         <button
                             className="btn-icon-text ghost-green"
                             onClick={() => activateProvider(provider.id)}
@@ -74,6 +83,17 @@ const ProviderCard = ({ provider }) => {
                         >
                             <Power size={18} />
                             <span>Activar</span>
+                        </button>
+                    )}
+
+                    {isActive && (
+                        <button
+                            className="btn-icon-text ghost-red"
+                            onClick={() => exhaustProvider(provider.id, 'Manually exhausted by admin')}
+                            title="Marcar como agotada"
+                        >
+                            <XCircle size={18} />
+                            <span>Agotar</span>
                         </button>
                     )}
 

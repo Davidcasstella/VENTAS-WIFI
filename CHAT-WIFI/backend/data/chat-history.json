@@ -1,0 +1,133 @@
+{
+  "573503267342@s.whatsapp.net": {
+    "pushName": "573503267342",
+    "messages": [
+      {
+        "id": "35450fbf0cae61e6",
+        "text": "[media]",
+        "fromMe": false,
+        "timestamp": "2026-03-29T00:21:30.992Z",
+        "read": true
+      },
+      {
+        "id": "cd2c744fa87408d5",
+        "text": "[media]",
+        "fromMe": false,
+        "timestamp": "2026-03-29T00:21:40.790Z",
+        "read": true
+      },
+      {
+        "id": "53a521dae9cb63be",
+        "text": "[media]",
+        "fromMe": false,
+        "timestamp": "2026-03-29T00:21:49.271Z",
+        "read": true
+      },
+      {
+        "id": "b78fdc17f2f78e74",
+        "text": "[media]",
+        "fromMe": false,
+        "timestamp": "2026-03-29T00:21:58.547Z",
+        "read": true
+      },
+      {
+        "id": "db8176645220d87a",
+        "text": "[media]",
+        "fromMe": false,
+        "timestamp": "2026-03-29T00:22:02.102Z",
+        "read": true
+      },
+      {
+        "id": "f80ab792ee71d45e",
+        "text": "hola",
+        "fromMe": true,
+        "timestamp": "2026-03-29T00:22:18.934Z"
+      },
+      {
+        "id": "02476136d264c4a5",
+        "text": "prueba",
+        "fromMe": true,
+        "timestamp": "2026-03-29T00:27:25.536Z"
+      },
+      {
+        "id": "0d0050bcbcc01d9b",
+        "text": "test2",
+        "fromMe": true,
+        "timestamp": "2026-03-29T00:28:00.562Z"
+      },
+      {
+        "id": "e8cf62dc475951ed",
+        "text": "ds",
+        "fromMe": true,
+        "timestamp": "2026-03-29T00:32:46.531Z"
+      },
+      {
+        "id": "e8fdba79678bf5a9",
+        "text": "hola",
+        "fromMe": true,
+        "timestamp": "2026-03-29T00:42:21.676Z"
+      }
+    ]
+  },
+  "254468541157383@lid": {
+    "pushName": "David Castella",
+    "messages": [
+      {
+        "id": "1a0942cf5ef91a5e",
+        "text": "Hola",
+        "fromMe": false,
+        "timestamp": "2026-03-29T00:42:39.695Z",
+        "read": true
+      },
+      {
+        "id": "d90411097b9f73f3",
+        "text": "hg",
+        "fromMe": true,
+        "timestamp": "2026-03-29T00:42:47.861Z"
+      },
+      {
+        "id": "5f3b700b2d54d889",
+        "text": "Ucuc",
+        "fromMe": false,
+        "timestamp": "2026-03-29T00:42:55.716Z",
+        "read": true
+      },
+      {
+        "id": "e7253096e02f5831",
+        "text": "Uvuv",
+        "fromMe": false,
+        "timestamp": "2026-03-29T00:43:08.634Z",
+        "read": true
+      }
+    ]
+  },
+  "573028599105@s.whatsapp.net": {
+    "pushName": "David Castella",
+    "messages": [
+      {
+        "id": "385a7922d05e2149",
+        "text": "cuanto vale el curso ?",
+        "fromMe": false,
+        "timestamp": "2026-03-29T00:44:54.080Z"
+      },
+      {
+        "id": "7474433d94b20e98",
+        "text": "Mira",
+        "fromMe": true,
+        "timestamp": "2026-03-29T00:44:57.738Z"
+      },
+      {
+        "id": "46e16e0b65d51147",
+        "text": "El curso vale 15.000 pesos",
+        "fromMe": true,
+        "timestamp": "2026-03-29T00:45:00.148Z"
+      },
+      {
+        "id": "88afbc663087b613",
+        "text": "Cualquier cosa me dices.",
+        "fromMe": true,
+        "timestamp": "2026-03-29T00:45:02.175Z"
+      }
+    ]
+  }
+}

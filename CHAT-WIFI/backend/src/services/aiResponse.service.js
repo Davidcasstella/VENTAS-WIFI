@@ -24,8 +24,11 @@ class AIResponseService {
 
         // Build system prompt BEFORE try block so it's accessible in catch for fallback
         const kbContext = await knowledgeBaseService.searchKnowledge(prompt);
-        let systemPrompt = 'Eres un asistente de atención al cliente. Responde de manera breve, clara y directa (máximo 2-3 oraciones).';
-
+        let systemPrompt = 'Eres un asistente de ventas por WhatsApp. Responde como una persona REAL en un chat, no como un bot. ' +
+            'REGLA DE FORMATO OBLIGATORIA: Tu respuesta DEBE tener EXACTAMENTE 3 frases cortas separadas por ||| ' +
+            'Estructura: Frase1 casual de apertura ||| Frase2 respuesta principal ||| Frase3 cierre breve. ' +
+            'Ejemplo: Claro mira ||| El plan basico cuesta 15 dolares al mes con acceso ilimitado ||| Cualquier cosa me dices. ' +
+            'Reglas: Cada frase maximo 1 oracion CORTA. No emojis. No listas. Se directo y casual. Habla natural tipo mira, vale, es asi.';
         if (kbContext) {
             console.log('📚 RAG context found, applying constraints...');
             systemPrompt += '\nUsa SOLO la información del contexto proporcionado.\nSi no encuentras la respuesta en el contexto, o si no entiendes la pregunta, o si la pregunta no tiene sentido, responde EXACTAMENTE con esta palabra y NADA MÁS: FALLBACK_TRIGGER\nNo inventes respuestas. No digas "no entiendo". Si no estás 100% seguro de la respuesta, responde FALLBACK_TRIGGER\n\nContexto:\n' + kbContext;

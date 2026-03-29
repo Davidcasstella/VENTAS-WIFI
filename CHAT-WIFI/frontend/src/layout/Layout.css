@@ -1233,32 +1233,51 @@
         bottom: 0 !important;
         left: 0 !important;
         width: 100% !important;
-        height: 75px !important;
+        height: 70px !important;
         background: rgba(3, 15, 22, 0.95) !important;
         backdrop-filter: blur(15px) !important;
         border-top: 1px solid rgba(0, 255, 0, 0.05) !important;
-        justify-content: space-around !important;
         align-items: center !important;
-        padding: 0 10px !important;
+        padding: 0 4px !important;
         z-index: 1000 !important;
         box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5) !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        gap: 0 !important;
+    }
+
+    .mobile-bottom-nav::-webkit-scrollbar {
+        display: none;
     }
 
     .mobile-nav-item {
         display: flex !important;
         flex-direction: column !important;
         align-items: center !important;
+        justify-content: center !important;
         text-decoration: none !important;
         color: var(--text-secondary) !important;
-        gap: 5px !important;
-        flex: 1 !important;
+        gap: 3px !important;
+        min-width: 58px !important;
+        flex: 0 0 auto !important;
+        padding: 6px 4px !important;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        opacity: 0.7;
+        opacity: 0.65;
+    }
+
+    .mobile-nav-item svg {
+        width: 18px !important;
+        height: 18px !important;
     }
 
     .mobile-nav-item span {
-        font-size: 0.7rem !important;
+        font-size: 0.55rem !important;
         font-weight: 500 !important;
+        white-space: nowrap !important;
+        line-height: 1 !important;
     }
 
     .mobile-nav-item.active {

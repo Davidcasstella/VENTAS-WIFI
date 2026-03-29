@@ -112,7 +112,7 @@ const DashboardLayout = () => {
 
                 <NavLink to="/knowledge-base" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}>
                     <BookOpen size={20} />
-                    <span>Conocimiento</span>
+                    <span>Base</span>
                 </NavLink>
 
                 <NavLink to="/whatsapp" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}>
@@ -123,6 +123,16 @@ const DashboardLayout = () => {
                 <NavLink to="/ai-providers" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}>
                     <BrainCircuit size={20} />
                     <span>IA</span>
+                </NavLink>
+
+                <NavLink to="/blocked-numbers" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}>
+                    <ShieldBan size={20} />
+                    <span>Bloqueados</span>
+                </NavLink>
+
+                <NavLink to="/welcome-automation" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}>
+                    <BellRing size={20} />
+                    <span>24H</span>
                 </NavLink>
 
                 <NavLink to="/pending-chats" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}>

@@ -201,13 +201,14 @@ class WelcomeAutomationService {
      * Sends audio first (if available), then text message, then updates state.
      * @param {object} sock   - Baileys socket
      * @param {string} jid    - WhatsApp JID of the sender
+     * @returns {Promise<boolean>} true if the welcome was actually sent, false otherwise
      */
     async runIfNeeded(sock, jid) {
-        if (!sock) return;
+        if (!sock) return false;
 
         const config = await this.getConfig();
-        if (!config.isEnabled) return;
-        if (!await this._shouldSend(jid, config.cooldownHours)) return;
+        if (!config.isEnabled) return false;
+        if (!await this._shouldSend(jid, config.cooldownHours)) return false;
 
         console.log(`🔔 Welcome 24H: sending welcome sequence to ${jid}`);
 
@@ -226,15 +227,40 @@ class WelcomeAutomationService {
             }
         }
 
-        // 2. Send text message
+        // 2. Send text message(s)
+        // Supports multi-message: split on "---MSG---" separator
         if (config.messageText && config.messageText.trim()) {
-            try {
-                this.markBotSent(jid);
-                await sock.sendMessage(jid, { text: config.messageText });
-                console.log(`📝 Welcome message sent to ${jid}`);
-            } catch (textErr) {
-                console.error(`⚠️ Welcome text failed: ${textErr.message}`);
+            const RESPONSE_DELAY = parseInt(process.env.RESPONSE_DELAY, 10) || 2000;
+            const messageParts = config.messageText.split('---MSG---').map(p => p.trim()).filter(p => p.length > 0);
+
+            for (let i = 0; i < messageParts.length; i++) {
+                try {
+                    // Show typing indicator before each message
+                    try {
+                        await sock.presenceSubscribe(jid);
+                        await sock.sendPresenceUpdate('composing', jid);
+                    } catch (_) {}
+
+                    // Delay between messages (skip for the first one)
+                    if (i > 0) {
+                        await new Promise(resolve => setTimeout(resolve, RESPONSE_DELAY));
+                    } else {
+                        // Short pause even for the first message to show "typing"
+                        await new Promise(resolve => setTimeout(resolve, Math.floor(RESPONSE_DELAY * 0.5)));
+                    }
+
+                    this.markBotSent(jid);
+                    await sock.sendMessage(jid, { text: messageParts[i] });
+                    console.log(`📝 Welcome message ${i + 1}/${messageParts.length} sent to ${jid}`);
+                } catch (textErr) {
+                    console.error(`⚠️ Welcome text part ${i + 1} failed: ${textErr.message}`);
+                }
             }
+
+            // Clear typing indicator
+            try {
+                await sock.sendPresenceUpdate('paused', jid);
+            } catch (_) {}
         }
 
         // 3. Send video (if enabled and file exists on disk)
@@ -253,6 +279,8 @@ class WelcomeAutomationService {
 
         // 4. Persist timestamp — only after successful completion
         await this.updateUserState(jid);
+
+        return true;
     }
 
     // ── Audio management ──────────────────────────────────────────────────

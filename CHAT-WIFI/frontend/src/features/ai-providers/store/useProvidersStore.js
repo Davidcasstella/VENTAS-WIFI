@@ -3,9 +3,22 @@ import api from '../../../services/api';
 
 const useProvidersStore = create((set, get) => ({
     providers: [],
+    usageLogs: [],
     loading: false,
     error: null,
 
+    // ── Computed getters ──────────────────────────────────────────────
+    get availableProviders() {
+        return get().providers.filter(p => p.status === 'available');
+    },
+    get activeProvider() {
+        return get().providers.find(p => p.status === 'active') || null;
+    },
+    get exhaustedProviders() {
+        return get().providers.filter(p => p.status === 'exhausted');
+    },
+
+    // ── Fetch providers ──────────────────────────────────────────────
     fetchProviders: async () => {
         set({ loading: true, error: null });
         try {
@@ -18,6 +31,7 @@ const useProvidersStore = create((set, get) => ({
         }
     },
 
+    // ── Save provider ────────────────────────────────────────────────
     saveProvider: async (providerData) => {
         set({ loading: true, error: null });
         try {
@@ -32,12 +46,12 @@ const useProvidersStore = create((set, get) => ({
         }
     },
 
+    // ── Delete provider ──────────────────────────────────────────────
     deleteProvider: async (id) => {
         set({ loading: true, error: null });
         try {
             const response = await api.delete(`/api/ai-providers/${id}`);
             if (response.data.success) {
-                // Force a full re-fetch to guarantee UI sync
                 const refreshed = await api.get('/api/ai-providers');
                 if (refreshed.data.success) {
                     set({ providers: refreshed.data.providers, loading: false });
@@ -52,6 +66,7 @@ const useProvidersStore = create((set, get) => ({
         }
     },
 
+    // ── Activate provider ────────────────────────────────────────────
     activateProvider: async (id) => {
         set({ loading: true, error: null });
         try {
@@ -64,6 +79,60 @@ const useProvidersStore = create((set, get) => ({
         }
     },
 
+    // ── Exhaust provider ─────────────────────────────────────────────
+    exhaustProvider: async (id, reason = 'Manually exhausted by admin') => {
+        set({ loading: true, error: null });
+        try {
+            const response = await api.post(`/api/ai-providers/${id}/exhaust`, { reason });
+            if (response.data.success) {
+                set({ providers: response.data.providers, loading: false });
+            }
+        } catch (error) {
+            set({ error: error.response?.data?.message || 'Error al agotar proveedor', loading: false });
+        }
+    },
+
+    // ── Reactivate provider ──────────────────────────────────────────
+    reactivateProvider: async (id) => {
+        set({ loading: true, error: null });
+        try {
+            const response = await api.post(`/api/ai-providers/${id}/reactivate`);
+            if (response.data.success) {
+                set({ providers: response.data.providers, loading: false });
+            }
+        } catch (error) {
+            set({ error: error.response?.data?.message || 'Error al reactivar proveedor', loading: false });
+        }
+    },
+
+    // ── Reorder queue ────────────────────────────────────────────────
+    reorderQueue: async (orderedIds) => {
+        try {
+            const response = await api.put('/api/ai-providers/reorder', { orderedIds });
+            if (response.data.success) {
+                set({ providers: response.data.providers });
+            }
+        } catch (error) {
+            set({ error: error.response?.data?.message || 'Error al reordenar la cola' });
+        }
+    },
+
+    // ── Fetch usage logs ─────────────────────────────────────────────
+    fetchUsageLogs: async (providerId) => {
+        try {
+            const url = providerId
+                ? `/api/ai-providers/usage-logs?providerId=${providerId}`
+                : '/api/ai-providers/usage-logs';
+            const response = await api.get(url);
+            if (response.data.success) {
+                set({ usageLogs: response.data.logs });
+            }
+        } catch (error) {
+            console.error('Error fetching usage logs:', error);
+        }
+    },
+
+    // ── Test provider connection ─────────────────────────────────────
     testProvider: async (id) => {
         try {
             const response = await api.post(`/api/ai-providers/${id}/test`);

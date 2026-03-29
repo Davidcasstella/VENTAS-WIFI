@@ -1,10 +1,10 @@
 {
   "573028599105@s.whatsapp.net": {
-    "lastMessageText": "[audio]",
-    "lastMessageAt": "2026-03-06T07:42:48.127Z",
-    "aiEnabled": false,
+    "lastMessageText": "cuanto vale el curso ?",
+    "lastMessageAt": "2026-03-29T00:44:54.085Z",
+    "aiEnabled": true,
     "cooldownEnabled": true,
-    "lastWelcomeSentAt": "2026-03-06T07:42:24.326Z"
+    "lastWelcomeSentAt": "2026-03-29T00:21:41.840Z"
   },
   "151771427143897@lid": {
     "lastMessageText": "Que es la vida ?",
@@ -15,16 +15,16 @@
   },
   "573503267342@s.whatsapp.net": {
     "lastMessageText": "[unrecognized message]",
-    "lastMessageAt": "2026-03-06T06:32:03.716Z",
-    "aiEnabled": true,
-    "cooldownEnabled": true,
-    "lastWelcomeSentAt": "2026-03-06T06:31:40.614Z"
-  },
-  "254468541157383@lid": {
-    "lastMessageText": "Hilab",
-    "lastMessageAt": "2026-03-04T05:47:27.904Z",
+    "lastMessageAt": "2026-03-29T00:22:02.131Z",
     "aiEnabled": true,
     "cooldownEnabled": true
+  },
+  "254468541157383@lid": {
+    "lastMessageText": "Uvuv",
+    "lastMessageAt": "2026-03-29T00:43:08.642Z",
+    "aiEnabled": true,
+    "cooldownEnabled": true,
+    "lastWelcomeSentAt": "2026-03-29T00:43:30.088Z"
   },
   "143825737629729@lid": {
     "aiEnabled": true,
@@ -90,5 +90,8 @@
     "lastMessageText": "Dime",
     "lastMessageAt": "2026-03-04T04:17:06.794Z",
     "cooldownEnabled": true
+  },
+  "202172901908557@lid": {
+    "lastWelcomeSentAt": "2026-03-17T05:37:34.421Z"
   }
 }

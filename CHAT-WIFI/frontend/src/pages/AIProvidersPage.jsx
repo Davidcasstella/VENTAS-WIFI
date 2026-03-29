@@ -4,6 +4,7 @@ import useProvidersStore from '../features/ai-providers/store/useProvidersStore'
 import ProviderCard from '../features/ai-providers/components/ProviderCard';
 import KeyRotationStatus from '../features/ai-providers/components/KeyRotationStatus';
 import AIProviderDragDrop from '../features/ai-providers/components/AIProviderDragDrop';
+import UsageLogs from '../features/ai-providers/components/UsageLogs';
 
 const AIProvidersPage = () => {
     const { providers, loading, error, fetchProviders, saveProvider } = useProvidersStore();
@@ -43,6 +44,8 @@ const AIProvidersPage = () => {
             <KeyRotationStatus />
 
             <AIProviderDragDrop />
+
+            <UsageLogs />
 
             {showForm && (
                 <div className="provider-form-container premium-card animate-fade-in">
