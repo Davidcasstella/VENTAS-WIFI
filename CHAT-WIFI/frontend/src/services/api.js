@@ -1,7 +1,11 @@
 import axios from 'axios';
 
+const BASE_URL = window.location.hostname === 'localhost'
+    ? 'http://localhost:3000'
+    : window.location.origin;
+
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000',
+    baseURL: BASE_URL,
     headers: {
         'Content-Type': 'application/json',
     },
