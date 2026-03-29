@@ -28,6 +28,12 @@ class ChatHistoryService {
 
     // ── Private helpers ──
 
+    _normalizeJid(jid) {
+        if (!jid) return jid;
+        // Convert "123456:15@s.whatsapp.net" -> "123456@s.whatsapp.net"
+        return jid.replace(/:\d+@/, '@');
+    }
+
     async _read() {
         if (!this._cache) {
             this._cache = await fs.readJson(HISTORY_PATH);
@@ -50,7 +56,8 @@ class ChatHistoryService {
      * @param {string} [pushName] - Client display name (only for incoming)
      * @returns {object} The saved message object
      */
-    async addMessage(jid, text, fromMe, pushName) {
+    async addMessage(rawJid, text, fromMe, pushName) {
+        const jid = this._normalizeJid(rawJid);
         const data = await this._read();
 
         if (!data[jid]) {
@@ -88,7 +95,8 @@ class ChatHistoryService {
      * @param {string} jid
      * @returns {object} { pushName, messages: [...] }
      */
-    async getMessages(jid) {
+    async getMessages(rawJid) {
+        const jid = this._normalizeJid(rawJid);
         const data = await this._read();
         return data[jid] || { pushName: jid.replace('@s.whatsapp.net', ''), messages: [] };
     }
@@ -132,7 +140,8 @@ class ChatHistoryService {
      * Mark all messages in a conversation as read.
      * @param {string} jid
      */
-    async markAsRead(jid) {
+    async markAsRead(rawJid) {
+        const jid = this._normalizeJid(rawJid);
         const data = await this._read();
         if (data[jid]) {
             data[jid].messages.forEach(m => {
