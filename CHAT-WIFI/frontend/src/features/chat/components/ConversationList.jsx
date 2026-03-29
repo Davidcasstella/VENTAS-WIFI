@@ -1,7 +1,6 @@
-import React from 'react';
-import { Search, MessageSquare } from 'lucide-react';
+import { Search, MessageSquare, Trash2 } from 'lucide-react';
 
-const ConversationList = ({ conversations, activeJid, onSelect, searchTerm, onSearchChange }) => {
+const ConversationList = ({ conversations, activeJid, onSelect, onDelete, searchTerm, onSearchChange }) => {
 
     const formatTime = (isoStr) => {
         if (!isoStr) return '';
@@ -90,6 +89,16 @@ const ConversationList = ({ conversations, activeJid, onSelect, searchTerm, onSe
                                     {conv.unreadCount > 0 && (
                                         <span className="conv-unread-badge">{conv.unreadCount}</span>
                                     )}
+                                    <button
+                                        className="conv-delete-btn"
+                                        title="Eliminar chat"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onDelete(conv.jid);
+                                        }}
+                                    >
+                                        <Trash2 size={13} />
+                                    </button>
                                 </div>
                             </div>
                         </div>

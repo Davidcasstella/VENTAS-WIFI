@@ -92,4 +92,22 @@ router.post('/mark-read/:jid', async (req, res) => {
     }
 });
 
+/**
+ * DELETE /api/chat/:jid
+ * Deletes a conversation from the history.
+ */
+router.delete('/:jid', async (req, res) => {
+    try {
+        const jid = decodeURIComponent(req.params.jid);
+        const deleted = await chatHistoryService.deleteConversation(jid);
+        if (deleted) {
+            res.json({ success: true, message: 'Conversación eliminada' });
+        } else {
+            res.status(404).json({ success: false, message: 'Conversación no encontrada' });
+        }
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 module.exports = router;

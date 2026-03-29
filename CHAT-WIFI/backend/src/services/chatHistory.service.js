@@ -150,6 +150,21 @@ class ChatHistoryService {
             await this._write(data);
         }
     }
+
+    /**
+     * Delete a conversation entirely.
+     * @param {string} rawJid
+     */
+    async deleteConversation(rawJid) {
+        const jid = this._normalizeJid(rawJid);
+        const data = await this._read();
+        if (data[jid]) {
+            delete data[jid];
+            await this._write(data);
+            return true;
+        }
+        return false;
+    }
 }
 
 module.exports = new ChatHistoryService();

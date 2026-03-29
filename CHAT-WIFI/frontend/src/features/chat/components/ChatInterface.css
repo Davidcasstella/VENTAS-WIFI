@@ -198,6 +198,24 @@
     color: #53bdeb;
 }
 
+.conv-delete-btn {
+    background: none;
+    border: none;
+    color: #8696a0;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.conv-delete-btn:hover {
+    color: #f15c6d;
+    background: rgba(241, 92, 109, 0.1);
+}
+
 .conv-unread-badge {
     background: #00a884;
     color: #111b21;

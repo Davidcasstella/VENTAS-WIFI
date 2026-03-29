@@ -101,6 +101,21 @@ const ChatInterface = () => {
 
     const goBack = () => setActiveJid(null);
 
+    const handleDeleteConversation = async (jid) => {
+        if (!window.confirm('¿Seguro que deseas eliminar el historial de este chat?')) return;
+        try {
+            await api.delete(`/api/chat/${encodeURIComponent(jid)}`);
+            setConversations(prev => prev.filter(c => c.jid !== jid));
+            if (activeJid === jid) {
+                setActiveJid(null);
+                setMessages([]);
+            }
+        } catch (err) {
+            console.error('Error deleting chat:', err);
+            alert('Error al eliminar chat');
+        }
+    };
+
     const activeConversation = conversations.find(c => c.jid === activeJid);
 
     const filteredConversations = conversations.filter(c => {
@@ -118,6 +133,7 @@ const ChatInterface = () => {
                     conversations={filteredConversations}
                     activeJid={activeJid}
                     onSelect={selectConversation}
+                    onDelete={handleDeleteConversation}
                     searchTerm={searchTerm}
                     onSearchChange={setSearchTerm}
                 />
