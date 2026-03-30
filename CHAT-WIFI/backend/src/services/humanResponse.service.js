@@ -1,23 +1,23 @@
 /**
  * HumanResponseService
  * 
- * Splits AI responses into 3 sequential messages with configurable delays
+ * Splits AI responses into 1-3 sequential messages with configurable delays
  * to simulate a real human typing in WhatsApp chat.
  * 
- * The AI is instructed to return responses in 3 parts separated by |||:
- *   Part 1 → casual opener  (e.g. "Claro mira")
- *   Part 2 → main answer    (e.g. "El plan cuesta 15 dolares")
- *   Part 3 → brief closing  (e.g. "Cualquier cosa me dices")
+ * The AI decides how many parts to use (1, 2, or 3) separated by |||:
+ *   1 part  → short answer (greetings, confirmations)
+ *   2 parts → simple Q&A (answer + closing)
+ *   3 parts → detailed explanation (opener + body + closing)
  * 
- * If the AI doesn't use the ||| delimiter, the service falls back to
- * wrapping the response with random intro/closing phrases.
+ * If the AI doesn't use the ||| delimiter, the response is sent
+ * as a single message without artificial wrapping.
  * 
  * Each sent fragment is individually recorded in the chat history
  * and emitted via Socket.io for real-time dashboard updates.
  */
 
 const sentTracker = require('../utils/sentTracker');
-const RESPONSE_DELAY = parseInt(process.env.RESPONSE_DELAY, 10) || 2000;
+const RESPONSE_DELAY = 7000;
 
 const FALLBACK_INTROS = [
     'Claro, mira…',
@@ -102,7 +102,9 @@ class HumanResponseService {
     }
 
     /**
-     * Splits the AI response into exactly 3 parts.
+     * Splits the AI response into 1-3 parts dynamically.
+     * If AI uses ||| delimiter: returns 1, 2, or 3 parts as provided.
+     * If no delimiter: returns the response as a single message.
      */
     splitResponse(text, options = {}) {
         const trimmed = text.trim();
@@ -110,29 +112,26 @@ class HumanResponseService {
         if (trimmed.includes('|||')) {
             const parts = trimmed.split('|||').map(p => p.trim()).filter(p => p.length > 0);
 
-            if (parts.length === 3) {
-                return parts;
+            // Return 1, 2, or 3 parts — exactly as the AI decided
+            if (parts.length >= 3) {
+                return [parts[0], parts[1], parts.slice(2).join('. ')];
             }
-
-            if (parts.length >= 2) {
-                return [
-                    parts[0],
-                    parts.slice(1, -1).join('. ') || parts[1],
-                    parts[parts.length - 1]
-                ];
-            }
+            // 1 or 2 parts — return as-is
+            return parts;
         }
 
-        // Fallback: wrap with random phrases
-        const intro = this._random(FALLBACK_INTROS);
-        const closingPool = options.isPostWelcomeFlow ? POST_FLOW_CLOSINGS : FALLBACK_CLOSINGS;
-        const closing = this._random(closingPool);
+        // No delimiter — single message response
+        // Only add a closing if the response is very short (likely a greeting/ack)
+        if (trimmed.length < 40 && options.isPostWelcomeFlow) {
+            const closing = this._random(POST_FLOW_CLOSINGS);
+            return [trimmed, closing];
+        }
 
-        return [intro, trimmed, closing];
+        return [trimmed];
     }
 
     /**
-     * Sends an AI response as 3 human-like messages with delays and typing indicators.
+     * Sends an AI response as 1-3 human-like messages with delays and typing indicators.
      * Each individual fragment is recorded in chat history and emitted via Socket.io.
      */
     async sendHumanLike(sock, jid, responseText, markBotSentFn, options = {}) {
@@ -140,22 +139,18 @@ class HumanResponseService {
 
         const parts = this.splitResponse(responseText, options);
         const delay = RESPONSE_DELAY;
+        const partCount = parts.length;
 
         const flowTag = options.isPostWelcomeFlow ? ' [post-flow]' : '';
-        console.log(`🧑 [HumanResponse] Sending 3-part response to ${jid} (delay: ${delay}ms)${flowTag}`);
+        console.log(`🧑 [HumanResponse] Sending ${partCount}-part response to ${jid} (delay: ${delay}ms)${flowTag}`);
 
         for (let i = 0; i < parts.length; i++) {
             try {
                 await this._showTyping(sock, jid);
 
-                let typingDelay;
-                if (i === 0) {
-                    typingDelay = Math.floor(delay * 0.5);
-                } else if (i === 1) {
-                    typingDelay = Math.min(delay + (parts[i].length * 15), delay * 3);
-                } else {
-                    typingDelay = delay;
-                }
+                // Fixed 3s delay between messages to feel human
+                // First message: 2s typing delay. Following messages: 3s each.
+                const typingDelay = (i === 0) ? Math.floor(delay * 0.7) : delay;
 
                 await this._sleep(typingDelay);
                 markBotSentFn(jid);
@@ -164,14 +159,14 @@ class HumanResponseService {
                 // Record each individual fragment in chat history
                 await this._recordSentMessage(jid, parts[i]);
 
-                console.log(`🧑 [HumanResponse] Part ${i + 1}/3 sent: "${parts[i].substring(0, 60)}${parts[i].length > 60 ? '...' : ''}"`);
+                console.log(`🧑 [HumanResponse] Part ${i + 1}/${partCount} sent: "${parts[i].substring(0, 60)}${parts[i].length > 60 ? '...' : ''}"`);
             } catch (err) {
                 console.error(`❌ [HumanResponse] Part ${i + 1} failed: ${err.message}`);
             }
         }
 
         await this._clearTyping(sock, jid);
-        console.log(`✅ [HumanResponse] Full 3-part response delivered to ${jid}`);
+        console.log(`✅ [HumanResponse] Full ${partCount}-part response delivered to ${jid}`);
     }
 }
 

@@ -3,6 +3,7 @@ const cors = require('cors');
 const http = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
+const fs = require('fs');
 const config = require('./config');
 const whatsapp = require('./core/WhatsApp');
 const authRoutes = require('./routes/auth.routes');
@@ -25,6 +26,9 @@ const { verifyToken } = require('./middleware/auth.middleware');
 // MASTER AI SWITCH — change at runtime via API or socket
 // ============================================================
 global.aiEnabled = true;
+
+// Estado en memoria para evitar enviar el video promocional multiples veces al mismo numero
+const sentPromoJids = new Set();
 
 const app = express();
 app.use(cors()); // Habilitar CORS para todas las rutas
@@ -537,16 +541,54 @@ whatsapp.on('message', async (m) => {
 
             // Send AI response in human-like 3-part format
             if (whatsapp.sock) {
+                // Check if we need to send the promo video
+                let finalResponse = response;
+                let sendPromoVideo = false;
+                if (finalResponse.includes('[VIDEO_PROMO]')) {
+                    if (!sentPromoJids.has(remoteJid)) {
+                        sendPromoVideo = true;
+                    }
+                    finalResponse = finalResponse.replace('[VIDEO_PROMO]', '').trim();
+                }
+
                 await humanResponse.sendHumanLike(
                     whatsapp.sock,
                     remoteJid,
-                    response,
+                    finalResponse,
                     (jid) => welcomeAutomationService.markBotSent(jid),
                     { isPostWelcomeFlow: welcomeWasSent }
                 );
-                console.log(`🤖 Respuesta enviada con IA (human-like): ${response}`);
+                console.log(`🤖 Respuesta enviada con IA (human-like): ${finalResponse}`);
+
                 // Track outgoing response for analytics
                 try { analyticsService.trackOutgoing(); } catch (_) { }
+
+                // Send the promotional video if tagged
+                if (sendPromoVideo) {
+                    console.log(`🎥 Sending promo video to ${remoteJid}...`);
+                    try {
+                        // Small extra delay for natural feeling
+                        await new Promise(r => setTimeout(r, 2000));
+                        await whatsapp.sock.sendPresenceUpdate('composing', remoteJid);
+                        await new Promise(r => setTimeout(r, 1000));
+                        
+                        const promoPath = path.join(__dirname, '../public/uploads/promo.mp4');
+                        if (fs.existsSync(promoPath)) {
+                            welcomeAutomationService.markBotSent(remoteJid);
+                            await whatsapp.sock.sendMessage(remoteJid, {
+                                video: fs.readFileSync(promoPath),
+                                caption: "Mira bro un resumen de todo lo que trae este super pack 🔥👇",
+                                mimetype: 'video/mp4'
+                            });
+                            sentPromoJids.add(remoteJid);
+                            console.log(`✅ Promo video delivered to ${remoteJid}`);
+                        } else {
+                            console.log(`⚠️ Promo video not found at ${promoPath}`);
+                        }
+                    } catch (err) {
+                        console.error(`❌ Error sending promo video to ${remoteJid}:`, err.message);
+                    }
+                }
             }
         }
     } catch (error) {

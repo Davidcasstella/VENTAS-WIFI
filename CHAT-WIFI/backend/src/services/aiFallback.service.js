@@ -23,7 +23,16 @@ const DEFAULT_DATA = {
             'no comprendo',
             'podrias proporcionar mas contexto',
             'podrias dar mas detalles',
-            'no tengo suficiente contexto'
+            'no tengo suficiente contexto',
+            'no se encuentra en el contexto',
+            'no hay menciones',
+            'no se menciona',
+            'fuera de mi alcance',
+            'no puedo responder',
+            'no tengo capacidad',
+            'no hay información disponible',
+            'lamentablemente no',
+            'lo siento, no'
         ]
     },
     pending: {}

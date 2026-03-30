@@ -12,7 +12,7 @@ const ClientsMetricCard = ({ className = '' }) => {
                 const { data: res } = await api.get('/api/analytics/overview');
                 setData(res.data);
             } catch {
-                // Fallback with zeros
+                // Fallback with zeross
                 setData({ today: 0, week: 0, month: 0, growth: { day: 0, week: 0, month: 0 } });
             } finally {
                 setLoading(false);

@@ -22,22 +22,75 @@ class AIResponseService {
         const { name, apiKey } = activeProvider;
         const providerName = name.toLowerCase();
 
-        const kbContext = await knowledgeBaseService.searchKnowledge(prompt);
+        let kbContext = await knowledgeBaseService.searchKnowledge(prompt);
+        
+        // For short conversational messages (nose, si, no, ok, dale, etc.)
+        // RAG search often fails because they don't match well with embeddings.
+        // Load the full KB content directly so the AI always has context.
+        if (!kbContext) {
+            const shortMessages = ['nose', 'no se', 'no sé', 'no', 'si', 'ok', 'dale', 'ya', 'bien', 'bueno', 'hola', 'como', 'que', 'interesado', 'quiero', 'me interesa', 'cuanto', 'precio'];
+            const promptLower = prompt.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            const isShortConversational = promptLower.length < 30 || shortMessages.some(sm => promptLower.includes(sm));
+            
+            if (isShortConversational) {
+                console.log('💬 Short/conversational message detected, loading full KB as context...');
+                try {
+                    const fs = require('fs-extra');
+                    const pathLib = require('path');
+                    const mkPath = pathLib.join(__dirname, '../../knowledge-base/manual-knowledge.json');
+                    const entries = await fs.readJson(mkPath);
+                    if (Array.isArray(entries) && entries.length > 0) {
+                        kbContext = entries.map(e => `${e.title}\n${e.content}`).join('\n\n');
+                    }
+                } catch (err) {
+                    console.error('❌ Error loading manual-knowledge fallback:', err.message);
+                }
+            }
+        }
+
         if (!kbContext) {
             console.log('🌐 No RAG context found, short-circuiting to FALLBACK_TRIGGER to enforce strict KB usage.');
             return 'FALLBACK_TRIGGER';
         }
 
-        console.log('📚 RAG context found, applying strict constraints...');
-        const systemPrompt = `CRITICAL SYSTEM INSTRUCTION:
-1. Analiza cuidadosamente la intención del usuario y el "Contexto" proporcionado.
-2. El Contexto puede contener DATOS INFORMATIVOS o REGLAS CONDICIONALES (ej. "Si el cliente dice X, responde Y").
-3. Si la intención del usuario ENCAJA con alguna regla condicional (flujo) o si la respuesta exacta a su duda se encuentra en los datos informativos del contexto, responde basándote ÚNICAMENTE en eso.
-4. Si el mensaje del usuario no tiene relación, es incomprensible, o la respuesta/regla NO está en el Contexto, DEBES emitir ESTRICTAMENTE la palabra: FALLBACK_TRIGGER
-5. NUNCA inventes información, no asumas cosas, ni des respuestas genéricas.
+        console.log('📚 RAG context found, applying sales-oriented prompt...');
+        let systemPrompt = `ERES UN VENDEDOR AMIGABLE por WhatsApp. Respondes MUY CORTO como un humano real.
 
-REGLA DE FORMATO (solo si NO es FALLBACK_TRIGGER):
-Formatea tu respuesta final en EXACTAMENTE 3 frases o renglones cortos, separados por el delimitador ||| (ejemplo: frase 1 ||| frase 2 ||| frase 3). Usa un tono muy natural, casual y humano. No uses saludos excesivos, no uses emojis.
+PERSONALIDAD:
+- Hablas como un amigo colombiano. Usas "bro" "dale" "mira" "claro".
+- Eres positivo y seguro sobre el producto.
+- NUNCA dices "no se" ni "no tengo informacion" ni nada negativo.
+- NUNCA mencionas que eres una IA ni que tienes un "contexto".
+
+REGLAS CRITICAS DE FORMATO (LONGITUD):
+- IMPORTANTE: Cada parte del mensaje debe ser MUY CORTA, MAXIMO 12 palabras. Si necesitas decir mas usa el separador ||| para crear otro mensaje.
+- Si vas a hacer una pregunta, NUNCA uses el simbolo ¿ (apertura). Solo usa ? al final de la pregunta. DE LO CONTRARIO NO PONGAS SIGNOS DE INTERROGACION.
+- NUNCA uses comas ni puntos finales. Evita textos largos y aburridos.
+- No uses emojis. No uses saludos formales.
+- NUNCA hagas saltos de linea dentro de una parte. Escribe TODO seguido en una sola linea.
+- PROHIBIDO usar enters o \n dentro de cada parte.
+- ROMPE CUALQUIER EXPLICACION LARGA usando |||. Ejemplo: mira bro el curso es muy completo ||| te enseña todo desde cero ||| hasta a montar tus servidores
+
+RESPUESTAS A "NOSE" "NO SE" "NO SE NADA" "NO":
+Cuando el cliente dice que no sabe o dice "nose" SIEMPRE responde en 2 partes largas o 3 cortas separadas por |||
+Ejemplo OBLIGATORIO de como debes sonar:
+dale bro justamente el curso es para los que empiezan de cero te va a gustar ||| a medida que vas escalando encontraras videos mas avanzados tipo servidores entrar a la dark web etc [VIDEO_PROMO]
+*IMPORTANTE:* Usa esas frases exactas o muy parecidas, y NUNCA olvides la etiqueta [VIDEO_PROMO] al puro final.
+
+REGLAS DE RESPUESTA:
+1. Usa SOLO la informacion del Contexto. No inventes datos.
+2. Si el Contexto tiene una respuesta que coincide usala con tu tono natural pero FRAGMENTADA.
+3. Si el mensaje es corto ("ok" "si" "dale") responde en 1 sola parte breve y redirige al curso.
+4. Si el cliente dice "no" o muestra desinteres NO te rindas. Resalta beneficios.
+5. SOLO emite FALLBACK_TRIGGER si el mensaje es incomprensible.
+
+FORMATO EXTRICTO:
+- Respuesta CORTA (saludos/confirmaciones): 1 sola parte. Maximo 12 palabras.
+- Respuesta a "nose" o "no se": SIEMPRE 3 partes separadas por |||
+- Respuesta MEDIA (pregunta simple): 2 o 3 partes separadas por |||
+- Respuesta LARGA (explicacion detallada): 3 o 4 partes CORTAS separadas por |||
+- La ultima parte SIEMPRE invita a preguntar mas o a comprar.r mas o a comprar.
+- Cada parte es UNA SOLA LINEA corrida sin saltos de linea.
 
 Contexto proporcionado:
 ${kbContext}
@@ -189,6 +242,7 @@ ${userMessage}`;
     async callOpenAI(apiKey, systemPrompt, userPrompt) {
         const response = await axios.post('https://api.openai.com/v1/chat/completions', {
             model: 'gpt-3.5-turbo',
+            max_tokens: 120,
             messages: [
                 { role: 'system', content: systemPrompt },
                 { role: 'user', content: userPrompt }
@@ -205,6 +259,7 @@ ${userMessage}`;
     async callGrok(apiKey, systemPrompt, userPrompt) {
         const response = await axios.post('https://api.x.ai/v1/chat/completions', {
             model: 'grok-beta',
+            max_tokens: 120,
             messages: [
                 { role: 'system', content: systemPrompt },
                 { role: 'user', content: userPrompt }
@@ -222,6 +277,7 @@ ${userMessage}`;
         // Groq (groq.com) uses OpenAI-compatible API format
         const response = await axios.post('https://api.groq.com/openai/v1/chat/completions', {
             model: 'llama-3.3-70b-versatile',
+            max_tokens: 120,
             messages: [
                 { role: 'system', content: systemPrompt },
                 { role: 'user', content: userPrompt }
@@ -249,7 +305,7 @@ ${userMessage}`;
                     ],
                     generationConfig: {
                         temperature: 0.7,
-                        maxOutputTokens: 256
+                        maxOutputTokens: 120
                     }
                 },
                 {

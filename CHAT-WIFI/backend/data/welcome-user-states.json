@@ -1,9 +1,10 @@
 {
   "573028599105@s.whatsapp.net": {
-    "lastMessageText": "no",
-    "lastMessageAt": "2026-03-29T06:58:46.131Z",
+    "lastMessageText": "y que mas voy a aprender?",
+    "lastMessageAt": "2026-03-30T06:03:58.593Z",
     "aiEnabled": true,
-    "cooldownEnabled": true
+    "cooldownEnabled": true,
+    "lastWelcomeSentAt": "2026-03-30T06:03:04.584Z"
   },
   "151771427143897@lid": {
     "lastMessageText": "Que es la vida ?",
@@ -14,9 +15,10 @@
   },
   "573503267342@s.whatsapp.net": {
     "lastMessageText": "[unrecognized message]",
-    "lastMessageAt": "2026-03-29T00:22:02.131Z",
+    "lastMessageAt": "2026-03-30T05:20:02.287Z",
     "aiEnabled": true,
-    "cooldownEnabled": true
+    "cooldownEnabled": true,
+    "lastWelcomeSentAt": "2026-03-30T05:19:43.013Z"
   },
   "254468541157383@lid": {
     "lastMessageText": "Chevere",
@@ -109,5 +111,11 @@
   },
   "20723686989999@lid": {
     "aiEnabled": false
+  },
+  "42018369703942@lid": {
+    "aiEnabled": false
+  },
+  "91366856089780@lid": {
+    "lastWelcomeSentAt": "2026-03-30T05:41:47.894Z"
   }
 }

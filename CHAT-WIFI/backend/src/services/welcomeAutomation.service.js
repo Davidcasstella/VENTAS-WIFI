@@ -221,23 +221,28 @@ class WelcomeAutomationService {
         console.log(`🔔 Welcome 24H: sending welcome sequence to ${jid}`);
 
         // 1. Send audio FIRST (if file exists on disk)
-        if (config.audioFilePath && fs.existsSync(config.audioFilePath)) {
-            try {
-                this.markBotSent(jid);
-                await sock.sendMessage(jid, {
-                    audio: { url: config.audioFilePath },
-                    mimetype: 'audio/ogg; codecs=opus',
-                    ptt: true   // voice note
-                });
-                console.log(`🔊 Welcome audio sent to ${jid}`);
-                if (chatHistoryService && io) {
-                    try {
-                        const savedMsg = await chatHistoryService.addMessage(jid, '[Welcome Audio]', true, 'System', 'system');
-                        io.emit('chat:message', { jid, message: savedMsg });
-                    } catch (e) { console.error('Error saving welcome audio to history:', e.message); }
+        if (config.audioFilePath) {
+            if (fs.existsSync(config.audioFilePath)) {
+                try {
+                    this.markBotSent(jid);
+                    await sock.sendMessage(jid, {
+                        audio: { url: config.audioFilePath },
+                        mimetype: 'audio/ogg; codecs=opus',
+                        ptt: true   // voice note
+                    });
+                    console.log(`🔊 Welcome audio sent to ${jid}`);
+                    if (chatHistoryService && io) {
+                        try {
+                            const savedMsg = await chatHistoryService.addMessage(jid, '[Welcome Audio]', true, 'System', 'system');
+                            io.emit('chat:message', { jid, message: savedMsg });
+                        } catch (e) { console.error('Error saving welcome audio to history:', e.message); }
+                    }
+                } catch (audioErr) {
+                    console.error(`⚠️ Welcome audio failed (continuing): ${audioErr.message}`);
                 }
-            } catch (audioErr) {
-                console.error(`⚠️ Welcome audio failed (continuing): ${audioErr.message}`);
+            } else {
+                console.error(`❌ Welcome audio file NOT FOUND on disk: ${config.audioFilePath}`);
+                console.error(`   Re-upload the audio from the dashboard to fix this.`);
             }
         }
 

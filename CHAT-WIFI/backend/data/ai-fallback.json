@@ -10,7 +10,22 @@
       "no tengo datos",
       "no cuento con información",
       "no tengo la respuesta",
-      "no dispongo de información"
+      "no dispongo de información",
+      "no entiendo tu pregunta",
+      "no entiendo tu mensaje",
+      "no comprendo",
+      "podrias proporcionar mas contexto",
+      "podrias dar mas detalles",
+      "no tengo suficiente contexto",
+      "no se encuentra en el contexto",
+      "no hay menciones",
+      "no se menciona",
+      "fuera de mi alcance",
+      "no puedo responder",
+      "no tengo capacidad",
+      "no hay información disponible",
+      "lamentablemente no",
+      "lo siento, no"
     ]
   },
   "pending": {
@@ -28,8 +43,8 @@
       "attended": false
     },
     "573028599105@s.whatsapp.net": {
-      "lastMessage": "no",
-      "disabledAt": "2026-03-29T06:58:46.174Z",
+      "lastMessage": "[imageMessage]",
+      "disabledAt": "2026-03-30T04:27:05.993Z",
       "reason": "fallback_unanswered",
       "attended": false
     },
