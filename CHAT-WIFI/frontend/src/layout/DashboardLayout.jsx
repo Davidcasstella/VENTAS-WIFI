@@ -53,6 +53,11 @@ const DashboardLayout = () => {
                         <span>Dashboard</span>
                     </NavLink>
 
+                    <NavLink to="/welcome-automation" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+                        <BellRing size={18} />
+                        <span>Bienvenida 24H</span>
+                    </NavLink>
+
                     <NavLink to="/knowledge-base" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
                         <BookOpen size={18} />
                         <span>Conocimiento</span>
@@ -74,11 +79,6 @@ const DashboardLayout = () => {
                         {blockedCount > 0 && (
                             <span className="bn-sidebar-badge">{blockedCount}</span>
                         )}
-                    </NavLink>
-
-                    <NavLink to="/welcome-automation" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-                        <BellRing size={18} />
-                        <span>Bienvenida 24H</span>
                     </NavLink>
 
                     <NavLink to="/pending-chats" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
@@ -123,6 +123,11 @@ const DashboardLayout = () => {
                     <span>Inicio</span>
                 </NavLink>
 
+                <NavLink to="/welcome-automation" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}>
+                    <BellRing size={20} />
+                    <span>24H</span>
+                </NavLink>
+
                 <NavLink to="/knowledge-base" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}>
                     <BookOpen size={20} />
                     <span>Base</span>
@@ -141,11 +146,6 @@ const DashboardLayout = () => {
                 <NavLink to="/blocked-numbers" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}>
                     <ShieldBan size={20} />
                     <span>Bloqueados</span>
-                </NavLink>
-
-                <NavLink to="/welcome-automation" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}>
-                    <BellRing size={20} />
-                    <span>24H</span>
                 </NavLink>
 
                 <NavLink to="/pending-chats" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}>

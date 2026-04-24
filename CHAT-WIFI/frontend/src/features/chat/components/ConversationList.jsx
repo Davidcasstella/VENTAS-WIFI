@@ -1,8 +1,11 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Search, MessageSquare, Trash2, Check, CheckCheck, Star, X, Users, Edit2 } from 'lucide-react';
+import { Search, MessageSquare, Trash2, Check, CheckCheck, Star, X, Users, Edit2, Plus, Tag, FolderOpen } from 'lucide-react';
 
 // Persist leads in localStorage so they survive page reloads
 const LEADS_KEY = 'chatwifi_leads';
+const CATEGORIES_KEY = 'chatwifi_categories';
+const CATEGORY_MEMBERS_KEY = 'chatwifi_category_members';
+const TAB_LABELS_KEY = 'chatwifi_tab_labels';
 
 const loadLeads = () => {
     try {
@@ -19,12 +22,61 @@ const saveLeads = (leadsSet) => {
     } catch { /* noop */ }
 };
 
-// Filter tab definitions
-const TABS = [
-    { id: 'todos',     label: 'Todos'     },
-    { id: 'leads',     label: '⭐ Leads'  },
-    { id: 'no-leidos', label: 'No leídos' },
-];
+// Custom categories persistence
+const loadCategories = () => {
+    try {
+        const raw = localStorage.getItem(CATEGORIES_KEY);
+        return raw ? JSON.parse(raw) : [];
+    } catch {
+        return [];
+    }
+};
+
+const saveCategories = (cats) => {
+    try {
+        localStorage.setItem(CATEGORIES_KEY, JSON.stringify(cats));
+    } catch { /* noop */ }
+};
+
+const loadCategoryMembers = () => {
+    try {
+        const raw = localStorage.getItem(CATEGORY_MEMBERS_KEY);
+        return raw ? JSON.parse(raw) : {};
+    } catch {
+        return {};
+    }
+};
+
+const saveCategoryMembers = (members) => {
+    try {
+        localStorage.setItem(CATEGORY_MEMBERS_KEY, JSON.stringify(members));
+    } catch { /* noop */ }
+};
+
+// Built-in filter tab definitions (default labels)
+const DEFAULT_TAB_LABELS = {
+    todos: 'Todos',
+    leads: '⭐ Leads',
+    'no-leidos': 'No leídos',
+};
+
+// Tabs that can be renamed (all except 'todos')
+const RENAMEABLE_BUILTIN = new Set(['leads', 'no-leidos']);
+
+const loadTabLabels = () => {
+    try {
+        const raw = localStorage.getItem(TAB_LABELS_KEY);
+        return raw ? JSON.parse(raw) : {};
+    } catch {
+        return {};
+    }
+};
+
+const saveTabLabels = (labels) => {
+    try {
+        localStorage.setItem(TAB_LABELS_KEY, JSON.stringify(labels));
+    } catch { /* noop */ }
+};
 
 const ConversationList = ({ conversations, activeJid, onSelect, onDelete, searchTerm, onSearchChange, customNames, setCustomNames }) => {
     const [confirmDelete, setConfirmDelete]   = useState(null);
@@ -32,20 +84,55 @@ const ConversationList = ({ conversations, activeJid, onSelect, onDelete, search
     const [leads, setLeads]                   = useState(loadLeads);
     const [contextMenu, setContextMenu]       = useState(null); // { jid, x, y }
 
+    // Custom categories state
+    const [categories, setCategories]         = useState(loadCategories);       // [{ id, label }]
+    const [categoryMembers, setCategoryMembers] = useState(loadCategoryMembers); // { catId: [jid1, jid2...] }
+    const [showAddCategory, setShowAddCategory] = useState(false);
+    const [newCategoryName, setNewCategoryName] = useState('');
+    const [tabContextMenu, setTabContextMenu]   = useState(null); // { catId, x, y, isBuiltIn }
+    const [editingTabId, setEditingTabId]       = useState(null);
+    const [editingTabName, setEditingTabName]   = useState('');
+    const [tabLabels, setTabLabels]             = useState(loadTabLabels); // { 'leads': 'Custom Name', ... }
+
     // Long-press detection
     const pressTimer  = useRef(null);
     const pressTarget = useRef(null);
+    const newCatInputRef = useRef(null);
+    const editCatInputRef = useRef(null);
 
     // Persist leads whenever they change
     useEffect(() => { saveLeads(leads); }, [leads]);
 
+    // Persist categories
+    useEffect(() => { saveCategories(categories); }, [categories]);
+    useEffect(() => { saveCategoryMembers(categoryMembers); }, [categoryMembers]);
+    useEffect(() => { saveTabLabels(tabLabels); }, [tabLabels]);
+
+    // Focus the new category input when shown
+    useEffect(() => {
+        if (showAddCategory && newCatInputRef.current) {
+            newCatInputRef.current.focus();
+        }
+    }, [showAddCategory]);
+
+    // Focus the edit input
+    useEffect(() => {
+        if (editingTabId && editCatInputRef.current) {
+            editCatInputRef.current.focus();
+            editCatInputRef.current.select();
+        }
+    }, [editingTabId]);
+
     // Close context menu on outside click
     useEffect(() => {
-        if (!contextMenu) return;
-        const close = () => setContextMenu(null);
+        if (!contextMenu && !tabContextMenu) return;
+        const close = () => {
+            setContextMenu(null);
+            setTabContextMenu(null);
+        };
         window.addEventListener('pointerdown', close);
         return () => window.removeEventListener('pointerdown', close);
-    }, [contextMenu]);
+    }, [contextMenu, tabContextMenu]);
 
     // ── Long-press handlers ──────────────────────────────────────────
     const startPress = useCallback((e, jid) => {
@@ -97,11 +184,81 @@ const ConversationList = ({ conversations, activeJid, onSelect, onDelete, search
         }
     };
 
+    // ── Category actions ─────────────────────────────────────────────
+    const addCategory = () => {
+        const name = newCategoryName.trim();
+        if (!name) return;
+        const id = 'cat_' + Date.now();
+        setCategories(prev => [...prev, { id, label: name }]);
+        setCategoryMembers(prev => ({ ...prev, [id]: [] }));
+        setNewCategoryName('');
+        setShowAddCategory(false);
+    };
+
+    const deleteCategory = (catId) => {
+        setCategories(prev => prev.filter(c => c.id !== catId));
+        setCategoryMembers(prev => {
+            const next = { ...prev };
+            delete next[catId];
+            return next;
+        });
+        if (activeTab === catId) setActiveTab('todos');
+        setTabContextMenu(null);
+    };
+
+    const startEditCategory = (catId) => {
+        // Check if it's a renameable built-in tab
+        if (RENAMEABLE_BUILTIN.has(catId)) {
+            const currentLabel = tabLabels[catId] || DEFAULT_TAB_LABELS[catId];
+            setEditingTabId(catId);
+            setEditingTabName(currentLabel);
+            setTabContextMenu(null);
+            return;
+        }
+        const cat = categories.find(c => c.id === catId);
+        if (!cat) return;
+        setEditingTabId(catId);
+        setEditingTabName(cat.label);
+        setTabContextMenu(null);
+    };
+
+    const saveEditCategory = () => {
+        const name = editingTabName.trim();
+        if (!name || !editingTabId) {
+            setEditingTabId(null);
+            return;
+        }
+        // If editing a built-in tab, save to tabLabels
+        if (RENAMEABLE_BUILTIN.has(editingTabId)) {
+            setTabLabels(prev => ({ ...prev, [editingTabId]: name }));
+        } else {
+            setCategories(prev => prev.map(c =>
+                c.id === editingTabId ? { ...c, label: name } : c
+            ));
+        }
+        setEditingTabId(null);
+        setEditingTabName('');
+    };
+
+    const toggleChatInCategory = (jid, catId) => {
+        setCategoryMembers(prev => {
+            const members = prev[catId] || [];
+            const exists = members.includes(jid);
+            return {
+                ...prev,
+                [catId]: exists ? members.filter(m => m !== jid) : [...members, jid]
+            };
+        });
+    };
+
     // ── Filtering ────────────────────────────────────────────────────
     const filtered = conversations.filter(c => {
         if (activeTab === 'no-leidos') return c.unreadCount > 0;
         if (activeTab === 'leads')    return leads.has(c.jid);
-        return true; // 'todos'
+        if (activeTab === 'todos')    return true;
+        // Custom category
+        const members = categoryMembers[activeTab] || [];
+        return members.includes(c.jid);
     });
 
     // ── Helpers ──────────────────────────────────────────────────────
@@ -129,6 +286,19 @@ const ConversationList = ({ conversations, activeJid, onSelect, onDelete, search
     const noLeidos = conversations.filter(c => c.unreadCount > 0).length;
     const leadsCount = leads.size;
 
+    // Build built-in tabs with potentially custom labels
+    const builtInTabs = [
+        { id: 'todos',     label: tabLabels['todos'] || DEFAULT_TAB_LABELS['todos'],         builtIn: true },
+        { id: 'leads',     label: tabLabels['leads'] || DEFAULT_TAB_LABELS['leads'],         builtIn: true },
+        { id: 'no-leidos', label: tabLabels['no-leidos'] || DEFAULT_TAB_LABELS['no-leidos'], builtIn: true },
+    ];
+
+    // Merge built-in + custom tabs
+    const allTabs = [
+        ...builtInTabs,
+        ...categories.map(c => ({ ...c, builtIn: false }))
+    ];
+
     return (
         <div className="conv-list">
             {/* ── Header ── */}
@@ -152,23 +322,90 @@ const ConversationList = ({ conversations, activeJid, onSelect, onDelete, search
                 />
             </div>
 
-            {/* ── Filter tabs (WhatsApp-style) ── */}
+            {/* ── Filter tabs (built-in + custom + add button) ── */}
             <div className="conv-filter-tabs">
-                {TABS.map(tab => (
-                    <button
-                        key={tab.id}
-                        className={`conv-filter-tab ${activeTab === tab.id ? 'conv-filter-tab-active' : ''}`}
-                        onClick={() => setActiveTab(tab.id)}
-                    >
-                        {tab.label}
-                        {tab.id === 'no-leidos' && noLeidos > 0 && (
-                            <span className="conv-tab-badge">{noLeidos}</span>
-                        )}
-                        {tab.id === 'leads' && leadsCount > 0 && (
-                            <span className="conv-tab-badge conv-tab-badge-lead">{leadsCount}</span>
-                        )}
-                    </button>
+                {allTabs.map(tab => (
+                    editingTabId === tab.id ? (
+                        <div key={tab.id} className="conv-filter-tab conv-filter-tab-active conv-tab-editing">
+                            <input
+                                ref={editCatInputRef}
+                                type="text"
+                                className="conv-tab-edit-input"
+                                value={editingTabName}
+                                onChange={e => setEditingTabName(e.target.value)}
+                                onKeyDown={e => {
+                                    if (e.key === 'Enter') saveEditCategory();
+                                    if (e.key === 'Escape') setEditingTabId(null);
+                                }}
+                                onBlur={saveEditCategory}
+                            />
+                        </div>
+                    ) : (
+                        <button
+                            key={tab.id}
+                            className={`conv-filter-tab ${activeTab === tab.id ? 'conv-filter-tab-active' : ''}`}
+                            onClick={() => setActiveTab(tab.id)}
+                            onContextMenu={e => {
+                                e.preventDefault();
+                                // Allow context menu for custom tabs AND renameable built-in tabs
+                                if (!tab.builtIn || RENAMEABLE_BUILTIN.has(tab.id)) {
+                                    setTabContextMenu({ catId: tab.id, x: e.clientX, y: e.clientY, isBuiltIn: tab.builtIn });
+                                }
+                            }}
+                        >
+                            {!tab.builtIn && <Tag size={11} />}
+                            {tab.label}
+                            {tab.id === 'no-leidos' && noLeidos > 0 && (
+                                <span className="conv-tab-badge">{noLeidos}</span>
+                            )}
+                            {tab.id === 'leads' && leadsCount > 0 && (
+                                <span className="conv-tab-badge conv-tab-badge-lead">{leadsCount}</span>
+                            )}
+                            {!tab.builtIn && (categoryMembers[tab.id]?.length || 0) > 0 && (
+                                <span className="conv-tab-badge conv-tab-badge-cat">{categoryMembers[tab.id].length}</span>
+                            )}
+                        </button>
+                    )
                 ))}
+
+                {/* Add category button or inline input */}
+                {showAddCategory ? (
+                    <div className="conv-tab-add-form">
+                        <input
+                            ref={newCatInputRef}
+                            type="text"
+                            className="conv-tab-add-input"
+                            placeholder="Nombre..."
+                            value={newCategoryName}
+                            onChange={e => setNewCategoryName(e.target.value)}
+                            onKeyDown={e => {
+                                if (e.key === 'Enter') addCategory();
+                                if (e.key === 'Escape') { setShowAddCategory(false); setNewCategoryName(''); }
+                            }}
+                            onBlur={() => {
+                                if (!newCategoryName.trim()) setShowAddCategory(false);
+                            }}
+                        />
+                        <button className="conv-tab-add-confirm" onClick={addCategory} title="Crear categoría">
+                            <Check size={13} />
+                        </button>
+                        <button
+                            className="conv-tab-add-cancel"
+                            onClick={() => { setShowAddCategory(false); setNewCategoryName(''); }}
+                            title="Cancelar"
+                        >
+                            <X size={13} />
+                        </button>
+                    </div>
+                ) : (
+                    <button
+                        className="conv-filter-tab conv-tab-add-btn"
+                        onClick={() => setShowAddCategory(true)}
+                        title="Añadir categoría"
+                    >
+                        <Plus size={13} />
+                    </button>
+                )}
             </div>
 
             {/* ── Conversation items ── */}
@@ -184,6 +421,11 @@ const ConversationList = ({ conversations, activeJid, onSelect, onDelete, search
                             <>
                                 <MessageSquare size={32} />
                                 <p>No hay mensajes sin leer</p>
+                            </>
+                        ) : !(activeTab in DEFAULT_TAB_LABELS) ? (
+                            <>
+                                <FolderOpen size={32} />
+                                <p>Mantén presionado un chat<br/>para agregarlo a esta categoría</p>
                             </>
                         ) : (
                             <>
@@ -262,7 +504,7 @@ const ConversationList = ({ conversations, activeJid, onSelect, onDelete, search
                 )}
             </div>
 
-            {/* ── Context menu (long-press) ── */}
+            {/* ── Context menu (long-press on chat) ── */}
             {contextMenu && (() => {
                 const isLead = leads.has(contextMenu.jid);
                 const conv   = conversations.find(c => c.jid === contextMenu.jid);
@@ -270,7 +512,7 @@ const ConversationList = ({ conversations, activeJid, onSelect, onDelete, search
                     <div
                         className="conv-context-menu"
                         style={{
-                            top:  Math.min(contextMenu.y, window.innerHeight - 200),
+                            top:  Math.min(contextMenu.y, window.innerHeight - 300),
                             left: Math.min(contextMenu.x, window.innerWidth  - 220),
                         }}
                         onPointerDown={e => e.stopPropagation()}
@@ -292,9 +534,79 @@ const ConversationList = ({ conversations, activeJid, onSelect, onDelete, search
                             <Star size={15} />
                             {isLead ? 'Quitar de Leads' : 'Agregar a Leads'}
                         </button>
+
+                        {/* Custom category assignments */}
+                        {categories.length > 0 && (
+                            <div className="conv-context-divider" />
+                        )}
+                        {categories.map(cat => {
+                            const isMember = (categoryMembers[cat.id] || []).includes(contextMenu.jid);
+                            return (
+                                <button
+                                    key={cat.id}
+                                    className={`conv-context-btn ${isMember ? 'conv-context-btn-active-cat' : ''}`}
+                                    onClick={() => {
+                                        toggleChatInCategory(contextMenu.jid, cat.id);
+                                    }}
+                                >
+                                    <Tag size={15} />
+                                    {isMember ? `✓ ${cat.label}` : cat.label}
+                                </button>
+                            );
+                        })}
+
                         <button
                             className="conv-context-btn conv-context-btn-close"
                             onClick={() => setContextMenu(null)}
+                        >
+                            <X size={15} />
+                            Cerrar
+                        </button>
+                    </div>
+                );
+            })()}
+
+            {/* ── Tab context menu (right-click on any editable tab) ── */}
+            {tabContextMenu && (() => {
+                const isBuiltIn = tabContextMenu.isBuiltIn;
+                const cat = isBuiltIn ? null : categories.find(c => c.id === tabContextMenu.catId);
+                // For custom tabs, must find the category; for built-in, always show
+                if (!isBuiltIn && !cat) return null;
+                const displayLabel = isBuiltIn
+                    ? (tabLabels[tabContextMenu.catId] || DEFAULT_TAB_LABELS[tabContextMenu.catId])
+                    : cat.label;
+                return (
+                    <div
+                        className="conv-context-menu conv-tab-context-menu"
+                        style={{
+                            top:  Math.min(tabContextMenu.y, window.innerHeight - 160),
+                            left: Math.min(tabContextMenu.x, window.innerWidth  - 220),
+                        }}
+                        onPointerDown={e => e.stopPropagation()}
+                    >
+                        <div className="conv-context-name">
+                            <Tag size={12} /> {displayLabel}
+                        </div>
+                        <button
+                            className="conv-context-btn"
+                            onClick={() => startEditCategory(tabContextMenu.catId)}
+                        >
+                            <Edit2 size={15} />
+                            Renombrar
+                        </button>
+                        {/* Only show delete for custom categories, not built-in */}
+                        {!isBuiltIn && (
+                            <button
+                                className="conv-context-btn conv-context-btn-danger"
+                                onClick={() => deleteCategory(tabContextMenu.catId)}
+                            >
+                                <Trash2 size={15} />
+                                Eliminar categoría
+                            </button>
+                        )}
+                        <button
+                            className="conv-context-btn conv-context-btn-close"
+                            onClick={() => setTabContextMenu(null)}
                         >
                             <X size={15} />
                             Cancelar

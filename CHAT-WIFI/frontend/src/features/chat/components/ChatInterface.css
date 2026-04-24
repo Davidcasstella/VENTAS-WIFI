@@ -313,6 +313,119 @@
     color: #111;
 }
 
+.conv-tab-badge-cat {
+    background: #53bdeb;
+    color: #111;
+}
+
+/* ── Add category button ── */
+.conv-tab-add-btn {
+    border-style: dashed !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    color: #8696a0 !important;
+    padding: 4px 10px !important;
+    transition: all 0.2s ease;
+}
+
+.conv-tab-add-btn:hover {
+    border-color: rgba(0, 255, 0, 0.4) !important;
+    color: #00ff00 !important;
+    background: rgba(0, 255, 0, 0.05) !important;
+}
+
+/* ── Inline add category form ── */
+.conv-tab-add-form {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    flex-shrink: 0;
+}
+
+.conv-tab-add-input {
+    width: 90px;
+    padding: 4px 8px;
+    border-radius: 14px;
+    border: 1px solid rgba(0, 255, 0, 0.3);
+    background: rgba(0, 0, 0, 0.3);
+    color: #e9edef;
+    font-size: 0.72rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.conv-tab-add-input:focus {
+    border-color: #00ff00;
+}
+
+.conv-tab-add-input::placeholder {
+    color: #8696a0;
+}
+
+.conv-tab-add-confirm,
+.conv-tab-add-cancel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.conv-tab-add-confirm {
+    background: rgba(0, 168, 132, 0.25);
+    color: #00a884;
+}
+
+.conv-tab-add-confirm:hover {
+    background: rgba(0, 168, 132, 0.4);
+}
+
+.conv-tab-add-cancel {
+    background: rgba(255, 255, 255, 0.06);
+    color: #8696a0;
+}
+
+.conv-tab-add-cancel:hover {
+    background: rgba(241, 92, 109, 0.15);
+    color: #f15c6d;
+}
+
+/* ── Inline tab edit ── */
+.conv-tab-editing {
+    padding: 2px 6px !important;
+}
+
+.conv-tab-edit-input {
+    width: 80px;
+    padding: 2px 6px;
+    border-radius: 10px;
+    border: 1px solid #00ff00;
+    background: rgba(0, 0, 0, 0.4);
+    color: #00ff00;
+    font-size: 0.72rem;
+    font-weight: 600;
+    outline: none;
+}
+
+/* ── Context menu divider ── */
+.conv-context-divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.06);
+    margin: 4px 8px;
+}
+
+/* ── Active category in context menu ── */
+.conv-context-btn-active-cat {
+    color: #53bdeb;
+}
+
+.conv-context-btn-active-cat:hover {
+    background: rgba(83, 189, 235, 0.1);
+}
+
 /* ── Lead highlight on conversation item ── */
 .conv-item-lead {
     border-left: 3px solid #f0c040 !important;
