@@ -56,6 +56,32 @@ const uploadVideo = multer({
     }
 });
 
+// ── Multer: store image temp file, validate images ───────────────────────────
+const imageStorage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        const uploadsDir = path.join(__dirname, '../../public/uploads');
+        cb(null, uploadsDir);
+    },
+    filename: (req, file, cb) => {
+        // Guardamos con la extensión original
+        const ext = path.extname(file.originalname).toLowerCase() || '.jpg';
+        cb(null, `welcome-img-temp${ext}`);
+    }
+});
+
+const uploadImage = multer({
+    storage: imageStorage,
+    limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB max
+    fileFilter: (req, file, cb) => {
+        const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+        const ext = path.extname(file.originalname).toLowerCase();
+        if (allowed.includes(file.mimetype) || ['.jpg', '.jpeg', '.png', '.webp'].includes(ext)) {
+            return cb(null, true);
+        }
+        cb(new Error('Solo se aceptan imágenes .jpg, .png o .webp'));
+    }
+});
+
 // ── GET /api/welcome-automation/config ─────────────────────────────────────
 router.get('/config', async (req, res) => {
     try {
@@ -70,12 +96,13 @@ router.get('/config', async (req, res) => {
 // ── PUT /api/welcome-automation/config ─────────────────────────────────────
 router.put('/config', async (req, res) => {
     try {
-        const { isEnabled, messageText, cooldownHours, videoEnabled } = req.body;
+        const { isEnabled, messageText, cooldownHours, videoEnabled, imageEnabled } = req.body;
         const updated = await welcomeService.saveConfig({
             ...(isEnabled !== undefined && { isEnabled: Boolean(isEnabled) }),
             ...(messageText !== undefined && { messageText: String(messageText) }),
             ...(cooldownHours !== undefined && { cooldownHours: Number(cooldownHours) }),
-            ...(videoEnabled !== undefined && { videoEnabled: Boolean(videoEnabled) })
+            ...(videoEnabled !== undefined && { videoEnabled: Boolean(videoEnabled) }),
+            ...(imageEnabled !== undefined && { imageEnabled: Boolean(imageEnabled) })
         });
         console.log(`⚙️ Welcome config updated: enabled=${updated.isEnabled}, cooldown=${updated.cooldownHours}h`);
         res.json({ success: true, data: updated });
@@ -145,6 +172,32 @@ router.delete('/video', async (req, res) => {
         res.json({ success: true, message: 'Video eliminado correctamente' });
     } catch (error) {
         console.error('Error deleting video:', error.message);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ── POST /api/welcome-automation/image  (upload image) ──────────────────────
+router.post('/image', uploadImage.single('image'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ success: false, error: 'No se recibió archivo de imagen' });
+        }
+        const savedPath = await welcomeService.saveImageFile(req.file.path, req.file.originalname);
+        console.log(`🖼️ Welcome image uploaded: ${savedPath}`);
+        res.json({ success: true, message: 'Imagen guardada correctamente', path: savedPath });
+    } catch (error) {
+        console.error('Error saving image:', error.message);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ── DELETE /api/welcome-automation/image ───────────────────────────────────
+router.delete('/image', async (req, res) => {
+    try {
+        await welcomeService.deleteImage();
+        res.json({ success: true, message: 'Imagen eliminada correctamente' });
+    } catch (error) {
+        console.error('Error deleting image:', error.message);
         res.status(500).json({ success: false, error: error.message });
     }
 });

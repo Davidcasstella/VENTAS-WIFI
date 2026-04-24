@@ -13,6 +13,8 @@ const DEFAULT_CONFIG = {
     audioFilePath: null,   // absolute path to .ogg file on disk
     videoFilePath: null,   // absolute path to .mp4 file on disk
     videoEnabled: false,   // toggle video sending independently
+    imageFilePath: null,   // absolute path to image file on disk
+    imageEnabled: false,   // toggle image sending independently
     cooldownHours: 24,
     updatedAt: null
 };
@@ -62,6 +64,11 @@ class WelcomeAutomationService {
         const videoDest = this.getVideoDestPath();
         if (fs.existsSync(videoDest)) {
             await fs.remove(videoDest);
+        }
+        // Also delete the image file if it exists
+        const config = await this.getConfig(); // To get current imageFilePath before reset
+        if (config && config.imageFilePath && fs.existsSync(config.imageFilePath)) {
+            await fs.remove(config.imageFilePath);
         }
         console.log('🔄 Welcome config reset to defaults');
         return reset;
@@ -271,6 +278,29 @@ class WelcomeAutomationService {
                             io.emit('chat:message', { jid, message: savedMsg });
                         } catch (e) { console.error('Error saving welcome text to history:', e.message); }
                     }
+
+                    // Send image after the first text part
+                    if (i === 0 && config.imageEnabled && config.imageFilePath && fs.existsSync(config.imageFilePath)) {
+                        try {
+                            // Short pause before the image
+                            await new Promise(resolve => setTimeout(resolve, Math.floor(RESPONSE_DELAY * 0.5)));
+                            this.markBotSent(jid);
+                            await sock.sendMessage(jid, {
+                                image: { url: config.imageFilePath },
+                                caption: ''
+                            });
+                            console.log(`🖼️ Welcome image sent to ${jid}`);
+                            if (chatHistoryService && io) {
+                                try {
+                                    const savedMsg = await chatHistoryService.addMessage(jid, '[Welcome Image]', true, 'System', 'system');
+                                    io.emit('chat:message', { jid, message: savedMsg });
+                                } catch (e) { console.error('Error saving welcome image to history:', e.message); }
+                            }
+                        } catch (imageErr) {
+                            console.error(`⚠️ Welcome image failed: ${imageErr.message}`);
+                        }
+                    }
+
                 } catch (textErr) {
                     console.error(`⚠️ Welcome text part ${i + 1} failed: ${textErr.message}`);
                 }
@@ -354,6 +384,40 @@ class WelcomeAutomationService {
         }
         await this.saveConfig({ videoFilePath: null, videoEnabled: false });
         console.log('🗑️ Welcome video deleted');
+    }
+
+    // ── Image management ──────────────────────────────────────────────────
+
+    /** Returns the absolute destination path for the welcome image file. */
+    getImageDestPath(ext = '.jpg') {
+        return path.join(UPLOADS_DIR, `welcome-image${ext}`);
+    }
+
+    /** Moves an uploaded temp file to the permanent location and updates config. */
+    async saveImageFile(tempPath, originalName) {
+        const ext = path.extname(originalName).toLowerCase() || '.jpg';
+        const dest = this.getImageDestPath(ext);
+
+        // Delete existing image if there's one with a different extension
+        const config = await this.getConfig();
+        if (config.imageFilePath && fs.existsSync(config.imageFilePath)) {
+            await fs.remove(config.imageFilePath);
+        }
+
+        await fs.move(tempPath, dest, { overwrite: true });
+        await this.saveConfig({ imageFilePath: dest, imageEnabled: true });
+        console.log(`🖼️ Welcome image saved: ${dest}`);
+        return dest;
+    }
+
+    /** Deletes the welcome image file and updates config. */
+    async deleteImage() {
+        const config = await this.getConfig();
+        if (config.imageFilePath && fs.existsSync(config.imageFilePath)) {
+            await fs.remove(config.imageFilePath);
+        }
+        await this.saveConfig({ imageFilePath: null, imageEnabled: false });
+        console.log('🗑️ Welcome image deleted');
     }
 
     // ── Stats ─────────────────────────────────────────────────────────────

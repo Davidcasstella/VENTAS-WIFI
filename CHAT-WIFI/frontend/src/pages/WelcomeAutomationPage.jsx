@@ -19,6 +19,7 @@ const WelcomeAutomationPage = () => {
     const [resettingConfig, setResettingConfig] = useState(false);
     const [uploadingAudio, setUploadingAudio] = useState(false);
     const [uploadingVideo, setUploadingVideo] = useState(false);
+    const [uploadingImage, setUploadingImage] = useState(false);
     const [toast, setToast] = useState(null);
 
     // Local editable fields
@@ -28,13 +29,18 @@ const WelcomeAutomationPage = () => {
     const [audioFileName, setAudioFileName] = useState(null);
     const [videoFileName, setVideoFileName] = useState(null);
     const [videoEnabled, setVideoEnabled] = useState(false);
+    const [imageFileName, setImageFileName] = useState(null);
+    const [imageEnabled, setImageEnabled] = useState(false);
 
     const fileInputRef = useRef(null);
     const videoInputRef = useRef(null);
+    const imageInputRef = useRef(null);
     const dropRef = useRef(null);
     const videoDropRef = useRef(null);
+    const imageDropRef = useRef(null);
     const [dragging, setDragging] = useState(false);
     const [draggingVideo, setDraggingVideo] = useState(false);
+    const [draggingImage, setDraggingImage] = useState(false);
 
     // ── Users state (now managed by UserControlPanel component) ────────
 
@@ -60,6 +66,14 @@ const WelcomeAutomationPage = () => {
             setAudioFileName(cfg.audioFilePath ? 'welcome-audio.ogg' : null);
             setVideoFileName(cfg.videoFilePath ? 'welcome-video.mp4' : null);
             setVideoEnabled(cfg.videoEnabled || false);
+            if (cfg.imageFilePath) {
+                // Extract original filename or use default
+                const ext = cfg.imageFilePath.split('.').pop() || 'jpg';
+                setImageFileName(`welcome-image.${ext}`);
+            } else {
+                setImageFileName(null);
+            }
+            setImageEnabled(cfg.imageEnabled || false);
             setStats(statsRes.data.data);
         } catch (err) {
             showToast('error', 'Error cargando configuración');
@@ -85,7 +99,8 @@ const WelcomeAutomationPage = () => {
                 isEnabled,
                 messageText,
                 cooldownHours: Number(cooldownHours),
-                videoEnabled
+                videoEnabled,
+                imageEnabled
             });
             setConfig(data.data);
             showToast('success', 'Configuración guardada correctamente');
@@ -111,6 +126,8 @@ const WelcomeAutomationPage = () => {
             setAudioFileName(null);
             setVideoFileName(null);
             setVideoEnabled(false);
+            setImageFileName(null);
+            setImageEnabled(false);
             showToast('success', 'Configuración reseteada a valores por defecto');
         } catch {
             showToast('error', 'Error al resetear configuración');
@@ -236,6 +253,68 @@ const WelcomeAutomationPage = () => {
         setDraggingVideo(false);
         const file = e.dataTransfer.files[0];
         uploadVideoFile(file);
+    };
+
+    // ── Image upload ─────────────────────────────────────────────────────
+    const uploadImageFile = async (file) => {
+        if (!file) return;
+        const validExts = ['.jpg', '.jpeg', '.png', '.webp'];
+        const isValid = validExts.some(ext => file.name.toLowerCase().endsWith(ext));
+        if (!isValid) {
+            showToast('error', 'Solo se aceptan archivos .jpg, .png o .webp');
+            return;
+        }
+        setUploadingImage(true);
+        try {
+            const form = new FormData();
+            form.append('image', file);
+            await api.post('/api/welcome-automation/image', form, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            setImageFileName(file.name);
+            setImageEnabled(true);
+            showToast('success', 'Imagen subida correctamente');
+            loadAll();
+        } catch (err) {
+            showToast('error', err.response?.data?.error || 'Error al subir imagen');
+        } finally {
+            setUploadingImage(false);
+        }
+    };
+
+    const handleImageInput = (e) => uploadImageFile(e.target.files[0]);
+
+    const handleDeleteImage = async () => {
+        try {
+            await api.delete('/api/welcome-automation/image');
+            setImageFileName(null);
+            setImageEnabled(false);
+            showToast('success', 'Imagen eliminada');
+        } catch {
+            showToast('error', 'Error al eliminar imagen');
+        }
+    };
+
+    const handleToggleImage = async () => {
+        const newVal = !imageEnabled;
+        setImageEnabled(newVal);
+        try {
+            await api.put('/api/welcome-automation/config', { imageEnabled: newVal });
+            showToast('success', newVal ? 'Imagen activada' : 'Imagen desactivada');
+        } catch {
+            setImageEnabled(!newVal);
+            showToast('error', 'Error al cambiar estado de la imagen');
+        }
+    };
+
+    // ── Drag & drop (image) ──────────────────────────────────────────────
+    const onDragOverImage = (e) => { e.preventDefault(); setDraggingImage(true); };
+    const onDragLeaveImage = () => setDraggingImage(false);
+    const onDropImage = (e) => {
+        e.preventDefault();
+        setDraggingImage(false);
+        const file = e.dataTransfer.files[0];
+        uploadImageFile(file);
     };
 
     // Per-user actions and helpers now handled by UserControlPanel component
@@ -490,6 +569,82 @@ const WelcomeAutomationPage = () => {
                             />
                         </div>
 
+                        {/* Image card */}
+                        <div className="premium-card wa-card">
+                            <div className="wa-card-header" style={{ justifyContent: 'space-between' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                    <span style={{ fontSize: '1.2rem' }}>🖼️</span>
+                                    <span className="wa-card-title">Imagen de Bienvenida (.jpg, .png)</span>
+                                </div>
+                                {imageFileName && (
+                                    <button
+                                        className={`ai-toggle-btn ${imageEnabled ? 'toggle-on' : 'toggle-off'}`}
+                                        onClick={handleToggleImage}
+                                        title={imageEnabled ? 'Desactivar imagen' : 'Activar imagen'}
+                                    >
+                                        <span className="ai-toggle-thumb" />
+                                    </button>
+                                )}
+                            </div>
+                            <p className="wa-card-desc">
+                                Se envía <strong>justo después del primer globo de texto</strong>.
+                            </p>
+
+                            {imageFileName ? (
+                                <div className="wa-audio-present">
+                                    <div className="wa-audio-info">
+                                        <div className="wa-audio-icon">🖼️</div>
+                                        <div>
+                                            <span className="wa-audio-name">{imageFileName}</span>
+                                            <span className={`wa-audio-badge ${imageEnabled ? '' : 'wa-badge-off'}`}
+                                                style={!imageEnabled ? { background: '#374151', color: '#9ca3af' } : {}}
+                                            >
+                                                {imageEnabled ? 'Activa' : 'Desactivada'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <button className="wa-audio-delete-btn" onClick={handleDeleteImage}>
+                                        <Trash2 size={16} />
+                                        Eliminar
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="wa-audio-empty">
+                                    <span className="wa-audio-empty-icon">📭</span>
+                                    <span>Sin imagen configurada</span>
+                                </div>
+                            )}
+
+                            {/* Image drop zone */}
+                            <div
+                                ref={imageDropRef}
+                                className={`wa-dropzone ${draggingImage ? 'wa-dropzone-drag' : ''} ${uploadingImage ? 'wa-dropzone-loading' : ''}`}
+                                onDragOver={onDragOverImage}
+                                onDragLeave={onDragLeaveImage}
+                                onDrop={onDropImage}
+                                onClick={() => !uploadingImage && imageInputRef.current?.click()}
+                            >
+                                {uploadingImage ? (
+                                    <div className="wa-upload-spinner" />
+                                ) : (
+                                    <>
+                                        <Upload size={28} style={{ color: '#00ff00', marginBottom: 8 }} />
+                                        <span className="wa-dropzone-text">
+                                            {draggingImage ? 'Suelta la imagen aquí...' : 'Arrastra una imagen o haz clic'}
+                                        </span>
+                                        <span className="wa-dropzone-hint">Máximo 10 MB · JPG, PNG, WEBP</span>
+                                    </>
+                                )}
+                            </div>
+                            <input
+                                ref={imageInputRef}
+                                type="file"
+                                accept=".jpg,.jpeg,.png,.webp,image/*"
+                                style={{ display: 'none' }}
+                                onChange={handleImageInput}
+                            />
+                        </div>
+
                         {/* Video card */}
                         <div className="premium-card wa-card">
                             <div className="wa-card-header" style={{ justifyContent: 'space-between' }}>
@@ -587,7 +742,15 @@ const WelcomeAutomationPage = () => {
                                 </div>
                                 <div className="wa-flow-arrow">↓</div>
                                 <div className="wa-flow-step wa-flow-action">
-                                    <span>📝 Envía mensaje texto</span>
+                                    <span>📝 Envía mensaje texto (globo 1)</span>
+                                </div>
+                                <div className="wa-flow-arrow">↓</div>
+                                <div className="wa-flow-step wa-flow-action">
+                                    <span>🖼️ Envía imagen (si aplica)</span>
+                                </div>
+                                <div className="wa-flow-arrow">↓</div>
+                                <div className="wa-flow-step wa-flow-action">
+                                    <span>📝 Envía mensaje texto (demás globos)</span>
                                 </div>
                                 <div className="wa-flow-arrow">↓</div>
                                 <div className="wa-flow-step wa-flow-action">
