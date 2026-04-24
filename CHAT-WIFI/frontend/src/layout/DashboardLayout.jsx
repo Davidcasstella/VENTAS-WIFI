@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { LayoutDashboard, LogOut, Zap, QrCode, Settings, BrainCircuit, BookOpen, ShieldBan, BellRing, AlertTriangle } from 'lucide-react';
 import api from '../services/api';
@@ -26,6 +26,19 @@ const DashboardLayout = () => {
         logout();
         navigate('/login');
     };
+
+    // On mobile: add body class when on the chat/dashboard route
+    // so we can hide the header and reclaim that vertical space
+    const location = useLocation();
+    useEffect(() => {
+        const isChatRoute = location.pathname === '/';
+        if (isChatRoute) {
+            document.body.classList.add('mobile-on-chat');
+        } else {
+            document.body.classList.remove('mobile-on-chat');
+        }
+        return () => document.body.classList.remove('mobile-on-chat');
+    }, [location.pathname]);
 
     return (
         <div className="layout-container">

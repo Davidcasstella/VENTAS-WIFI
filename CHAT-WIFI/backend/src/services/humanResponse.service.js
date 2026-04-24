@@ -74,16 +74,14 @@ class HumanResponseService {
     }
 
     async _showTyping(sock, jid) {
-        try {
-            await sock.presenceSubscribe(jid);
-            await sock.sendPresenceUpdate('composing', jid);
-        } catch (_) { }
+        // Intentionally disabled: sendPresenceUpdate('composing') tells WhatsApp
+        // the owner is typing, which automatically marks all previous messages as
+        // read — silencing notifications on the owner's physical phone.
+        // The bot still responds normally; it just won't show a typing indicator.
     }
 
     async _clearTyping(sock, jid) {
-        try {
-            await sock.sendPresenceUpdate('paused', jid);
-        } catch (_) { }
+        // Intentionally disabled: paired with _showTyping above.
     }
 
     /**

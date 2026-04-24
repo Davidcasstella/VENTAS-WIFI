@@ -5,18 +5,53 @@ import ConversationList from './ConversationList';
 import ChatWindow from './ChatWindow';
 import './ChatInterface.css';
 
+const CUSTOM_NAMES_KEY = 'chatwifi_custom_names';
+
+const loadCustomNames = () => {
+    try {
+        const raw = localStorage.getItem(CUSTOM_NAMES_KEY);
+        return raw ? JSON.parse(raw) : {};
+    } catch {
+        return {};
+    }
+};
+
+const saveCustomNames = (namesObj) => {
+    try {
+        localStorage.setItem(CUSTOM_NAMES_KEY, JSON.stringify(namesObj));
+    } catch { /* noop */ }
+};
+
 const ChatInterface = () => {
     const [conversations, setConversations] = useState([]);
     const [activeJid, setActiveJid] = useState(null);
     const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [customNames, setCustomNames] = useState(loadCustomNames);
 
     // Ref to track activeJid without re-creating socket listener
     const activeJidRef = useRef(null);
     useEffect(() => {
         activeJidRef.current = activeJid;
     }, [activeJid]);
+
+    // Persist custom names
+    useEffect(() => {
+        saveCustomNames(customNames);
+    }, [customNames]);
+
+    // Add/remove body class so CSS can hide the mobile bottom nav
+    useEffect(() => {
+        if (activeJid) {
+            document.body.classList.add('mobile-chat-open');
+        } else {
+            document.body.classList.remove('mobile-chat-open');
+        }
+        // Cleanup on unmount
+        return () => document.body.classList.remove('mobile-chat-open');
+    }, [activeJid]);
+
 
     // Load conversations on mount
     useEffect(() => {
@@ -147,13 +182,15 @@ const ChatInterface = () => {
                     onDelete={handleDeleteConversation}
                     searchTerm={searchTerm}
                     onSearchChange={setSearchTerm}
+                    customNames={customNames}
+                    setCustomNames={setCustomNames}
                 />
             </div>
             <div className="chat-main">
                 {activeJid ? (
                     <ChatWindow
                         jid={activeJid}
-                        pushName={activeConversation?.pushName || activeJid.replace('@s.whatsapp.net', '')}
+                        pushName={customNames[activeJid] || activeConversation?.pushName || activeJid.replace('@s.whatsapp.net', '')}
                         messages={messages}
                         loading={loading}
                         onSend={sendMessage}

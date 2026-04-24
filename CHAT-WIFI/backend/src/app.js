@@ -569,7 +569,6 @@ whatsapp.on('message', async (m) => {
                     try {
                         // Small extra delay for natural feeling
                         await new Promise(r => setTimeout(r, 2000));
-                        await whatsapp.sock.sendPresenceUpdate('composing', remoteJid);
                         await new Promise(r => setTimeout(r, 1000));
                         
                         const promoPath = path.join(__dirname, '../public/uploads/promo.mp4');

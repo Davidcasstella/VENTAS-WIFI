@@ -6,27 +6,25 @@
 .chat-interface {
     display: flex;
     position: relative;
-    height: 520px;
-    border-radius: 12px;
+    flex: 1;
+    min-height: 0;
     overflow: hidden;
-    background: #111b21;
-    border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .chat-sidebar {
     width: 340px;
     min-width: 280px;
-    border-right: 1px solid rgba(255, 255, 255, 0.06);
+    border-right: 1px solid rgba(0, 255, 0, 0.15);
     display: flex;
     flex-direction: column;
-    background: #111b21;
+    background: transparent;
 }
 
 .chat-main {
     flex: 1;
     display: flex;
     flex-direction: column;
-    background: #0b141a;
+    background: transparent;
     position: relative;
 }
 
@@ -45,7 +43,8 @@
     align-items: center;
     justify-content: space-between;
     padding: 14px 16px;
-    background: #1f2c33;
+    background: rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid rgba(0, 255, 0, 0.05);
 }
 
 .conv-list-title {
@@ -71,7 +70,7 @@
 .conv-search-wrapper {
     position: relative;
     padding: 8px 12px;
-    background: #111b21;
+    background: transparent;
 }
 
 .conv-search-icon {
@@ -84,13 +83,18 @@
 
 .conv-search-input {
     width: 100%;
-    background: #202c33;
-    border: none;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(0, 255, 0, 0.1);
     border-radius: 8px;
     padding: 8px 12px 8px 34px;
     color: #e9edef;
     font-size: 0.82rem;
     outline: none;
+    transition: all 0.3s ease;
+}
+.conv-search-input:focus {
+    border-color: rgba(0, 255, 0, 0.4);
+    background: rgba(0, 0, 0, 0.2);
 }
 
 .conv-search-input::placeholder {
@@ -128,7 +132,8 @@
 }
 
 .conv-item-active {
-    background: #2a3942 !important;
+    background: rgba(0, 255, 0, 0.1) !important;
+    border-left: 3px solid #00ff00;
 }
 
 /* Avatar */
@@ -240,7 +245,173 @@
     color: #8696a0;
     gap: 10px;
     font-size: 0.85rem;
+    text-align: center;
+    padding: 0 20px;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   Filter Tabs  (Todos / No leídos / Leads)
+   ═══════════════════════════════════════════════════════════════ */
+
+.conv-filter-tabs {
+    display: flex;
+    gap: 6px;
+    padding: 6px 12px 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    border-bottom: 1px solid rgba(0, 255, 0, 0.06);
+    background: rgba(0, 0, 0, 0.15);
+}
+.conv-filter-tabs::-webkit-scrollbar { display: none; }
+
+.conv-filter-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 13px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: transparent;
+    color: #8696a0;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.conv-filter-tab:hover {
+    border-color: rgba(0, 255, 0, 0.3);
+    color: #e9edef;
+}
+
+.conv-filter-tab-active {
+    background: rgba(0, 255, 0, 0.15);
+    border-color: #00ff00;
+    color: #00ff00;
+    font-weight: 600;
+}
+
+/* Small badge inside the tab button */
+.conv-tab-badge {
+    background: #00a884;
+    color: #111b21;
+    font-size: 0.6rem;
+    font-weight: 700;
+    min-width: 16px;
+    height: 16px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+}
+
+.conv-tab-badge-lead {
+    background: #f0c040;
+    color: #111;
+}
+
+/* ── Lead highlight on conversation item ── */
+.conv-item-lead {
+    border-left: 3px solid #f0c040 !important;
+}
+
+.conv-item-lead .conv-name {
+    color: #f0c040;
+}
+
+/* ── Lead star on avatar ── */
+.conv-avatar {
+    position: relative;
+}
+
+.conv-avatar-lead-dot {
+    position: absolute;
+    bottom: -2px;
+    right: -4px;
+    font-size: 0.6rem;
+    line-height: 1;
+    filter: drop-shadow(0 0 2px rgba(0,0,0,0.8));
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Context Menu (long-press)
+   ═══════════════════════════════════════════════════════════════ */
+
+.conv-context-menu {
+    position: fixed;
+    z-index: 9999;
+    min-width: 200px;
+    background: #1a2a1a;
+    border: 1px solid rgba(0, 255, 0, 0.25);
+    border-radius: 12px;
+    padding: 6px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(0,255,0,0.05);
+    animation: ctx-pop 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transform-origin: top left;
+}
+
+@keyframes ctx-pop {
+    from { opacity: 0; transform: scale(0.85); }
+    to   { opacity: 1; transform: scale(1); }
+}
+
+.conv-context-name {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #8696a0;
+    padding: 6px 12px 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.conv-context-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 10px 12px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: #e9edef;
+    font-size: 0.83rem;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s;
+}
+
+.conv-context-btn:hover {
+    background: rgba(255, 255, 255, 0.07);
+}
+
+.conv-context-btn-lead {
+    color: #f0c040;
+}
+.conv-context-btn-lead:hover {
+    background: rgba(240, 192, 64, 0.1);
+}
+
+.conv-context-btn-danger {
+    color: #f15c6d;
+}
+.conv-context-btn-danger:hover {
+    background: rgba(241, 92, 109, 0.1);
+}
+
+.conv-context-btn-close {
+    color: #8696a0;
+    margin-top: 2px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    border-radius: 0 0 8px 8px;
+}
+
+
 
 /* ═══════════════════════════════════════════════════════════════
    Chat Window 
@@ -250,6 +421,8 @@
     display: flex;
     flex-direction: column;
     height: 100%;
+    /* Input bar always anchored to bottom */
+    overflow: hidden;
 }
 
 /* Header */
@@ -258,8 +431,8 @@
     align-items: center;
     gap: 10px;
     padding: 10px 16px;
-    background: #1f2c33;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid rgba(0, 255, 0, 0.05);
 }
 
 .chat-back-btn {
@@ -384,18 +557,30 @@
     align-items: center;
     gap: 8px;
     padding: 10px 16px;
-    background: #1f2c33;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    background: rgba(0, 0, 0, 0.2);
+    border-top: 1px solid rgba(0, 255, 0, 0.05);
+    /* Never hidden, always at bottom */
+    flex-shrink: 0;
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
 }
 
 .chat-input {
     flex: 1;
-    background: #2a3942;
-    border: none;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(0, 255, 0, 0.1);
     border-radius: 8px;
     padding: 10px 14px;
     color: #e9edef;
     font-size: 0.85rem;
     outline: none;
+    transition: all 0.3s ease;
+}
+.chat-input:focus {
+    border-color: rgba(0, 255, 0, 0.4);
+    background: rgba(0, 0, 0, 0.2);
 }
 
 .chat-input::placeholder {
@@ -574,56 +759,145 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   Responsive — Mobile (≤768px)
+   Responsive — Mobile (≤768px)  WhatsApp-style navigation
    ═══════════════════════════════════════════════════════════════ */
 
 @media (max-width: 768px) {
+
+    /*
+     * Always position:fixed on mobile — avoids DOM jump glitch.
+     *
+     * List mode:   top=60px (header), bottom=70px (nav), z-index=50
+     * Active mode: top=0,   bottom=0  (full-screen),  z-index=2000
+     *
+     * IMPORTANT: NO transitions on the container itself.
+     * Container changes must be INSTANT so only the panel slide is visible.
+     * Any animated top/bottom change creates the "left-then-right" flash.
+     */
     .chat-interface {
-        height: calc(100vh - 240px);
-        min-height: 400px;
-        border-radius: 8px;
+        position: fixed;
+        left: 0;
+        right: 0;
+        top: 60px;
+        bottom: 70px;
+        z-index: 50;
+        overflow: hidden;
+        border-radius: 0;
+        background: #0a1a0a;
+        /* NO container transition */
     }
 
-    /* Show sidebar by default, hide chat-main */
+    /* ── Sidebar: fills the interface, scrollable ── */
     .chat-sidebar {
-        width: 100%;
-        min-width: 100%;
-    }
-
-    .chat-main {
-        display: none;
         position: absolute;
         top: 0;
         left: 0;
-        right: 0;
-        bottom: 0;
-        z-index: 10;
+        width: 100%;
+        height: 100%;
+        min-width: 100%;
+        overflow-y: auto;
+        background: #0a1a0a;
+        border-right: none;
+        transform: translateX(0);
+        transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+        padding-bottom: 16px;
     }
 
-    /* When a conversation is active, show chat-main and hide sidebar */
-    .chat-active .chat-sidebar {
-        display: none;
-    }
-
-    .chat-active .chat-main {
+    /* ── Chat main: off-screen right by default ── */
+    .chat-main {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
         display: flex;
+        flex-direction: column;
+        transform: translateX(100%);
+        transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 2;
+        background: #0a1a0a;
+        overflow: hidden;
     }
 
-    /* Show back button on mobile */
+    /* ── ACTIVE CHAT: full screen — instant, no transition ── */
+    .chat-interface.chat-active {
+        top: 0;
+        bottom: 0;
+        z-index: 2000;
+        /* dvh: shrinks when virtual keyboard opens so input stays visible */
+        height: 100dvh;
+        height: 100vh;  /* fallback */
+        height: 100dvh;
+        /* NO transition — container must be instant */
+    }
+
+    /* Slide sidebar out to the left */
+    .chat-active .chat-sidebar {
+        transform: translateX(-100%);
+    }
+
+    /* Slide chat in from the right */
+    .chat-active .chat-main {
+        transform: translateX(0);
+    }
+
+
+    /* ── Chat window fills the main panel ── */
+    .chat-window {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    /* ── Messages scroll area ── */
+    .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 10px 12px;
+        min-height: 0;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* ── Input bar: always at bottom of flex, never hidden ── */
+    .chat-input-bar {
+        flex-shrink: 0;
+        position: relative;
+        padding: 8px 10px;
+        padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+        background: rgba(0, 5, 0, 0.95);
+        border-top: 1px solid rgba(0, 255, 0, 0.1);
+    }
+
+    /* ── Back button (only visible inside active chat) ── */
     .chat-back-btn {
         display: flex !important;
-        background: rgba(255, 255, 255, 0.1);
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 255, 0, 0.1);
+        border: 1px solid rgba(0, 255, 0, 0.2);
         border-radius: 50%;
-        padding: 6px;
-        margin-right: 4px;
+        width: 34px;
+        height: 34px;
+        padding: 0;
+        margin-right: 6px;
+        flex-shrink: 0;
+        color: #00ff00;
     }
 
-    /* Wider bubbles on mobile */
+    /* ── Wider bubbles on small screens ── */
     .chat-bubble {
-        max-width: 80%;
+        max-width: 82%;
     }
 
-    .chat-messages {
-        padding: 12px 14px;
+    /* ── Conversation list items: bigger tap targets ── */
+    .conv-item {
+        padding: 13px 16px;
+    }
+
+    /* ── Hide control labels (IA ON/OFF text) on small screens ── */
+    .chat-ctrl-label {
+        display: none;
     }
 }

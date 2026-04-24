@@ -128,7 +128,10 @@ const ChatWindow = ({ jid, pushName, messages, loading, onSend, onBack }) => {
         groupedMessages.push({ type: 'message', ...msg });
     });
 
-    const phoneNumber = jid ? jid.replace(/@.*$/, '').replace(/:\d+$/, '') : '';
+    const isLid = jid && jid.includes('@lid');
+    const rawNumber = jid ? jid.replace(/@.*$/, '').replace(/:\d+$/, '') : '';
+    // Format if it's a normal phone number (not a lid)
+    const displaySubtitle = isLid ? 'Número oculto (WhatsApp)' : `+${rawNumber}`;
 
     return (
         <div className="chat-window">
@@ -149,7 +152,7 @@ const ChatWindow = ({ jid, pushName, messages, loading, onSend, onBack }) => {
                 </div>
                 <div className="chat-header-info">
                     <span className="chat-header-name">{pushName}</span>
-                    <span className="chat-header-number">{phoneNumber}</span>
+                    <span className="chat-header-number">{displaySubtitle}</span>
                 </div>
 
                 {/* ── User control buttons ── */}

@@ -1,546 +1,385 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import {
-    Upload, FileText, Trash2, RefreshCw, Search,
-    CheckCircle, AlertCircle, Clock, BookOpen, File, X,
-    Plus, Save, Edit3, BookMarked
+    Upload, FileText, Search, Plus, Trash2, RefreshCw,
+    Download, X, AlertCircle, CheckCircle, Clock, Loader,
+    BookOpen, ChevronRight, Pencil, Check
 } from 'lucide-react';
 import useKnowledgeStore from '../features/knowledge-base/store/useKnowledgeStore';
 import api from '../services/api';
 
 const KnowledgeBasePage = () => {
     const {
-        documents, loading, uploading, error,
+        documents, loading, uploading, error: docError,
         fetchDocuments, uploadDocument, reprocessDocument, deleteDocument, clearError
     } = useKnowledgeStore();
 
+    // ── Local state ─────────────────────────────────────────
     const [dragActive, setDragActive] = useState(false);
+    const [manualEntries, setManualEntries] = useState([]);
+
+    // Modal
+    const [modalOpen, setModalOpen] = useState(false);
+    const [modalTitle, setModalTitle] = useState('');
+    const [modalContent, setModalContent] = useState('');
+    const [modalEditingId, setModalEditingId] = useState(null);
+    const [savingManual, setSavingManual] = useState(false);
+
+    // RAG search
     const [searchQuery, setSearchQuery] = useState('');
-    const [searchResult, setSearchResult] = useState(null);
+    const [searchResult, setSearchResult] = useState('');
     const [searching, setSearching] = useState(false);
+
     const fileInputRef = useRef(null);
 
-    // ── Tab state ────────────────────────────────────────────────────
-    const [activeTab, setActiveTab] = useState('text');
-
-    // ── Toast state ───────────────────────────────────────────────────
-    const [toast, setToast] = useState(null);
-
-    // ── Manual Knowledge state ────────────────────────────────────────
-    const [mkEntries, setMkEntries] = useState([]);
-    const [mkLoading, setMkLoading] = useState(false);
-    const [newMkTitle, setNewMkTitle] = useState('');
-    const [newMkContent, setNewMkContent] = useState('');
-    const [addingMK, setAddingMK] = useState(false);
-    const [showMkForm, setShowMkForm] = useState(false);
-    const [editingMkId, setEditingMkId] = useState(null);
-    const [editMkTitle, setEditMkTitle] = useState('');
-    const [editMkContent, setEditMkContent] = useState('');
-    const [reprocessingMK, setReprocessingMK] = useState(false);
-
+    // ── Fetch data ──────────────────────────────────────────
     useEffect(() => {
         fetchDocuments();
-        loadManualKnowledge();
+        loadManualEntries();
         const interval = setInterval(fetchDocuments, 5000);
         return () => clearInterval(interval);
     }, []);
 
-    useEffect(() => {
-        if (error) {
-            const timer = setTimeout(clearError, 5000);
-            return () => clearTimeout(timer);
-        }
-    }, [error]);
-
-    // ── Toast helper ──────────────────────────────────────────────────
-    const showToast = (type, msg) => {
-        setToast({ type, msg });
-        setTimeout(() => setToast(null), 3500);
-    };
-
-    // ── Manual Knowledge Helpers ──────────────────────────────────────
-    const loadManualKnowledge = async () => {
-        setMkLoading(true);
+    const loadManualEntries = async () => {
         try {
             const { data } = await api.get('/api/knowledge-base/manual-knowledge');
-            setMkEntries(data.entries || []);
-        } catch {
-            console.error('Error loading manual knowledge');
-        } finally {
-            setMkLoading(false);
-        }
+            if (data.success) setManualEntries(data.entries || []);
+        } catch {}
     };
 
-    const handleAddMK = async () => {
-        if (!newMkTitle.trim() || !newMkContent.trim()) return;
-        setAddingMK(true);
+    // ── Upload handlers ─────────────────────────────────────
+    const handleDrop = useCallback((e) => {
+        e.preventDefault();
+        setDragActive(false);
+        const file = e.dataTransfer.files[0];
+        if (file) handleFileUpload(file);
+    }, []);
+
+    const handleFileSelect = (e) => {
+        const file = e.target.files[0];
+        if (file) handleFileUpload(file);
+        e.target.value = '';
+    };
+
+    const handleFileUpload = async (file) => {
+        const ext = file.name.toLowerCase().match(/\.[^.]+$/)?.[0];
+        if (!['.pdf', '.txt'].includes(ext)) { alert('Solo PDF y TXT'); return; }
+        await uploadDocument(file);
+    };
+
+    // ── Manual knowledge ────────────────────────────────────
+    const openNewModal = () => {
+        setModalEditingId(null);
+        setModalTitle('');
+        setModalContent('');
+        setModalOpen(true);
+    };
+
+    const openEditModal = (entry) => {
+        setModalEditingId(entry.id);
+        setModalTitle(entry.title);
+        setModalContent(entry.content);
+        setModalOpen(true);
+    };
+
+    const closeModal = () => {
+        setModalOpen(false);
+        setModalTitle('');
+        setModalContent('');
+        setModalEditingId(null);
+    };
+
+    const handleModalSave = async () => {
+        if (!modalTitle.trim() || !modalContent.trim()) return;
+        setSavingManual(true);
         try {
-            await api.post('/api/knowledge-base/manual-knowledge', { title: newMkTitle, content: newMkContent });
-            setNewMkTitle('');
-            setNewMkContent('');
-            setShowMkForm(false);
-            showToast('success', 'Conocimiento añadido y vectorizado ✨');
-            loadManualKnowledge();
-        } catch {
-            showToast('error', 'Error al añadir conocimiento');
-        } finally {
-            setAddingMK(false);
-        }
+            if (modalEditingId) {
+                await api.put(`/api/knowledge-base/manual-knowledge/${modalEditingId}`, {
+                    title: modalTitle, content: modalContent
+                });
+            } else {
+                await api.post('/api/knowledge-base/manual-knowledge', {
+                    title: modalTitle, content: modalContent
+                });
+            }
+            closeModal();
+            await loadManualEntries();
+        } catch { alert('Error al guardar'); }
+        setSavingManual(false);
     };
 
-    const handleUpdateMK = async (id) => {
-        if (!editMkTitle.trim() || !editMkContent.trim()) return;
-        try {
-            await api.put(`/api/knowledge-base/manual-knowledge/${id}`, { title: editMkTitle, content: editMkContent });
-            setEditingMkId(null);
-            showToast('success', 'Conocimiento actualizado y re-vectorizado ✨');
-            loadManualKnowledge();
-        } catch {
-            showToast('error', 'Error al actualizar');
-        }
-    };
-
-    const handleDeleteMK = async (id) => {
+    const handleDeleteManual = async (id) => {
+        if (!confirm('¿Eliminar esta entrada?')) return;
         try {
             await api.delete(`/api/knowledge-base/manual-knowledge/${id}`);
-            showToast('success', 'Conocimiento eliminado');
-            loadManualKnowledge();
-        } catch (err) {
-            console.error('Delete error:', err);
-            showToast('error', 'Error al eliminar');
-        }
+            await loadManualEntries();
+        } catch { alert('Error al eliminar'); }
     };
 
-    const handleReprocessMK = async () => {
-        setReprocessingMK(true);
+    const handleReprocessManual = async () => {
         try {
-            const { data } = await api.post('/api/knowledge-base/manual-knowledge/reprocess');
-            showToast('success', `${data.count} conocimientos re-vectorizados ✨`);
-        } catch {
-            showToast('error', 'Error al re-vectorizar');
-        } finally {
-            setReprocessingMK(false);
-        }
+            await api.post('/api/knowledge-base/manual-knowledge/reprocess');
+            alert('Re-vectorización completada');
+        } catch { alert('Error al re-vectorizar'); }
     };
 
-    const startEditingMK = (entry) => {
-        setEditingMkId(entry.id);
-        setEditMkTitle(entry.title);
-        setEditMkContent(entry.content);
-    };
-
-    // ── Document Handlers ────────────────────────────────────────────
-    const handleDrag = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (e.type === 'dragenter' || e.type === 'dragover') {
-            setDragActive(true);
-        } else if (e.type === 'dragleave') {
-            setDragActive(false);
-        }
-    };
-
-    const handleDrop = async (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setDragActive(false);
-        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-            await uploadDocument(e.dataTransfer.files[0]);
-        }
-    };
-
-    const handleFileSelect = async (e) => {
-        if (e.target.files && e.target.files[0]) {
-            await uploadDocument(e.target.files[0]);
-            e.target.value = '';
-        }
-    };
-
+    // ── RAG search ──────────────────────────────────────────
     const handleSearch = async (e) => {
         e.preventDefault();
         if (!searchQuery.trim()) return;
         setSearching(true);
+        setSearchResult('');
         try {
-            const response = await api.post('/api/knowledge-base/search', { query: searchQuery });
-            setSearchResult(response.data);
-        } catch (err) {
-            setSearchResult({ success: false, context: 'Error al buscar' });
-        }
+            const { data } = await api.post('/api/knowledge-base/search', { query: searchQuery });
+            setSearchResult(data.context || 'Sin resultados');
+        } catch { setSearchResult('Error en la búsqueda'); }
         setSearching(false);
     };
 
-    const getStatusBadge = (status) => {
+    // ── Status badge ────────────────────────────────────────
+    const renderStatus = (status, chunkCount) => {
         switch (status) {
             case 'processed':
-                return <span className="kb-status-badge kb-status-success"><CheckCircle size={14} /> Procesado</span>;
+                return <span className="kb-status-badge kb-status-success"><CheckCircle size={11} /> {chunkCount} chunks</span>;
             case 'processing':
-                return <span className="kb-status-badge kb-status-processing"><RefreshCw size={14} className="spin" /> Procesando</span>;
+                return <span className="kb-status-badge kb-status-processing"><Loader size={11} className="spin" /> Procesando</span>;
             case 'error':
-                return <span className="kb-status-badge kb-status-error"><AlertCircle size={14} /> Error</span>;
-            case 'uploaded':
-                return <span className="kb-status-badge kb-status-pending"><Clock size={14} /> En cola</span>;
+                return <span className="kb-status-badge kb-status-error"><AlertCircle size={11} /> Error</span>;
             default:
-                return <span className="kb-status-badge">{status}</span>;
+                return <span className="kb-status-badge kb-status-pending"><Clock size={11} /> En cola</span>;
         }
     };
 
-    const formatFileSize = (bytes) => {
-        if (!bytes) return '—';
-        if (bytes < 1024) return `${bytes} B`;
-        if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-        return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-    };
-
-    const formatDate = (dateStr) => {
-        if (!dateStr) return '—';
-        return new Date(dateStr).toLocaleDateString('es-ES', {
-            day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
-        });
-    };
+    // Unify and sort entries (newest first)
+    const unifiedEntries = [
+        ...manualEntries.map(e => ({ ...e, _itemType: 'manual', _sortDate: new Date(e.createdAt || 0).getTime() })),
+        ...documents.map(d => ({ ...d, _itemType: 'document', title: d.name, _sortDate: new Date(d.createdAt || 0).getTime() }))
+    ].sort((a, b) => b._sortDate - a._sortDate);
 
     return (
-        <div className="ai-providers-container">
-            {error && (
-                <div className="kb-error-banner">
-                    <AlertCircle size={18} />
-                    <span>{error}</span>
-                    <button onClick={clearError}><X size={16} /></button>
+        <>
+            {/* ── STICKY HEADER ── */}
+            <div style={{
+                position: 'sticky', top: 0, zIndex: 50,
+                background: 'rgba(0, 30, 0, 0.95)',
+                backdropFilter: 'blur(12px)',
+                borderBottom: '1px solid rgba(0,255,0,0.2)',
+                width: '100%',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.4)'
+            }}>
+                <div style={{ padding: '0.85rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <BookOpen size={22} style={{ color: '#00ff00' }} />
+                    <h1 style={{ fontSize: '1.3rem', fontWeight: 800, margin: 0, color: '#e9edef' }}>
+                        Base de Conocimiento
+                    </h1>
                 </div>
-            )}
-
-            {/* Toast notifications */}
-            {toast && (
-                <div className={`wa-toast ${toast.type === 'success' ? 'wa-toast-ok' : 'wa-toast-err'}`}>
-                    {toast.type === 'success' ? <CheckCircle size={16} /> : <AlertCircle size={16} />}
-                    {toast.msg}
-                </div>
-            )}
-
-            {/* ═══════════════════════════════════════════════════════════════
-                SEARCH TEST AREA — Quick RAG test
-                ═══════════════════════════════════════════════════════════════ */}
-            <div className="kb-search-section premium-card">
-                <div className="kb-section-header">
-                    <Search size={20} />
-                    <h3>Probar Búsqueda RAG</h3>
-                </div>
-                <form onSubmit={handleSearch} className="kb-search-form">
-                    <input
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Escribe una pregunta para probar la búsqueda..."
-                        className="form-input"
-                    />
-                    <button type="submit" className="btn-submit" disabled={searching || !searchQuery.trim()}>
-                        {searching ? <RefreshCw className="spin" size={18} /> : <Search size={18} />}
-                    </button>
-                </form>
-                {searchResult && (
-                    <div className="kb-search-results">
-                        <h4>{searchResult.hasResults ? '✅ Contexto encontrado:' : '❌ Sin resultados'}</h4>
-                        <pre className="kb-context-preview">{searchResult.context}</pre>
-                    </div>
-                )}
             </div>
 
-            {/* ═══════════════════════════════════════════════════════════════
-                TABBED KNOWLEDGE SECTION
-                ═══════════════════════════════════════════════════════════════ */}
-            <div className="kb-documents-section premium-card">
-                {/* ── Tab Bar ── */}
-                <div className="kb-tabs-bar">
-                    <button
-                        className={`kb-tab ${activeTab === 'text' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('text')}
-                    >
-                        <Edit3 size={16} />
-                        Editor de texto
-                    </button>
-                    <button
-                        className={`kb-tab ${activeTab === 'upload' ? 'active' : ''}`}
-                        onClick={() => setActiveTab('upload')}
-                    >
-                        <Upload size={16} />
-                        Subir documentos
-                    </button>
+            <div
+                className={`kb-page-container ${dragActive ? 'kb-drag-active-global' : ''}`}
+                onDragOver={e => { e.preventDefault(); setDragActive(true); }}
+                onDragLeave={() => setDragActive(false)}
+                onDrop={handleDrop}
+                style={{ position: 'relative', padding: '0.85rem 1rem' }}
+            >
+                {/* Global drag overlay */}
+                {dragActive && (
+                    <div style={{
+                        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                        background: 'rgba(0,10,0,0.9)',
+                        backdropFilter: 'blur(4px)',
+                        zIndex: 9999,
+                        display: 'flex', flexDirection: 'column',
+                        alignItems: 'center', justifyContent: 'center',
+                        border: '3px dashed rgba(0,255,0,0.5)',
+                        pointerEvents: 'none'
+                    }}>
+                        <Upload size={48} style={{ marginBottom: '1rem', color: '#00ff00' }} />
+                        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#e9edef', margin: 0 }}>
+                            Suelta tus documentos aquí
+                        </h2>
+                        <p style={{ marginTop: '0.5rem', color: 'rgba(255,255,255,0.5)' }}>Soportamos archivos PDF y TXT</p>
+                    </div>
+                )}
+
+                {/* Error banner */}
+                {docError && (
+                    <div className="kb-error-banner">
+                        <AlertCircle size={16} /><span>{docError}</span>
+                        <button onClick={clearError}><X size={14} /></button>
+                    </div>
+                )}
+
+                {/* ── RAG SEARCH ── */}
+                <div className="kb-search-container" style={{ marginBottom: '0.75rem' }}>
+                    <form className="kb-search-form-inline" onSubmit={handleSearch}>
+                        <Search size={15} className="kb-search-icon" />
+                        <input
+                            type="text" className="kb-search-input"
+                            placeholder="Probar RAG: escribe una pregunta para ver qué respondería el chatbot..."
+                            value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+                        />
+                        <button type="submit" className="kb-search-btn" disabled={searching || !searchQuery.trim()}>
+                            {searching ? <Loader size={13} className="spin" /> : <ChevronRight size={13} />}
+                        </button>
+                    </form>
+                    {searchResult && (
+                        <div className="kb-search-result-preview">
+                            <span className="kb-search-result-label">Respuesta del chatbot:</span>
+                            <p>{searchResult}</p>
+                        </div>
+                    )}
                 </div>
 
-                {/* ── Tab Content ── */}
-                <div className="kb-tab-content">
+                {/* ── MAIN CARD ── */}
+                <div className="premium-card kb-main-card">
+                    {/* Hidden file input */}
+                    <input ref={fileInputRef} type="file" accept=".pdf,.txt"
+                        onChange={handleFileSelect} style={{ display: 'none' }} />
 
-                    {/* ════════════════════════════════════════════════════════
-                        TAB 1 — TEXT EDITOR
-                        ════════════════════════════════════════════════════════ */}
-                    {activeTab === 'text' && (
-                        <div className="kb-text-editor-tab">
-                            {/* Header with action buttons */}
-                            <div className="kb-tab-header">
-                                <p className="text-muted" style={{ margin: 0 }}>
-                                    Escribe o pega información extensa. El sistema la dividirá en fragmentos y la vectorizará automáticamente.
-                                </p>
-                                <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
-                                    {mkEntries.length > 0 && (
-                                        <button
-                                            className="btn-icon-text ghost-blue"
-                                            onClick={handleReprocessMK}
-                                            disabled={reprocessingMK}
-                                            title="Re-vectorizar todos los conocimientos"
-                                        >
-                                            <RefreshCw size={14} className={reprocessingMK ? 'spin' : ''} />
-                                            {reprocessingMK ? 'Vectorizando...' : 'Re-vectorizar'}
-                                        </button>
+                    {/* Topbar */}
+                    <div className="kb-entries-topbar">
+                        <div className="kb-entries-title">
+                            <FileText size={14} />
+                            <span>
+                                {unifiedEntries.length > 0
+                                    ? `Documentos (${unifiedEntries.length})`
+                                    : 'Sin contenido aún'}
+                            </span>
+                        </div>
+                        <div className="kb-entries-topbar-actions">
+                            <button className="kb-btn-sec kb-btn-outline" onClick={handleReprocessManual}
+                                title="Re-vectorizar contenido">
+                                <RefreshCw size={13} />
+                            </button>
+                            <button className="kb-btn-sec kb-btn-outline" onClick={openNewModal}>
+                                <Plus size={13} /> Agregar texto
+                            </button>
+                            <button className="kb-btn-pri" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
+                                {uploading ? <Loader size={13} className="spin" /> : <Upload size={13} />}
+                                {uploading ? 'Subiendo...' : 'Subir archivo'}
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Unified entries list */}
+                    {unifiedEntries.length > 0 ? (
+                        <div className="kb-entries-list-compact">
+                            {unifiedEntries.map((entry, idx) => (
+                                <div key={entry.id || idx} className="kb-entry-row">
+                                    <span className="kb-type-badge">
+                                        {entry._itemType === 'document' ? entry.type?.toUpperCase() : 'TEXTO'}
+                                    </span>
+
+                                    <div className="kb-entry-row-info" style={{ flex: 1 }}>
+                                        <span className="kb-entry-row-title">{entry.title}</span>
+                                    </div>
+
+                                    <div className="kb-entry-row-status" style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+                                        {entry._itemType === 'document' ? (
+                                            renderStatus(entry.status, entry.chunkCount)
+                                        ) : (
+                                            <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', fontWeight: 500 }}>
+                                                {new Date(entry.updatedAt || entry.createdAt || entry._sortDate)
+                                                    .toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    {entry._itemType === 'document' && (
+                                        <div style={{
+                                            marginRight: '1rem',
+                                            fontSize: '0.75rem',
+                                            color: 'rgba(255,255,255,0.4)',
+                                            fontWeight: 500,
+                                            whiteSpace: 'nowrap'
+                                        }}>
+                                            {new Date(entry.updatedAt || entry.createdAt || entry._sortDate)
+                                                .toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                        </div>
                                     )}
-                                </div>
-                            </div>
 
-                            {/* Editor form — always visible */}
-                            <div className="kb-editor-form">
-                                <div className="kb-editor-field">
-                                    <label className="kb-editor-label">Título</label>
-                                    <input
-                                        type="text"
-                                        value={newMkTitle}
-                                        onChange={e => setNewMkTitle(e.target.value)}
-                                        placeholder="Ej: Información de planes WiFi, Horarios de atención..."
-                                        className="form-input kb-title-input"
-                                    />
-                                </div>
-                                <div className="kb-editor-field">
-                                    <label className="kb-editor-label">Contenido</label>
-                                    <textarea
-                                        value={newMkContent}
-                                        onChange={e => setNewMkContent(e.target.value)}
-                                        placeholder="Pega o escribe aquí toda la información que quieras agregar como conocimiento del sistema..."
-                                        className="form-input kb-content-textarea"
-                                        rows={12}
-                                    />
-                                </div>
-                                <div className="kb-editor-actions">
-                                    <button
-                                        className="btn-submit"
-                                        onClick={handleAddMK}
-                                        disabled={addingMK || !newMkTitle.trim() || !newMkContent.trim()}
-                                    >
-                                        {addingMK ? <RefreshCw className="spin" size={16} /> : <Save size={16} />}
-                                        {addingMK ? 'Guardando y vectorizando...' : 'Guardar'}
-                                    </button>
-                                    <button
-                                        className="btn-icon-text ghost-red"
-                                        onClick={() => { setNewMkTitle(''); setNewMkContent(''); }}
-                                        disabled={!newMkTitle && !newMkContent}
-                                    >
-                                        <X size={14} />
-                                        Cancelar
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Existing entries list */}
-                            {mkEntries.length > 0 && (
-                                <div className="kb-entries-divider">
-                                    <BookMarked size={16} style={{ color: '#00ff00' }} />
-                                    <span>Conocimientos guardados ({mkEntries.length})</span>
-                                </div>
-                            )}
-
-                            {mkLoading && <p className="text-muted" style={{ textAlign: 'center', padding: '1rem' }}>Cargando...</p>}
-
-                            {!mkLoading && mkEntries.length === 0 && (
-                                <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--text-muted)' }}>
-                                    <BookMarked size={40} style={{ opacity: 0.3, marginBottom: 8 }} />
-                                    <p>No hay conocimientos manuales todavía. ¡Escribe el primero arriba!</p>
-                                </div>
-                            )}
-
-                            {!mkLoading && mkEntries.map(entry => (
-                                <div key={entry.id} className="kb-entry-card">
-                                    {editingMkId === entry.id ? (
-                                        /* Edit mode */
-                                        <>
-                                            <input
-                                                type="text"
-                                                value={editMkTitle}
-                                                onChange={e => setEditMkTitle(e.target.value)}
-                                                className="form-input"
-                                                style={{ marginBottom: '0.75rem' }}
-                                            />
-                                            <textarea
-                                                value={editMkContent}
-                                                onChange={e => setEditMkContent(e.target.value)}
-                                                className="form-input kb-content-textarea"
-                                                rows={8}
-                                            />
-                                            <div className="kb-editor-actions" style={{ marginTop: '0.75rem' }}>
-                                                <button
-                                                    className="btn-submit"
-                                                    onClick={() => handleUpdateMK(entry.id)}
-                                                >
-                                                    <Save size={14} /> Guardar
-                                                </button>
-                                                <button
-                                                    className="btn-icon-text ghost-red"
-                                                    onClick={() => setEditingMkId(null)}
-                                                >
-                                                    Cancelar
-                                                </button>
-                                            </div>
-                                        </>
-                                    ) : (
-                                        /* View mode */
-                                        <>
-                                            <div style={{ marginBottom: '0.5rem' }}>
-                                                <span className="kb-editor-label" style={{ fontSize: '0.75rem' }}>Título</span>
-                                                <p style={{ margin: '0.25rem 0 0', fontWeight: 500 }}>{entry.title}</p>
-                                            </div>
-                                            <div style={{ marginBottom: '0.75rem' }}>
-                                                <span className="kb-editor-label" style={{ fontSize: '0.75rem' }}>Contenido</span>
-                                                <p style={{
-                                                    margin: '0.25rem 0 0',
-                                                    color: 'var(--text-muted)',
-                                                    whiteSpace: 'pre-wrap',
-                                                    maxHeight: '150px',
-                                                    overflow: 'auto',
-                                                    fontSize: '0.85rem',
-                                                    lineHeight: '1.5'
-                                                }}>
-                                                    {entry.content}
-                                                </p>
-                                            </div>
-                                            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', opacity: 0.6 }}>
-                                                    {entry.updatedAt ? `Actualizado: ${new Date(entry.updatedAt).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}` : ''}
-                                                </span>
-                                                <div style={{ display: 'flex', gap: '0.75rem' }}>
-                                                    <button
-                                                        className="btn-icon-text ghost-blue"
-                                                        onClick={() => startEditingMK(entry)}
-                                                        title="Editar"
-                                                    >
-                                                        <Edit3 size={14} /> Editar
+                                    <div className="kb-entry-row-actions">
+                                        {entry._itemType === 'document' ? (
+                                            <>
+                                                {entry.status === 'error' && (
+                                                    <button className="kb-icon-btn" title="Reintentar"
+                                                        onClick={() => reprocessDocument(entry.id)}>
+                                                        <RefreshCw size={13} />
                                                     </button>
-                                                    <button
-                                                        className="btn-icon-text ghost-red"
-                                                        onClick={() => handleDeleteMK(entry.id)}
-                                                        title="Eliminar"
-                                                    >
-                                                        <Trash2 size={14} /> Eliminar
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </>
-                                    )}
+                                                )}
+                                                <button className="kb-icon-btn" title="Descargar"
+                                                    onClick={() => window.open(`${api.defaults.baseURL}/api/knowledge-base/documents/${entry.id}/download`, '_blank')}>
+                                                    <Download size={13} />
+                                                </button>
+                                                <button className="kb-icon-btn kb-icon-btn-danger" title="Eliminar"
+                                                    onClick={() => deleteDocument(entry.id)}>
+                                                    <Trash2 size={13} />
+                                                </button>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <button className="kb-icon-btn" onClick={() => openEditModal(entry)} title="Editar texto">
+                                                    <Pencil size={13} />
+                                                </button>
+                                                <button className="kb-icon-btn kb-icon-btn-danger"
+                                                    onClick={() => handleDeleteManual(entry.id)} title="Eliminar">
+                                                    <Trash2 size={13} />
+                                                </button>
+                                            </>
+                                        )}
+                                    </div>
                                 </div>
                             ))}
                         </div>
-                    )}
-
-                    {/* ════════════════════════════════════════════════════════
-                        TAB 2 — UPLOAD DOCUMENTS
-                        ════════════════════════════════════════════════════════ */}
-                    {activeTab === 'upload' && (
-                        <div className="kb-upload-tab">
-                            {/* Upload zone */}
-                            <div
-                                className={`kb-upload-zone ${dragActive ? 'kb-drag-active' : ''}`}
-                                onDragEnter={handleDrag}
-                                onDragOver={handleDrag}
-                                onDragLeave={handleDrag}
-                                onDrop={handleDrop}
-                                onClick={() => fileInputRef.current?.click()}
-                            >
-                                <input
-                                    ref={fileInputRef}
-                                    type="file"
-                                    accept=".pdf,.txt"
-                                    onChange={handleFileSelect}
-                                    style={{ display: 'none' }}
-                                />
-                                {uploading ? (
-                                    <div className="kb-upload-content">
-                                        <RefreshCw size={40} className="spin" style={{ color: 'var(--primary-color)' }} />
-                                        <h3>Subiendo documento...</h3>
-                                        <p className="text-muted">Procesamiento iniciará automáticamente</p>
-                                    </div>
-                                ) : (
-                                    <div className="kb-upload-content">
-                                        <Upload size={40} style={{ color: 'var(--primary-color)' }} />
-                                        <h3>Arrastra tu archivo aquí o haz clic</h3>
-                                        <p className="text-muted">Soporta archivos PDF y TXT — Máximo 20MB</p>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Documents table */}
-                            {documents.length > 0 && (
-                                <div className="kb-docs-list-section">
-                                    <div className="kb-entries-divider">
-                                        <BookOpen size={16} />
-                                        <span>Documentos subidos ({documents.length})</span>
-                                    </div>
-                                    <div className="kb-table-wrapper">
-                                        <table className="kb-table">
-                                            <thead>
-                                                <tr>
-                                                    <th>Nombre</th>
-                                                    <th>Tipo</th>
-                                                    <th>Tamaño</th>
-                                                    <th>Chunks</th>
-                                                    <th>Estado</th>
-                                                    <th>Fecha</th>
-                                                    <th>Acciones</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {documents.map(doc => (
-                                                    <tr key={doc.id}>
-                                                        <td className="kb-doc-name">
-                                                            <FileText size={16} />
-                                                            <span>{doc.name}</span>
-                                                        </td>
-                                                        <td>
-                                                            <span className="kb-type-badge">{doc.type?.toUpperCase()}</span>
-                                                        </td>
-                                                        <td>{formatFileSize(doc.size)}</td>
-                                                        <td>{doc.chunkCount || '—'}</td>
-                                                        <td>{getStatusBadge(doc.status)}</td>
-                                                        <td>{formatDate(doc.createdAt)}</td>
-                                                        <td className="kb-actions">
-                                                            <button
-                                                                className="kb-action-btn kb-reprocess"
-                                                                onClick={() => reprocessDocument(doc.id)}
-                                                                title="Reprocesar"
-                                                                disabled={doc.status === 'processing'}
-                                                            >
-                                                                <RefreshCw size={16} />
-                                                            </button>
-                                                            <button
-                                                                className="kb-action-btn kb-delete"
-                                                                onClick={() => deleteDocument(doc.id)}
-                                                                title="Eliminar"
-                                                            >
-                                                                <Trash2 size={16} />
-                                                            </button>
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            )}
-
-                            {documents.length === 0 && !loading && (
-                                <div style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--text-muted)' }}>
-                                    <BookOpen size={48} style={{ opacity: 0.3, marginBottom: 12 }} />
-                                    <p>No hay documentos subidos todavía.</p>
-                                    <p style={{ fontSize: '0.8rem', opacity: 0.6 }}>Arrastra un archivo PDF o TXT a la zona de arriba.</p>
-                                </div>
-                            )}
+                    ) : (
+                        <div className="kb-empty-state" style={{ paddingTop: '2.5rem' }}>
+                            <FileText size={40} style={{ opacity: 0.25 }} />
+                            <h2>Sin documentos</h2>
+                            <p>Sube archivos PDF/TXT o escribe contenido manualmente para empezar</p>
                         </div>
                     )}
                 </div>
             </div>
-        </div>
+
+            {/* ── MODAL ── */}
+            {modalOpen && (
+                <div className="kb-modal-overlay" onClick={closeModal}>
+                    <div className="kb-modal" onClick={e => e.stopPropagation()}>
+                        <div className="kb-modal-header">
+                            <h3>{modalEditingId ? 'Editar contenido' : 'Nuevo contenido'}</h3>
+                            <button className="kb-modal-close" onClick={closeModal}><X size={16} /></button>
+                        </div>
+                        <div className="kb-modal-body">
+                            <input
+                                type="text" className="form-input kb-modal-title-input"
+                                placeholder="Título (ej: Planes de internet WiFi)"
+                                value={modalTitle} onChange={e => setModalTitle(e.target.value)}
+                                autoFocus
+                            />
+                            <textarea
+                                className="form-input kb-modal-textarea"
+                                placeholder={"Escribe el conocimiento aquí...\n\nEjemplo:\n¿Cuánto cuesta el plan básico?\nEl plan básico cuesta $X al mes e incluye..."}
+                                value={modalContent} onChange={e => setModalContent(e.target.value)}
+                                rows={10}
+                            />
+                        </div>
+                        <div className="kb-modal-footer">
+                            <button className="btn-premium danger" onClick={closeModal}>
+                                <X size={13} /> Cancelar
+                            </button>
+                            <button
+                                className="btn-premium primary"
+                                onClick={handleModalSave}
+                                disabled={savingManual || !modalTitle.trim() || !modalContent.trim()}
+                            >
+                                {savingManual ? <Loader size={13} className="spin" /> : <CheckCircle size={13} />}
+                                {modalEditingId ? 'Guardar cambios' : 'Guardar y vectorizar'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </>
     );
 };
 

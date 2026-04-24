@@ -1503,16 +1503,22 @@ body {
 
 /* ── DASHBOARD TABS ── */
 .dashboard-tabs-section {
-    margin-top: 1.25rem;
     display: flex;
     flex-direction: column;
     gap: 0;
+    height: calc(100vh - 64px);
+    margin: 0 -2rem -1rem; /* Anula el padding lateral y el padding inferior del main-content */
+    border: 1px solid rgba(0, 255, 0, 0.15);
+    border-radius: 0;
+    background: rgba(0, 10, 0, 0.5);
+    overflow: hidden;
 }
 
 .dashboard-tabs {
     display: flex;
     gap: 0;
     border-bottom: 1px solid rgba(0, 255, 0, 0.15);
+    background: rgba(0, 0, 0, 0.2);
 }
 
 .dashboard-tab-btn {
@@ -1557,15 +1563,11 @@ body {
 }
 
 .dashboard-tab-content {
-    border: 1px solid rgba(0, 255, 0, 0.15);
-    border-top: none;
-    border-radius: 0 0 18px 18px;
-    background: rgba(0, 10, 0, 0.5);
-    padding: 0.75rem;
-    min-height: 200px;
-    max-height: 580px;
-    overflow-y: auto;
     animation: tabFadeIn 0.25s ease;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
 }
 
 @keyframes tabFadeIn {
@@ -1593,7 +1595,96 @@ body {
     }
 
     .dashboard-tab-content {
-        max-height: 450px;
         padding: 0.5rem;
     }
 }
+
+/* ── Mobile: let the chat interface take full screen ── */
+@media (max-width: 768px) {
+    /* Dashboard wrapper: auto height, let children determine size */
+    .dashboard-tabs-section {
+        height: auto !important;
+        margin: 0 !important;
+        border: none !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        overflow: visible !important;
+        position: static;
+    }
+
+    /* Hide the tab bar on mobile — chat is full screen */
+    .dashboard-tabs {
+        display: none;
+    }
+
+    /* Tab content: auto height, no extra padding */
+    .dashboard-tab-content {
+        padding: 0 !important;
+        overflow: visible !important;
+        height: auto !important;
+    }
+
+    /* Main content: no padding, allow normal overflow */
+    .main-content {
+        padding: 0 !important;
+        overflow: visible !important;
+        /* Remove the bottom gap so chat sits flush */
+        gap: 0 !important;
+    }
+}
+
+
+/* ════════════════════════════════════════════════════════
+   Mobile — Hide bottom nav while a chat conversation is open
+   Class .mobile-chat-open is added to body by ChatInterface.jsx
+   ════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+    /* Prepare nav for smooth transition */
+    .mobile-bottom-nav {
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                    opacity 0.3s ease !important;
+    }
+
+    /* When a chat is open: slide nav out and hide it */
+    body.mobile-chat-open .mobile-bottom-nav {
+        transform: translateY(100%) !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }
+}
+
+/* ════════════════════════════════════════════════════════
+   Mobile — Hide header on chat/dashboard route
+   Class .mobile-on-chat is added to body by DashboardLayout.jsx
+   when pathname === '/'  (the chat screen)
+   ════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+    /* Hide the top header entirely on the chat screen */
+    body.mobile-on-chat .top-header {
+        display: none !important;
+    }
+
+    /* Hide the "Chats [6]" title inside the list to save space */
+    body.mobile-on-chat .conv-list-header {
+        display: none !important;
+    }
+
+    /* Remove the margin-top that compensates for the now-hidden header */
+    body.mobile-on-chat .main-content {
+        margin-top: 0 !important;
+        height: 100vh !important;
+    }
+
+    /* Chat list view: starts from top of screen (no header gap) */
+    body.mobile-on-chat .chat-interface {
+        top: 0 !important;
+        /* bottom stays 70px to leave room for bottom nav */
+    }
+
+    /* Active chat: full screen, top to bottom */
+    body.mobile-on-chat .chat-interface.chat-active {
+        top: 0 !important;
+        bottom: 0 !important;
+    }
+}
+

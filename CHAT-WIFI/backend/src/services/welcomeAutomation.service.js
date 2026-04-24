@@ -254,17 +254,11 @@ class WelcomeAutomationService {
 
             for (let i = 0; i < messageParts.length; i++) {
                 try {
-                    // Show typing indicator before each message
-                    try {
-                        await sock.presenceSubscribe(jid);
-                        await sock.sendPresenceUpdate('composing', jid);
-                    } catch (_) {}
-
                     // Delay between messages (skip for the first one)
                     if (i > 0) {
                         await new Promise(resolve => setTimeout(resolve, RESPONSE_DELAY));
                     } else {
-                        // Short pause even for the first message to show "typing"
+                        // Short pause before the first message
                         await new Promise(resolve => setTimeout(resolve, Math.floor(RESPONSE_DELAY * 0.5)));
                     }
 
@@ -282,10 +276,6 @@ class WelcomeAutomationService {
                 }
             }
 
-            // Clear typing indicator
-            try {
-                await sock.sendPresenceUpdate('paused', jid);
-            } catch (_) {}
         }
 
         // 3. Send video (if enabled and file exists on disk)

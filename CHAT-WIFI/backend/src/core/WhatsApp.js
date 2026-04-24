@@ -47,10 +47,16 @@ class WhatsApp extends EventEmitter {
                 printQRInTerminal: true,
                 browser: config.whatsapp.browser,
                 logger: this.logger.child({ module: 'baileys' }),
-                markOnlineOnConnect: true,
+                // Keep bot offline so it does NOT mark messages as read on the owner's phone.
+                // When markOnlineOnConnect is true, Baileys sends read receipts automatically,
+                // which silences WhatsApp notifications on the owner's device.
+                markOnlineOnConnect: false,
                 connectTimeoutMs: 60000,
                 defaultQueryTimeoutMs: 0,
-                syncFullHistory: false
+                syncFullHistory: false,
+                // Returning undefined prevents Baileys from sending read receipts
+                // for messages it fetches from the server during reconnection.
+                getMessage: async () => undefined
             });
 
             this.registerEvents();
