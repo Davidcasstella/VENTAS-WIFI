@@ -625,7 +625,8 @@
         "text": "no bro",
         "fromMe": false,
         "sender": "client",
-        "timestamp": "2026-04-24T07:17:29.864Z"
+        "timestamp": "2026-04-24T07:17:29.864Z",
+        "read": true
       },
       {
         "id": "f5a1f0a30984e310",
@@ -702,7 +703,8 @@
         "text": "pásame el neki",
         "fromMe": false,
         "sender": "client",
-        "timestamp": "2026-04-24T07:18:51.295Z"
+        "timestamp": "2026-04-24T07:18:51.295Z",
+        "read": true
       },
       {
         "id": "e9119a7b3ef6d737",

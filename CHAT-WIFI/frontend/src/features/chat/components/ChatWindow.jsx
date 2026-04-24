@@ -39,10 +39,8 @@ const ChatWindow = ({ jid, pushName, messages, loading, onSend, onBack }) => {
         }
     }, [messages, jid]);
 
-    // Focus input when chat opens
-    useEffect(() => {
-        inputRef.current?.focus();
-    }, [jid]);
+    // No auto-focus on chat open — prevents mobile keyboard from popping up
+    // Users can tap the input manually when ready to type
 
     const showToast = (type, msg) => {
         setToast({ type, msg });
@@ -58,7 +56,10 @@ const ChatWindow = ({ jid, pushName, messages, loading, onSend, onBack }) => {
             await onSend(text);
         } finally {
             setSending(false);
-            inputRef.current?.focus();
+            // Only re-focus after sending on wide screens (desktop)
+            if (window.innerWidth > 768) {
+                inputRef.current?.focus();
+            }
         }
     };
 
