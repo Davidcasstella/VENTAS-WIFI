@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { ArrowLeft, Send, Loader2, Power, RotateCcw, Clock, CheckCheck } from 'lucide-react';
 import api from '../../../services/api';
 
@@ -27,17 +27,31 @@ const ChatWindow = ({ jid, pushName, messages, loading, onSend, onBack }) => {
         loadUserState();
     }, [jid]);
 
-    // Auto-scroll to bottom on new messages and when opening chat
-    useEffect(() => {
+    // Scroll helper — scrolls the messages container to the very bottom
+    const scrollToBottom = useCallback(() => {
         if (messagesContainerRef.current) {
-            // Use requestAnimationFrame or a slight timeout to ensure DOM has updated sizes
-            setTimeout(() => {
-                if (messagesContainerRef.current) {
-                    messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
-                }
-            }, 50);
+            messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
         }
-    }, [messages, jid]);
+    }, []);
+
+    // Scroll to bottom when a new chat is opened (jid changes) or loading finishes
+    // Uses multiple passes to ensure DOM is fully rendered after async load
+    useEffect(() => {
+        if (!jid || loading) return;
+        // Immediate attempt
+        scrollToBottom();
+        // After initial render
+        requestAnimationFrame(scrollToBottom);
+        // After async content (images, long text) finishes layout
+        const t1 = setTimeout(scrollToBottom, 150);
+        const t2 = setTimeout(scrollToBottom, 400);
+        return () => { clearTimeout(t1); clearTimeout(t2); };
+    }, [jid, loading, scrollToBottom]);
+
+    // Scroll to bottom when new messages arrive
+    useEffect(() => {
+        requestAnimationFrame(scrollToBottom);
+    }, [messages, scrollToBottom]);
 
     // No auto-focus on chat open — prevents mobile keyboard from popping up
     // Users can tap the input manually when ready to type
