@@ -24,6 +24,9 @@ class WelcomeAutomationService {
         this._ensureFiles();
         // Track JIDs where the bot has sent messages (to distinguish bot vs manual)
         this._botSentJids = new Set();
+        // In-flight lock: prevents concurrent welcome sequences for the same JID
+        // (e.g. user sends 2 rapid messages before first welcome finishes)
+        this._sendingWelcome = new Set();
     }
 
     // ── Init ──────────────────────────────────────────────────────────────
@@ -194,6 +197,10 @@ class WelcomeAutomationService {
         // Check per-user cooldown toggle — if disabled, never send welcome
         if (state && state.cooldownEnabled === false) return false;
 
+        // If AI was manually disabled for this user (payment flow, manual intervention,
+        // or admin took over), don't re-send the welcome sequence
+        if (state && state.aiEnabled === false) return false;
+
         if (!state || !state.lastWelcomeSentAt) return true;
         const elapsed = (Date.now() - new Date(state.lastWelcomeSentAt).getTime()) / 3600000;
         return elapsed >= cooldownHours;
@@ -225,8 +232,20 @@ class WelcomeAutomationService {
         if (!config.isEnabled) return false;
         if (!await this._shouldSend(jid, config.cooldownHours)) return false;
 
+        // Prevent concurrent welcome sequences for the same JID (race condition guard)
+        if (this._sendingWelcome.has(jid)) {
+            console.log(`⏳ Welcome already in progress for ${jid} — skipping duplicate`);
+            return false;
+        }
+        this._sendingWelcome.add(jid);
+
+        // Persist timestamp BEFORE sending to prevent re-sends on reconnection.
+        // If the connection drops mid-sequence, the cooldown is already active.
+        await this.updateUserState(jid);
+
         console.log(`🔔 Welcome 24H: sending welcome sequence to ${jid}`);
 
+        try {
         // 1. Send audio FIRST (if file exists on disk)
         if (config.audioFilePath) {
             if (fs.existsSync(config.audioFilePath)) {
@@ -328,8 +347,10 @@ class WelcomeAutomationService {
             }
         }
 
-        // 4. Persist timestamp — only after successful completion
-        await this.updateUserState(jid);
+        } finally {
+            // Always release the lock, even if sending fails
+            this._sendingWelcome.delete(jid);
+        }
 
         return true;
     }

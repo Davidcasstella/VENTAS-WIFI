@@ -31,6 +31,13 @@ global.aiEnabled = true;
 // Estado en memoria para evitar enviar el video promocional multiples veces al mismo numero
 const sentPromoJids = new Set();
 
+// ── Deduplication guard for reconnection message replays ──────────────────
+// When WiFi drops and Baileys reconnects, WhatsApp re-delivers pending messages.
+// This set tracks recently-processed message IDs to skip duplicates.
+const PROCESSED_MSG_IDS = new Set();
+const PROCESSED_MSG_MAX = 500;       // hard cap to prevent unbounded growth
+const PROCESSED_MSG_TTL = 120_000;   // 2 minutes TTL per entry
+
 const app = express();
 app.use(cors()); // Habilitar CORS para todas las rutas
 const server = http.createServer(app);
@@ -142,6 +149,22 @@ whatsapp.on('message', async (m) => {
     try {
         const msg = m.messages[0];
         if (!msg) return;
+
+        // ── DEDUPLICATION: skip messages already processed (reconnection replays) ──
+        const msgId = msg.key?.id;
+        if (msgId && PROCESSED_MSG_IDS.has(msgId)) {
+            return; // Already processed before disconnection
+        }
+        if (msgId) {
+            PROCESSED_MSG_IDS.add(msgId);
+            // Auto-cleanup to prevent memory leak
+            setTimeout(() => PROCESSED_MSG_IDS.delete(msgId), PROCESSED_MSG_TTL);
+            // Hard cap safety — evict oldest entry if too many
+            if (PROCESSED_MSG_IDS.size > PROCESSED_MSG_MAX) {
+                const first = PROCESSED_MSG_IDS.values().next().value;
+                PROCESSED_MSG_IDS.delete(first);
+            }
+        }
 
         const rawJid = msg.key?.remoteJid || '';
 
