@@ -1,0 +1,47 @@
+{
+  "globalEnabled": false,
+  "stopOnReply": true,
+  "steps": [
+    {
+      "id": "step_1",
+      "label": "Seguimiento 2 horas",
+      "delayMinutes": 120,
+      "enabled": true,
+      "text": "",
+      "audioPath": null,
+      "videoPath": null,
+      "imagePath": null
+    },
+    {
+      "id": "step_2",
+      "label": "Seguimiento 4 horas",
+      "delayMinutes": 240,
+      "enabled": true,
+      "text": "",
+      "audioPath": null,
+      "videoPath": null,
+      "imagePath": null
+    },
+    {
+      "id": "step_3",
+      "label": "Seguimiento 2 días",
+      "delayMinutes": 2880,
+      "enabled": true,
+      "text": "",
+      "audioPath": null,
+      "videoPath": null,
+      "imagePath": null
+    },
+    {
+      "id": "step_4",
+      "label": "Seguimiento 4 días",
+      "delayMinutes": 5760,
+      "enabled": true,
+      "text": "",
+      "audioPath": null,
+      "videoPath": null,
+      "imagePath": null
+    }
+  ],
+  "updatedAt": "2026-04-27T04:10:15.629Z"
+}

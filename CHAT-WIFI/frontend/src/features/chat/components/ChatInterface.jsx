@@ -22,7 +22,7 @@ const saveCustomNames = (namesObj) => {
     } catch { /* noop */ }
 };
 
-const ChatInterface = () => {
+const ChatInterface = ({ setDashboardTab }) => {
     const [conversations, setConversations] = useState([]);
     const [activeJid, setActiveJid] = useState(null);
     const [messages, setMessages] = useState([]);
@@ -184,6 +184,7 @@ const ChatInterface = () => {
                     onSearchChange={setSearchTerm}
                     customNames={customNames}
                     setCustomNames={setCustomNames}
+                    setDashboardTab={setDashboardTab}
                 />
             </div>
             <div className="chat-main">

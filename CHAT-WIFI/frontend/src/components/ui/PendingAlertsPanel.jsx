@@ -2,10 +2,10 @@ import React, { useState, useEffect, useCallback } from 'react';
 import api from '../../services/api';
 import {
     AlertTriangle, RefreshCw, UserCheck, Power,
-    Clock, CheckCircle, AlertCircle
+    Clock, CheckCircle, AlertCircle, ChevronLeft, ChevronRight
 } from 'lucide-react';
 
-const PendingAlertsPanel = ({ className = '' }) => {
+const PendingAlertsPanel = ({ className = '', setDashboardTab }) => {
     const [pending, setPending] = useState([]);
     const [loading, setLoading] = useState(true);
     const [actionInProgress, setActionInProgress] = useState(null);
@@ -112,13 +112,24 @@ const PendingAlertsPanel = ({ className = '' }) => {
                         {pendingCount}
                     </span>
                 )}
-                <button
-                    className="wa-refresh-btn"
-                    onClick={loadPending}
-                    style={{ marginLeft: 'auto' }}
-                >
-                    <RefreshCw size={14} />
-                </button>
+                <div style={{ display: 'flex', marginLeft: 'auto', gap: '8px', alignItems: 'center' }}>
+                    {setDashboardTab && (
+                        <div className="conv-tab-nav" style={{ display: 'flex', gap: '4px' }}>
+                            <button className="conv-tab-nav-btn" onClick={() => setDashboardTab('followup')} title="Seguimiento">
+                                <ChevronLeft size={18} />
+                            </button>
+                            <button className="conv-tab-nav-btn" onClick={() => setDashboardTab('users')} title="Chats">
+                                <ChevronRight size={18} />
+                            </button>
+                        </div>
+                    )}
+                    <button
+                        className="wa-refresh-btn"
+                        onClick={loadPending}
+                    >
+                        <RefreshCw size={14} />
+                    </button>
+                </div>
             </div>
 
             {/* Pending list */}

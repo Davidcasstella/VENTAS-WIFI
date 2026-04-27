@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Search, MessageSquare, Trash2, Check, CheckCheck, Star, X, Users, Edit2, Plus, Tag, FolderOpen } from 'lucide-react';
+import { Search, MessageSquare, Trash2, Check, CheckCheck, Star, X, Users, Edit2, Plus, Tag, FolderOpen, Clock, XCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import api from '../../../services/api';
 
 // Persist leads in localStorage so they survive page reloads
 const LEADS_KEY = 'chatwifi_leads';
@@ -57,11 +58,11 @@ const saveCategoryMembers = (members) => {
 const DEFAULT_TAB_LABELS = {
     todos: 'Todos',
     leads: '⭐ Leads',
-    'no-leidos': 'No leídos',
+    seguimiento: '🔄 Seguimiento',
 };
 
 // Tabs that can be renamed (all except 'todos')
-const RENAMEABLE_BUILTIN = new Set(['leads', 'no-leidos']);
+const RENAMEABLE_BUILTIN = new Set(['leads', 'seguimiento']);
 
 const loadTabLabels = () => {
     try {
@@ -78,11 +79,12 @@ const saveTabLabels = (labels) => {
     } catch { /* noop */ }
 };
 
-const ConversationList = ({ conversations, activeJid, onSelect, onDelete, searchTerm, onSearchChange, customNames, setCustomNames }) => {
+const ConversationList = ({ conversations, activeJid, onSelect, onDelete, searchTerm, onSearchChange, customNames, setCustomNames, setDashboardTab }) => {
     const [confirmDelete, setConfirmDelete]   = useState(null);
     const [activeTab, setActiveTab]           = useState('todos');
     const [leads, setLeads]                   = useState(loadLeads);
     const [contextMenu, setContextMenu]       = useState(null); // { jid, x, y }
+    const [followUpJids, setFollowUpJids]     = useState(new Set()); // JIDs with active follow-up
 
     // Custom categories state
     const [categories, setCategories]         = useState(loadCategories);       // [{ id, label }]
@@ -102,6 +104,22 @@ const ConversationList = ({ conversations, activeJid, onSelect, onDelete, search
 
     // Persist leads whenever they change
     useEffect(() => { saveLeads(leads); }, [leads]);
+
+    // Load follow-up states from API
+    const loadFollowUpStates = useCallback(async () => {
+        try {
+            const res = await api.get('/api/follow-up/states');
+            const states = res.data.states || [];
+            setFollowUpJids(new Set(states.map(s => s.jid)));
+        } catch { /* ignore */ }
+    }, []);
+
+    useEffect(() => {
+        loadFollowUpStates();
+        // Refresh every 30 seconds
+        const interval = setInterval(loadFollowUpStates, 30000);
+        return () => clearInterval(interval);
+    }, [loadFollowUpStates]);
 
     // Persist categories
     useEffect(() => { saveCategories(categories); }, [categories]);
@@ -251,9 +269,32 @@ const ConversationList = ({ conversations, activeJid, onSelect, onDelete, search
         });
     };
 
+    // ── Dashboard Navigation ───────────────────────────────────────────────
+    const prevDashboard = () => {
+        if (setDashboardTab) setDashboardTab('alerts');
+    };
+
+    const nextDashboard = () => {
+        if (setDashboardTab) setDashboardTab('followup');
+    };
+
+
+    // ── Follow-up actions ────────────────────────────────────────────
+    const cancelFollowUp = async (jid) => {
+        try {
+            await api.post(`/api/follow-up/cancel/${encodeURIComponent(jid)}`);
+            setFollowUpJids(prev => {
+                const next = new Set(prev);
+                next.delete(jid);
+                return next;
+            });
+        } catch { /* ignore */ }
+        setContextMenu(null);
+    };
+
     // ── Filtering ────────────────────────────────────────────────────
     const filtered = conversations.filter(c => {
-        if (activeTab === 'no-leidos') return c.unreadCount > 0;
+        if (activeTab === 'seguimiento') return followUpJids.has(c.jid);
         if (activeTab === 'leads')    return leads.has(c.jid);
         if (activeTab === 'todos')    return true;
         // Custom category
@@ -283,14 +324,14 @@ const ConversationList = ({ conversations, activeJid, onSelect, onDelete, search
         return colors[Math.abs(hash) % colors.length];
     };
 
-    const noLeidos = conversations.filter(c => c.unreadCount > 0).length;
+    const seguimientoCount = followUpJids.size;
     const leadsCount = leads.size;
 
     // Build built-in tabs with potentially custom labels
     const builtInTabs = [
-        { id: 'todos',     label: tabLabels['todos'] || DEFAULT_TAB_LABELS['todos'],         builtIn: true },
-        { id: 'leads',     label: tabLabels['leads'] || DEFAULT_TAB_LABELS['leads'],         builtIn: true },
-        { id: 'no-leidos', label: tabLabels['no-leidos'] || DEFAULT_TAB_LABELS['no-leidos'], builtIn: true },
+        { id: 'todos',       label: tabLabels['todos'] || DEFAULT_TAB_LABELS['todos'],             builtIn: true },
+        { id: 'leads',       label: tabLabels['leads'] || DEFAULT_TAB_LABELS['leads'],             builtIn: true },
+        { id: 'seguimiento', label: tabLabels['seguimiento'] || DEFAULT_TAB_LABELS['seguimiento'], builtIn: true },
     ];
 
     // Merge built-in + custom tabs
@@ -310,16 +351,26 @@ const ConversationList = ({ conversations, activeJid, onSelect, onDelete, search
                 <span className="conv-list-count">{conversations.length}</span>
             </div>
 
-            {/* ── Search ── */}
-            <div className="conv-search-wrapper">
-                <Search size={14} className="conv-search-icon" />
-                <input
-                    type="text"
-                    className="conv-search-input"
-                    placeholder="Buscar chat..."
-                    value={searchTerm}
-                    onChange={e => onSearchChange(e.target.value)}
-                />
+            {/* ── Search & Dashboard Navigation ── */}
+            <div className="conv-search-wrapper" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <div style={{ position: 'relative', flex: 1 }}>
+                    <Search size={14} className="conv-search-icon" />
+                    <input
+                        type="text"
+                        className="conv-search-input"
+                        placeholder="Buscar chat..."
+                        value={searchTerm}
+                        onChange={e => onSearchChange(e.target.value)}
+                    />
+                </div>
+                <div className="conv-tab-nav" style={{ display: 'flex', gap: '4px' }}>
+                    <button className="conv-tab-nav-btn" onClick={prevDashboard} title="Alertas Pendientes">
+                        <ChevronLeft size={18} />
+                    </button>
+                    <button className="conv-tab-nav-btn" onClick={nextDashboard} title="Seguimiento">
+                        <ChevronRight size={18} />
+                    </button>
+                </div>
             </div>
 
             {/* ── Filter tabs (built-in + custom + add button) ── */}
@@ -355,8 +406,8 @@ const ConversationList = ({ conversations, activeJid, onSelect, onDelete, search
                         >
                             {!tab.builtIn && <Tag size={11} />}
                             {tab.label}
-                            {tab.id === 'no-leidos' && noLeidos > 0 && (
-                                <span className="conv-tab-badge">{noLeidos}</span>
+                            {tab.id === 'seguimiento' && seguimientoCount > 0 && (
+                                <span className="conv-tab-badge conv-tab-badge-follow">{seguimientoCount}</span>
                             )}
                             {tab.id === 'leads' && leadsCount > 0 && (
                                 <span className="conv-tab-badge conv-tab-badge-lead">{leadsCount}</span>
@@ -417,10 +468,10 @@ const ConversationList = ({ conversations, activeJid, onSelect, onDelete, search
                                 <Star size={32} />
                                 <p>Mantén presionado un chat<br/>para agregarlo a Leads</p>
                             </>
-                        ) : activeTab === 'no-leidos' ? (
+                        ) : activeTab === 'seguimiento' ? (
                             <>
-                                <MessageSquare size={32} />
-                                <p>No hay mensajes sin leer</p>
+                                <Clock size={32} />
+                                <p>No hay seguimientos activos</p>
                             </>
                         ) : !(activeTab in DEFAULT_TAB_LABELS) ? (
                             <>
@@ -438,7 +489,7 @@ const ConversationList = ({ conversations, activeJid, onSelect, onDelete, search
                     filtered.map(conv => (
                         <div
                             key={conv.jid}
-                            className={`conv-item ${conv.jid === activeJid ? 'conv-item-active' : ''} ${leads.has(conv.jid) ? 'conv-item-lead' : ''}`}
+                            className={`conv-item ${conv.jid === activeJid ? 'conv-item-active' : ''} ${leads.has(conv.jid) ? 'conv-item-lead' : ''} ${followUpJids.has(conv.jid) ? 'conv-item-followup' : ''}`}
                             onClick={() => onSelect(conv.jid)}
                             /* ── Long-press (touch) ── */
                             onTouchStart={e => startPress(e, conv.jid)}
@@ -458,6 +509,10 @@ const ConversationList = ({ conversations, activeJid, onSelect, onDelete, search
                                 {/* Lead star badge on avatar */}
                                 {leads.has(conv.jid) && (
                                     <span className="conv-avatar-lead-dot" title="Lead">⭐</span>
+                                )}
+                                {/* Follow-up indicator on avatar */}
+                                {followUpJids.has(conv.jid) && !leads.has(conv.jid) && (
+                                    <span className="conv-avatar-followup-dot" title="Seguimiento activo">🔄</span>
                                 )}
                             </div>
                             <div className="conv-info">
@@ -535,6 +590,25 @@ const ConversationList = ({ conversations, activeJid, onSelect, onDelete, search
                             {isLead ? 'Quitar de Leads' : 'Agregar a Leads'}
                         </button>
 
+                        {/* Follow-up cancel option */}
+                        {followUpJids.has(contextMenu.jid) && (
+                            <button
+                                className="conv-context-btn conv-context-btn-danger"
+                                onClick={() => cancelFollowUp(contextMenu.jid)}
+                            >
+                                <XCircle size={15} />
+                                Quitar seguimiento
+                            </button>
+                        )}
+                        {!followUpJids.has(contextMenu.jid) && (
+                            <button
+                                className="conv-context-btn conv-context-btn-muted"
+                                disabled
+                            >
+                                <Clock size={15} />
+                                Sin seguimiento activo
+                            </button>
+                        )}
                         {/* Custom category assignments */}
                         {categories.length > 0 && (
                             <div className="conv-context-divider" />

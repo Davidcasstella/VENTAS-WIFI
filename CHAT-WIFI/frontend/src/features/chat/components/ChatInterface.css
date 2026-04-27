@@ -101,6 +101,26 @@
     color: #8696a0;
 }
 
+.conv-tab-nav-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(0, 255, 0, 0.1);
+    color: #8696a0;
+    border-radius: 6px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.conv-tab-nav-btn:hover {
+    background: rgba(0, 255, 0, 0.1);
+    color: #00ff00;
+    border-color: rgba(0, 255, 0, 0.3);
+}
+
 /* Items container */
 .conv-list-items {
     flex: 1;
@@ -316,6 +336,42 @@
 .conv-tab-badge-cat {
     background: #53bdeb;
     color: #111;
+}
+
+.conv-tab-badge-follow {
+    background: #00ff00;
+    color: #111;
+}
+
+/* ── Follow-up highlight on conversation item ── */
+.conv-item-followup {
+    border-left: 3px solid #00ff00 !important;
+}
+
+.conv-item-followup .conv-name::after {
+    content: ' 🔄';
+    font-size: 0.7rem;
+}
+
+/* ── Follow-up dot on avatar ── */
+.conv-avatar-followup-dot {
+    position: absolute;
+    bottom: -2px;
+    right: -4px;
+    font-size: 0.55rem;
+    line-height: 1;
+    filter: drop-shadow(0 0 2px rgba(0,0,0,0.8));
+}
+
+/* ── Muted (disabled) context menu button ── */
+.conv-context-btn-muted {
+    color: #555;
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.conv-context-btn-muted:hover {
+    background: transparent;
 }
 
 /* ── Add category button ── */

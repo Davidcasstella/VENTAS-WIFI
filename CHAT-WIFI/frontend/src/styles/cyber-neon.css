@@ -1568,6 +1568,7 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 0;
+    overflow-y: auto;
 }
 
 @keyframes tabFadeIn {
@@ -1601,15 +1602,15 @@ body {
 
 /* ── Mobile: let the chat interface take full screen ── */
 @media (max-width: 768px) {
-    /* Dashboard wrapper: auto height, let children determine size */
+    /* Dashboard wrapper: fill available height */
     .dashboard-tabs-section {
-        height: auto !important;
+        height: 100% !important;
         margin: 0 !important;
         border: none !important;
         border-radius: 0 !important;
         background: transparent !important;
-        overflow: visible !important;
-        position: static;
+        display: flex;
+        flex-direction: column;
     }
 
     /* Hide the tab bar on mobile — chat is full screen */
@@ -1617,17 +1618,17 @@ body {
         display: none;
     }
 
-    /* Tab content: auto height, no extra padding */
+    /* Tab content: fill height, allow inner scroll if needed */
     .dashboard-tab-content {
         padding: 0 !important;
-        overflow: visible !important;
-        height: auto !important;
+        flex: 1 !important;
+        overflow-y: auto !important;
+        height: 100% !important;
     }
 
-    /* Main content: no padding, allow normal overflow */
+    /* Main content: allow Layout.css to handle overflow */
     .main-content {
         padding: 0 !important;
-        overflow: visible !important;
         /* Remove the bottom gap so chat sits flush */
         gap: 0 !important;
     }

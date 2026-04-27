@@ -16,6 +16,7 @@ const welcomeAutomationRoutes = require('./routes/welcomeAutomation.routes');
 const aiFallbackRoutes = require('./routes/aiFallback.routes');
 const aiAutomationsRoutes = require('./routes/aiAutomations.routes');
 const chatRoutes = require('./routes/chat.routes');
+const followUpRoutes = require('./routes/followUp.routes');
 const blockedNumbersService = require('./services/blockedNumbers.service');
 const analyticsService = require('./services/analyticsService');
 const welcomeAutomationService = require('./services/welcomeAutomation.service');
@@ -54,6 +55,7 @@ app.use('/api/welcome-automation', welcomeAutomationRoutes);
 app.use('/api/ai-fallback', aiFallbackRoutes);
 app.use('/api/ai-automations', aiAutomationsRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/follow-up', followUpRoutes);
 
 // API Status (Pública)
 app.get('/api/status', (req, res) => {
@@ -103,6 +105,7 @@ const paymentDetection = require('./services/paymentDetection.service');
 const humanResponse = require('./services/humanResponse.service');
 const chatHistoryService = require('./services/chatHistory.service');
 const mediaStorageService = require('./services/mediaStorage.service');
+const followUpService = require('./services/followUp.service');
 const { downloadMediaMessage } = require('@whiskeysockets/baileys');
 const sentTracker = require('./utils/sentTracker');
 apiKeyRotation.setIo(io);
@@ -118,6 +121,9 @@ whatsapp.on('status-update', (data) => {
     // Keep the key rotation service aware of the current WhatsApp socket
     if (data.status === 'connected' && whatsapp.sock) {
         apiKeyRotation.setSock(whatsapp.sock);
+        // Wire follow-up service dependencies and start scheduler
+        followUpService.setDependencies(whatsapp.sock, chatHistoryService, io, welcomeAutomationService);
+        followUpService.startScheduler();
     }
 });
 
@@ -252,6 +258,14 @@ whatsapp.on('message', async (m) => {
         // If the welcome flow was just sent, skip AI response entirely.
         if (welcomeWasSent) {
             console.log(`🔔 Welcome flow sent to ${remoteJid} — skipping AI response to avoid duplicate greeting`);
+
+            // Auto-start follow-up sequence for contacts that received the welcome
+            try {
+                await followUpService.startFollowUp(remoteJid);
+            } catch (fuErr) {
+                console.error(`⚠️ Follow-up auto-start error: ${fuErr.message}`);
+            }
+
             return;
         }
 
@@ -288,6 +302,11 @@ whatsapp.on('message', async (m) => {
 
             // Skip groups
             if (remoteJid.includes('@g.us')) return;
+
+            // === FOLLOW-UP: cancel if client replied ===
+            try {
+                await followUpService.cancelIfClientReplied(remoteJid);
+            } catch (_) { }
 
             // ── Record incoming message in chat history (with media if present) ──
             let incomingMediaInfo = null;
@@ -499,6 +518,9 @@ whatsapp.on('message', async (m) => {
             // === TRACK USER MESSAGE (for dashboard display) ===
             try { await welcomeAutomationService.updateUserMessage(remoteJid, text); } catch (_) { }
 
+            // === CANCEL FOLLOW-UP IF CLIENT REPLIED ===
+            try { await followUpService.cancelIfClientReplied(remoteJid); } catch (_) { }
+
             // === ANALYTICS TRACKING (secondary, non-blocking) ===
             try { analyticsService.trackIncoming(remoteJid); } catch (_) { }
 
@@ -535,6 +557,13 @@ whatsapp.on('message', async (m) => {
                     console.log(`💳 Payment account info sent to ${remoteJid}`);
                     try { analyticsService.trackOutgoing(); } catch (_) { }
                 }
+                // Auto-disable bot after sending payment info — admin takes control
+                await welcomeAutomationService.disableUserAI(remoteJid);
+                console.log(`🔒 AI disabled for ${remoteJid} after payment info request`);
+                await aiFallbackService.registerPending(remoteJid, text);
+                try {
+                    await aiFallbackService.sendAdminNotification(whatsapp.sock, remoteJid, `[Pidió método de pago] ${text}`, msg.pushName);
+                } catch (_) { }
                 return;
             }
 
