@@ -471,6 +471,16 @@ whatsapp.on('message', async (m) => {
                                 console.log(`📤 Payment confirmation sent to ${remoteJid}`);
                                 try { analyticsService.trackOutgoing(); } catch (_) { }
                             }
+                            // Disable AI immediately — admin takes over after payment
+                            await welcomeAutomationService.disableUserAI(remoteJid);
+                            console.log(`🔒 AI disabled for ${remoteJid} after payment receipt detected`);
+                            // Cancel any active follow-up sequence (customer already paid)
+                            try { await followUpService.cancelFollowUp(remoteJid, 'payment_received'); } catch (_) { }
+                            // Register as pending and notify admin
+                            await aiFallbackService.registerPending(remoteJid, '[Comprobante de pago]');
+                            try {
+                                await aiFallbackService.sendAdminNotification(whatsapp.sock, remoteJid, '[Envió comprobante de pago]', msg.pushName);
+                            } catch (_) { }
                         } else {
                             console.log(`📸 Image from ${remoteJid} is NOT a payment receipt — media-only flow`);
                             // Fall through to media-only handler behavior
