@@ -55,9 +55,10 @@ class ChatHistoryService {
      * @param {boolean} fromMe - true if sent by bot/admin, false if from client
      * @param {string} [pushName] - Client display name (only for incoming)
      * @param {string} [sender] - 'client' | 'agent' | 'bot' (defaults based on fromMe)
+     * @param {object} [mediaInfo] - Optional: { mediaId, mediaType } for media messages
      * @returns {object} The saved message object
      */
-    async addMessage(rawJid, text, fromMe, pushName, sender) {
+    async addMessage(rawJid, text, fromMe, pushName, sender, mediaInfo) {
         const jid = this._normalizeJid(rawJid);
         const data = await this._read();
 
@@ -80,6 +81,12 @@ class ChatHistoryService {
             sender: sender || (fromMe ? 'agent' : 'client'),
             timestamp: new Date().toISOString()
         };
+
+        // Attach media info if present
+        if (mediaInfo && mediaInfo.mediaId) {
+            message.mediaId = mediaInfo.mediaId;
+            message.mediaType = mediaInfo.mediaType || 'image';
+        }
 
         data[jid].messages.push(message);
 

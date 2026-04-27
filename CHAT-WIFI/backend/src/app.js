@@ -102,6 +102,8 @@ const aiAutomationsService = require('./services/aiAutomations.service');
 const paymentDetection = require('./services/paymentDetection.service');
 const humanResponse = require('./services/humanResponse.service');
 const chatHistoryService = require('./services/chatHistory.service');
+const mediaStorageService = require('./services/mediaStorage.service');
+const { downloadMediaMessage } = require('@whiskeysockets/baileys');
 const sentTracker = require('./utils/sentTracker');
 apiKeyRotation.setIo(io);
 humanResponse.setDependencies(io, chatHistoryService);
@@ -136,6 +138,14 @@ whatsapp.on('message', async (m) => {
         if (!msg) return;
 
         const rawJid = msg.key?.remoteJid || '';
+
+        // ── SKIP STATUS BROADCASTS (WhatsApp Stories/Status updates) ──
+        // When contacts post status updates, Baileys delivers them as
+        // messages.upsert with remoteJid = 'status@broadcast'. These
+        // must be completely ignored to avoid phantom messages and
+        // unwanted bot replies.
+        if (rawJid === 'status@broadcast') return;
+
         // Normalize JID: strip device suffix (e.g. "573028599105:42@s.whatsapp.net" → "573028599105@s.whatsapp.net")
         let remoteJid = rawJid.replace(/:\d+@/, '@');
 
@@ -163,6 +173,17 @@ whatsapp.on('message', async (m) => {
             msg.message?.interactiveResponseMessage?.body?.text ||
             '';
 
+        // ── SKIP PROTOCOL & NON-CHAT MESSAGES ──
+        // Protocol messages (read receipts, message edits/deletes, etc.),
+        // reaction messages, and ephemeral setting changes are not real
+        // chat messages and must be ignored.
+        const earlyContent = msg.message || {};
+        if (earlyContent.protocolMessage || earlyContent.reactionMessage ||
+            earlyContent.ephemeralMessage?.message?.protocolMessage ||
+            earlyContent.senderKeyDistributionMessage) {
+            return;
+        }
+
         // === OUTGOING MESSAGE HANDLER (fromMe = true) ===
         // Handles: bot messages (skip), dashboard messages (skip, already saved),
         //          and native phone/web messages (save + detect manual intervention)
@@ -177,9 +198,23 @@ whatsapp.on('message', async (m) => {
             if (sentTracker.wasSentRecently(remoteJid)) return;
 
             // 3. Native phone/web message (true manual intervention)
-            // Save to chat history for dashboard sync
+            // Save to chat history for dashboard sync — also capture outgoing media
             try {
-                const savedMsg = await chatHistoryService.addMessage(remoteJid, text || '[media]', true, msg.pushName, 'agent');
+                let outMediaInfo = null;
+                const outContent = msg.message || {};
+                const outHasImage = outContent.imageMessage;
+                const outHasVideo = outContent.videoMessage;
+                const outHasAudio = outContent.audioMessage || outContent.ptvMessage;
+                if (outHasImage || outHasVideo || outHasAudio) {
+                    try {
+                        const outBuffer = await downloadMediaMessage(msg, 'buffer', {}, { reuploadRequest: undefined });
+                        const outType = outHasImage ? 'image' : outHasAudio ? 'audio' : 'video';
+                        const outMime = (outHasImage?.mimetype || outHasVideo?.mimetype || outHasAudio?.mimetype) || `${outType}/unknown`;
+                        const saved = mediaStorageService.saveMedia(remoteJid, outBuffer, outType, outMime);
+                        outMediaInfo = { mediaId: saved.id, mediaType: outType };
+                    } catch (_) { }
+                }
+                const savedMsg = await chatHistoryService.addMessage(remoteJid, text || '[media]', true, msg.pushName, 'agent', outMediaInfo);
                 io.emit('chat:message', { jid: remoteJid, message: savedMsg });
             } catch (_) { }
 
@@ -254,9 +289,39 @@ whatsapp.on('message', async (m) => {
             // Skip groups
             if (remoteJid.includes('@g.us')) return;
 
-            // ── Record incoming message in chat history ──
+            // ── Record incoming message in chat history (with media if present) ──
+            let incomingMediaInfo = null;
             try {
-                const savedMsg = await chatHistoryService.addMessage(remoteJid, text || '[media]', false, msg.pushName, 'client');
+                const inContent = msg.message || {};
+                const inHasImage = inContent.imageMessage;
+                const inHasVideo = inContent.videoMessage;
+                const inHasAudio = inContent.audioMessage || inContent.ptvMessage;
+                const inHasSticker = inContent.stickerMessage;
+                if (inHasImage || inHasVideo || inHasAudio || inHasSticker) {
+                    try {
+                        const inBuffer = await downloadMediaMessage(
+                            msg,
+                            'buffer',
+                            {},
+                            { reuploadRequest: whatsapp.sock.updateMediaMessage }
+                        );
+                        const inType = inHasImage ? 'image' : inHasAudio ? 'audio' : inHasVideo ? 'video' : 'image';
+                        // Normalize audio MIME: WhatsApp sends 'audio/ogg; codecs=opus' but browsers
+                        // need plain 'audio/ogg' to play it reliably.
+                        let inMime = (inHasImage?.mimetype || inHasVideo?.mimetype || inHasAudio?.mimetype || inHasSticker?.mimetype) || `${inType}/ogg`;
+                        if (inType === 'audio') {
+                            inMime = 'audio/ogg';
+                        }
+                        const saved = mediaStorageService.saveMedia(remoteJid, inBuffer, inType, inMime);
+                        incomingMediaInfo = { mediaId: saved.id, mediaType: inType };
+                    } catch (dlErr) {
+                        console.error(`⚠️ Failed to download incoming media from ${remoteJid}: ${dlErr.message}`);
+                    }
+                }
+
+            } catch (_) { }
+            try {
+                const savedMsg = await chatHistoryService.addMessage(remoteJid, text || '[media]', false, msg.pushName, 'client', incomingMediaInfo);
                 io.emit('chat:message', { jid: remoteJid, message: savedMsg });
             } catch (_) { }
 

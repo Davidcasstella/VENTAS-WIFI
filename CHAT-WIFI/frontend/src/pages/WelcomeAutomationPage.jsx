@@ -3,9 +3,9 @@ import api from '../services/api';
 import {
     BellRing, Power, Upload, Trash2, Clock, MessageSquare,
     CheckCircle, XCircle, Users, Calendar, AlertCircle, Save,
-    RotateCcw, Search, RefreshCw, Settings2, UserCheck, Video
+    RotateCcw, Search, RefreshCw, Settings2, Video, Phone,
+    Zap, CreditCard, Mic, Loader2
 } from 'lucide-react';
-import UserControlPanel from '../components/ui/UserControlPanel';
 
 const WelcomeAutomationPage = () => {
     // ── Tab state ───────────────────────────────────────────────────────
@@ -21,6 +21,10 @@ const WelcomeAutomationPage = () => {
     const [uploadingVideo, setUploadingVideo] = useState(false);
     const [uploadingImage, setUploadingImage] = useState(false);
     const [toast, setToast] = useState(null);
+
+    // Admin number state (moved from PendingChatsPage)
+    const [adminNumber, setAdminNumber] = useState('');
+    const [savingAdmin, setSavingAdmin] = useState(false);
 
     // Local editable fields
     const [messageText, setMessageText] = useState('');
@@ -42,7 +46,9 @@ const WelcomeAutomationPage = () => {
     const [draggingVideo, setDraggingVideo] = useState(false);
     const [draggingImage, setDraggingImage] = useState(false);
 
-    // ── Users state (now managed by UserControlPanel component) ────────
+    // ── Automations state ─────────────────────────────────────────────
+    const [automationsConfig, setAutomationsConfig] = useState(null);
+    const [togglingAutomation, setTogglingAutomation] = useState(null);
 
     // ── Load initial data ───────────────────────────────────────────────
     useEffect(() => {
@@ -54,9 +60,11 @@ const WelcomeAutomationPage = () => {
     const loadAll = async () => {
         setLoading(true);
         try {
-            const [cfgRes, statsRes] = await Promise.all([
+            const [cfgRes, statsRes, fallbackCfgRes, autoCfgRes] = await Promise.all([
                 api.get('/api/welcome-automation/config'),
-                api.get('/api/welcome-automation/stats')
+                api.get('/api/welcome-automation/stats'),
+                api.get('/api/ai-fallback/config').catch(() => ({ data: { data: {} } })),
+                api.get('/api/ai-automations/config').catch(() => ({ data: { config: {} } }))
             ]);
             const cfg = cfgRes.data.data;
             setConfig(cfg);
@@ -67,7 +75,6 @@ const WelcomeAutomationPage = () => {
             setVideoFileName(cfg.videoFilePath ? 'welcome-video.mp4' : null);
             setVideoEnabled(cfg.videoEnabled || false);
             if (cfg.imageFilePath) {
-                // Extract original filename or use default
                 const ext = cfg.imageFilePath.split('.').pop() || 'jpg';
                 setImageFileName(`welcome-image.${ext}`);
             } else {
@@ -75,6 +82,11 @@ const WelcomeAutomationPage = () => {
             }
             setImageEnabled(cfg.imageEnabled || false);
             setStats(statsRes.data.data);
+            // Load admin number from fallback config
+            const fbCfg = fallbackCfgRes.data.data;
+            setAdminNumber(fbCfg.adminJid?.replace('@s.whatsapp.net', '') || '');
+            // Load automations config
+            setAutomationsConfig(autoCfgRes.data.config || {});
         } catch (err) {
             showToast('error', 'Error cargando configuración');
         } finally {
@@ -82,7 +94,6 @@ const WelcomeAutomationPage = () => {
         }
     };
 
-    // loadUsers now handled by UserControlPanel component
 
     // ── Toast helper ────────────────────────────────────────────────────
     const showToast = (type, msg) => {
@@ -317,7 +328,23 @@ const WelcomeAutomationPage = () => {
         uploadImageFile(file);
     };
 
-    // Per-user actions and helpers now handled by UserControlPanel component
+
+    // ── Save admin number ────────────────────────────────────────────────
+    const handleSaveAdmin = async () => {
+        if (savingAdmin) return;
+        setSavingAdmin(true);
+        try {
+            const jid = adminNumber.includes('@')
+                ? adminNumber
+                : `${adminNumber.replace(/\D/g, '')}@s.whatsapp.net`;
+            await api.put('/api/ai-fallback/config', { adminJid: jid });
+            showToast('success', 'Número de admin guardado');
+        } catch {
+            showToast('error', 'Error al guardar número');
+        } finally {
+            setSavingAdmin(false);
+        }
+    };
 
     // ── Loading state ───────────────────────────────────────────────────
     if (loading) {
@@ -410,11 +437,11 @@ const WelcomeAutomationPage = () => {
                     Configuración
                 </button>
                 <button
-                    className={`wa-tab ${activeTab === 'users' ? 'wa-tab-active' : ''}`}
-                    onClick={() => setActiveTab('users')}
+                    className={`wa-tab ${activeTab === 'automations' ? 'wa-tab-active' : ''}`}
+                    onClick={() => setActiveTab('automations')}
                 >
-                    <UserCheck size={16} />
-                    Control de Usuarios
+                    <Zap size={16} />
+                    Automatizaciones IA
                 </button>
             </div>
 
@@ -486,6 +513,35 @@ const WelcomeAutomationPage = () => {
                                         {h === 168 ? '7d' : `${h}h`}
                                     </button>
                                 ))}
+                            </div>
+                        </div>
+
+                        {/* Admin number config */}
+                        <div className="premium-card wa-card">
+                            <div className="wa-card-header">
+                                <Phone size={20} style={{ color: '#00ff00' }} />
+                                <span className="wa-card-title">Número del Administrador</span>
+                            </div>
+                            <p className="wa-card-desc">
+                                Cuando la IA no sepa responder, se enviará una notificación a este número por WhatsApp.
+                            </p>
+                            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem' }}>
+                                <input
+                                    type="text"
+                                    className="wa-number-input"
+                                    placeholder="Ej: 573028599105"
+                                    value={adminNumber}
+                                    onChange={e => setAdminNumber(e.target.value)}
+                                    style={{ flex: 1, fontSize: '0.95rem' }}
+                                />
+                                <button
+                                    className="wa-admin-save-btn"
+                                    onClick={handleSaveAdmin}
+                                    disabled={savingAdmin}
+                                >
+                                    <Save size={16} />
+                                    {savingAdmin ? 'Guardando...' : 'Guardar'}
+                                </button>
                             </div>
                         </div>
 
@@ -721,62 +777,107 @@ const WelcomeAutomationPage = () => {
                             />
                         </div>
 
-                        {/* Flow diagram */}
-                        <div className="premium-card wa-card wa-flow-card">
-                            <div className="wa-card-header">
-                                <span className="wa-card-title">Flujo de envío</span>
-                            </div>
-                            <div className="wa-flow">
-                                <div className="wa-flow-step">
-                                    <span className="wa-flow-num">1</span>
-                                    <span>Cliente envía mensaje</span>
-                                </div>
-                                <div className="wa-flow-arrow">↓</div>
-                                <div className="wa-flow-step">
-                                    <span className="wa-flow-num">2</span>
-                                    <span>¿Módulo activo + cooldown expirado?</span>
-                                </div>
-                                <div className="wa-flow-arrow">↓ SÍ</div>
-                                <div className="wa-flow-step wa-flow-action">
-                                    <span>🔊 Envía audio .ogg</span>
-                                </div>
-                                <div className="wa-flow-arrow">↓</div>
-                                <div className="wa-flow-step wa-flow-action">
-                                    <span>📝 Envía mensaje texto (globo 1)</span>
-                                </div>
-                                <div className="wa-flow-arrow">↓</div>
-                                <div className="wa-flow-step wa-flow-action">
-                                    <span>🖼️ Envía imagen (si aplica)</span>
-                                </div>
-                                <div className="wa-flow-arrow">↓</div>
-                                <div className="wa-flow-step wa-flow-action">
-                                    <span>📝 Envía mensaje texto (demás globos)</span>
-                                </div>
-                                <div className="wa-flow-arrow">↓</div>
-                                <div className="wa-flow-step wa-flow-action">
-                                    <span>🎬 Envía video .mp4</span>
-                                </div>
-                                <div className="wa-flow-arrow">↓</div>
-                                <div className="wa-flow-step">
-                                    <span className="wa-flow-num">3</span>
-                                    <span>IA responde la pregunta</span>
-                                </div>
-                                <div className="wa-flow-arrow">↓</div>
-                                <div className="wa-flow-step">
-                                    <span className="wa-flow-num">4</span>
-                                    <span>Si IA no sabe → "ok" + cooldown 24h</span>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             )}
 
             {/* ═══════════════════════════════════════════════════════════
-                TAB 2: USER CONTROL (extracted to reusable component)
+                TAB 2: AUTOMATIONS (payment detection + voice processing)
                 ═══════════════════════════════════════════════════════════ */}
-            {activeTab === 'users' && (
-                <UserControlPanel />
+            {activeTab === 'automations' && (
+                <div style={{ marginTop: '1rem' }}>
+                    <div className="automations-grid">
+                        {/* Payment Detection Toggle */}
+                        <div className={`automation-card ${automationsConfig?.paymentDetectionEnabled ? 'automation-active' : ''}`}>
+                            <div className="automation-card-header">
+                                <div className="automation-icon-wrap" style={{ background: automationsConfig?.paymentDetectionEnabled ? 'rgba(0, 255, 65, 0.15)' : 'rgba(255, 255, 255, 0.05)' }}>
+                                    <CreditCard size={28} style={{ color: automationsConfig?.paymentDetectionEnabled ? 'var(--neon-green)' : 'var(--text-secondary)' }} />
+                                </div>
+                                <label className="automation-switch">
+                                    <input
+                                        type="checkbox"
+                                        checked={automationsConfig?.paymentDetectionEnabled || false}
+                                        onChange={async () => {
+                                            if (togglingAutomation) return;
+                                            setTogglingAutomation('paymentDetectionEnabled');
+                                            try {
+                                                const { data } = await api.put('/api/ai-automations/config', {
+                                                    paymentDetectionEnabled: !automationsConfig.paymentDetectionEnabled
+                                                });
+                                                setAutomationsConfig(data.config);
+                                                showToast('success', data.config.paymentDetectionEnabled ? 'Verificación de pago activada' : 'Verificación de pago desactivada');
+                                            } catch {
+                                                showToast('error', 'Error al cambiar estado');
+                                            } finally {
+                                                setTogglingAutomation(null);
+                                            }
+                                        }}
+                                        disabled={togglingAutomation === 'paymentDetectionEnabled'}
+                                    />
+                                    <span className="automation-slider"></span>
+                                </label>
+                            </div>
+                            <h3 className="automation-card-title">Verificación de pago por imagen</h3>
+                            <p className="automation-card-desc">
+                                Cuando un cliente envía una imagen, el sistema analiza si es un comprobante de pago usando IA con visión.
+                            </p>
+                            <div className={`automation-status-badge ${automationsConfig?.paymentDetectionEnabled ? 'badge-active' : 'badge-inactive'}`}>
+                                {togglingAutomation === 'paymentDetectionEnabled' ? (
+                                    <><Loader2 size={14} className="spin-animation" /> Actualizando...</>
+                                ) : automationsConfig?.paymentDetectionEnabled ? (
+                                    '● Activo'
+                                ) : (
+                                    '○ Inactivo'
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Voice Processing Toggle */}
+                        <div className={`automation-card ${automationsConfig?.voiceProcessingEnabled ? 'automation-active' : ''}`}>
+                            <div className="automation-card-header">
+                                <div className="automation-icon-wrap" style={{ background: automationsConfig?.voiceProcessingEnabled ? 'rgba(0, 255, 65, 0.15)' : 'rgba(255, 255, 255, 0.05)' }}>
+                                    <Mic size={28} style={{ color: automationsConfig?.voiceProcessingEnabled ? 'var(--neon-green)' : 'var(--text-secondary)' }} />
+                                </div>
+                                <label className="automation-switch">
+                                    <input
+                                        type="checkbox"
+                                        checked={automationsConfig?.voiceProcessingEnabled || false}
+                                        onChange={async () => {
+                                            if (togglingAutomation) return;
+                                            setTogglingAutomation('voiceProcessingEnabled');
+                                            try {
+                                                const { data } = await api.put('/api/ai-automations/config', {
+                                                    voiceProcessingEnabled: !automationsConfig.voiceProcessingEnabled
+                                                });
+                                                setAutomationsConfig(data.config);
+                                                showToast('success', data.config.voiceProcessingEnabled ? 'Procesamiento de voz activado' : 'Procesamiento de voz desactivado');
+                                            } catch {
+                                                showToast('error', 'Error al cambiar estado');
+                                            } finally {
+                                                setTogglingAutomation(null);
+                                            }
+                                        }}
+                                        disabled={togglingAutomation === 'voiceProcessingEnabled'}
+                                    />
+                                    <span className="automation-slider"></span>
+                                </label>
+                            </div>
+                            <h3 className="automation-card-title">Procesamiento de voz</h3>
+                            <p className="automation-card-desc">
+                                Convierte los mensajes de voz a texto y los procesa con la IA para generar respuestas automáticas.
+                            </p>
+                            <div className={`automation-status-badge ${automationsConfig?.voiceProcessingEnabled ? 'badge-active' : 'badge-inactive'}`}>
+                                {togglingAutomation === 'voiceProcessingEnabled' ? (
+                                    <><Loader2 size={14} className="spin-animation" /> Actualizando...</>
+                                ) : automationsConfig?.voiceProcessingEnabled ? (
+                                    '● Activo'
+                                ) : (
+                                    '○ Inactivo'
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );

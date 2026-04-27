@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LayoutDashboard, LogOut, Zap, QrCode, Settings, BrainCircuit, BookOpen, ShieldBan, BellRing, AlertTriangle } from 'lucide-react';
+import { LayoutDashboard, LogOut, QrCode, BrainCircuit, BookOpen, ShieldBan, BellRing } from 'lucide-react';
 import api from '../services/api';
 import logo from '../Logo/logo.png';
 import Header from '../components/ui/Header';
@@ -11,14 +11,10 @@ const DashboardLayout = () => {
     const { logout, user } = useAuth();
     const navigate = useNavigate();
     const [blockedCount, setBlockedCount] = useState(0);
-    const [pendingCount, setPendingCount] = useState(0);
 
     useEffect(() => {
         api.get('/api/blocked-numbers')
             .then(({ data }) => setBlockedCount(data.count || 0))
-            .catch(() => { });
-        api.get('/api/ai-fallback/pending/count')
-            .then(({ data }) => setPendingCount(data.count || 0))
             .catch(() => { });
     }, []);
 
@@ -81,18 +77,6 @@ const DashboardLayout = () => {
                         )}
                     </NavLink>
 
-                    <NavLink to="/pending-chats" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-                        <AlertTriangle size={18} />
-                        <span>Pendientes</span>
-                        {pendingCount > 0 && (
-                            <span className="bn-sidebar-badge pc-pending-badge">{pendingCount}</span>
-                        )}
-                    </NavLink>
-
-                    <NavLink to="/ai-automations" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-                        <Zap size={18} />
-                        <span>Automatizaciones</span>
-                    </NavLink>
 
                     <button onClick={handleLogout} className="nav-item logout-nav-link" style={{ width: '100%', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}>
                         <LogOut size={18} />
@@ -148,15 +132,6 @@ const DashboardLayout = () => {
                     <span>Bloqueados</span>
                 </NavLink>
 
-                <NavLink to="/pending-chats" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}>
-                    <AlertTriangle size={20} />
-                    <span>Pendientes</span>
-                </NavLink>
-
-                <NavLink to="/ai-automations" className={({ isActive }) => `mobile-nav-item ${isActive ? 'active' : ''}`}>
-                    <Zap size={20} />
-                    <span>Auto</span>
-                </NavLink>
 
                 <button onClick={handleLogout} className="mobile-nav-item" style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
                     <LogOut size={20} />

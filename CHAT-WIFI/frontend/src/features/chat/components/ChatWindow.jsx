@@ -1,6 +1,12 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { ArrowLeft, Send, Loader2, Power, RotateCcw, Clock, CheckCheck } from 'lucide-react';
+import { ArrowLeft, Send, Loader2, Power, RotateCcw, CheckCheck, Paperclip, Mic, X } from 'lucide-react';
+
 import api from '../../../services/api';
+
+// Backend base URL — same logic as api.js
+const BACKEND_URL = window.location.hostname === 'localhost'
+    ? 'http://localhost:3000'
+    : window.location.origin;
 
 const ChatWindow = ({ jid, pushName, messages, loading, onSend, onBack }) => {
     const [inputText, setInputText] = useState('');
@@ -10,6 +16,24 @@ const ChatWindow = ({ jid, pushName, messages, loading, onSend, onBack }) => {
     const [toast, setToast] = useState(null);
     const messagesContainerRef = useRef(null);
     const inputRef = useRef(null);
+
+    // Media upload state
+    const [selectedFile, setSelectedFile] = useState(null);     // File object
+    const [filePreview, setFilePreview] = useState(null);       // Preview URL
+    const [caption, setCaption] = useState('');
+    const [uploadingMedia, setUploadingMedia] = useState(false);
+    const fileInputRef = useRef(null);
+
+    // Audio recording state
+    const [isRecording, setIsRecording] = useState(false);
+    const [recordingDuration, setRecordingDuration] = useState(0);
+    const mediaRecorderRef = useRef(null);
+    const audioChunksRef = useRef([]);
+    const recordingTimerRef = useRef(null);
+    const streamRef = useRef(null);
+
+    // Lightbox state
+    const [lightboxSrc, setLightboxSrc] = useState(null);
 
     // Load user state when JID changes
     useEffect(() => {
@@ -35,14 +59,10 @@ const ChatWindow = ({ jid, pushName, messages, loading, onSend, onBack }) => {
     }, []);
 
     // Scroll to bottom when a new chat is opened (jid changes) or loading finishes
-    // Uses multiple passes to ensure DOM is fully rendered after async load
     useEffect(() => {
         if (!jid || loading) return;
-        // Immediate attempt
         scrollToBottom();
-        // After initial render
         requestAnimationFrame(scrollToBottom);
-        // After async content (images, long text) finishes layout
         const t1 = setTimeout(scrollToBottom, 150);
         const t2 = setTimeout(scrollToBottom, 400);
         return () => { clearTimeout(t1); clearTimeout(t2); };
@@ -51,16 +71,31 @@ const ChatWindow = ({ jid, pushName, messages, loading, onSend, onBack }) => {
     // Scroll to bottom when new messages arrive
     useEffect(() => {
         requestAnimationFrame(scrollToBottom);
+        const t = setTimeout(scrollToBottom, 200);
+        return () => clearTimeout(t);
     }, [messages, scrollToBottom]);
 
+    // Scroll to bottom when file preview panel appears/disappears (it changes the layout height)
+    useEffect(() => {
+        const t = setTimeout(scrollToBottom, 50);
+        return () => clearTimeout(t);
+    }, [selectedFile, isRecording, scrollToBottom]);
+
+    // Cleanup file preview URL on unmount or change
+    useEffect(() => {
+        return () => {
+            if (filePreview) URL.revokeObjectURL(filePreview);
+        };
+    }, [filePreview]);
+
     // No auto-focus on chat open — prevents mobile keyboard from popping up
-    // Users can tap the input manually when ready to type
 
     const showToast = (type, msg) => {
         setToast({ type, msg });
         setTimeout(() => setToast(null), 3000);
     };
 
+    // ── Text send ──
     const handleSend = async () => {
         if (!inputText.trim() || sending) return;
         const text = inputText.trim();
@@ -70,7 +105,6 @@ const ChatWindow = ({ jid, pushName, messages, loading, onSend, onBack }) => {
             await onSend(text);
         } finally {
             setSending(false);
-            // Only re-focus after sending on wide screens (desktop)
             if (window.innerWidth > 768) {
                 inputRef.current?.focus();
             }
@@ -84,8 +118,159 @@ const ChatWindow = ({ jid, pushName, messages, loading, onSend, onBack }) => {
         }
     };
 
-    // ── User control actions ──
+    // ── File selection ──
+    const handleFileSelect = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
 
+        // Validate size (64MB)
+        if (file.size > 64 * 1024 * 1024) {
+            showToast('error', 'Archivo muy grande (máx 64MB)');
+            return;
+        }
+
+        setSelectedFile(file);
+        setCaption('');
+
+        // Generate preview for images/videos
+        if (file.type.startsWith('image/') || file.type.startsWith('video/')) {
+            const url = URL.createObjectURL(file);
+            setFilePreview(url);
+        } else {
+            setFilePreview(null);
+        }
+    };
+
+    const cancelFileSelection = () => {
+        setSelectedFile(null);
+        if (filePreview) URL.revokeObjectURL(filePreview);
+        setFilePreview(null);
+        setCaption('');
+        if (fileInputRef.current) fileInputRef.current.value = '';
+    };
+
+    const sendMedia = async () => {
+        if (!selectedFile || uploadingMedia) return;
+        setUploadingMedia(true);
+        try {
+            const formData = new FormData();
+            formData.append('jid', jid);
+            formData.append('file', selectedFile);
+            if (caption.trim()) formData.append('caption', caption.trim());
+
+            await api.post('/api/chat/send-media', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            showToast('success', 'Media enviado');
+            cancelFileSelection();
+        } catch (err) {
+            console.error('Error sending media:', err);
+            showToast('error', 'Error al enviar media');
+        } finally {
+            setUploadingMedia(false);
+        }
+    };
+
+    // ── Audio recording ──
+    const startRecording = async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            streamRef.current = stream;
+            audioChunksRef.current = [];
+
+            const mediaRecorder = new MediaRecorder(stream, {
+                mimeType: MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+                    ? 'audio/webm;codecs=opus'
+                    : 'audio/webm'
+            });
+            mediaRecorderRef.current = mediaRecorder;
+
+            mediaRecorder.ondataavailable = (e) => {
+                if (e.data.size > 0) audioChunksRef.current.push(e.data);
+            };
+
+            mediaRecorder.onstop = async () => {
+                // Stop all tracks
+                stream.getTracks().forEach(t => t.stop());
+                streamRef.current = null;
+
+                // Use the actual mimeType from the recorder for the Blob
+                const recorderMime = mediaRecorder.mimeType || 'audio/webm';
+                const audioBlob = new Blob(audioChunksRef.current, { type: recorderMime });
+                if (audioBlob.size < 500) {
+                    showToast('error', 'Audio muy corto');
+                    return;
+                }
+
+                // Send the audio
+                setUploadingMedia(true);
+                try {
+                    const formData = new FormData();
+                    formData.append('jid', jid);
+                    // Send as .webm — backend will handle format for WhatsApp
+                    formData.append('file', audioBlob, 'voice-note.webm');
+
+                    await api.post('/api/chat/send-media', formData, {
+                        headers: { 'Content-Type': 'multipart/form-data' }
+                    });
+                    showToast('success', 'Audio enviado');
+                } catch (err) {
+                    console.error('Error sending audio:', err);
+                    const errMsg = err.response?.data?.message || 'Error al enviar audio';
+                    showToast('error', errMsg);
+                } finally {
+                    setUploadingMedia(false);
+                }
+
+            };
+
+            mediaRecorder.start(250); // Collect data every 250ms
+            setIsRecording(true);
+            setRecordingDuration(0);
+
+            // Duration timer
+            recordingTimerRef.current = setInterval(() => {
+                setRecordingDuration(prev => prev + 1);
+            }, 1000);
+
+        } catch (err) {
+            console.error('Microphone access denied:', err);
+            showToast('error', 'No se pudo acceder al micrófono');
+        }
+    };
+
+    const stopRecording = () => {
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+            mediaRecorderRef.current.stop();
+        }
+        setIsRecording(false);
+        clearInterval(recordingTimerRef.current);
+        recordingTimerRef.current = null;
+    };
+
+    const cancelRecording = () => {
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+            mediaRecorderRef.current.ondataavailable = null; // Prevent data collection
+            mediaRecorderRef.current.onstop = null; // Prevent send
+            mediaRecorderRef.current.stop();
+        }
+        if (streamRef.current) {
+            streamRef.current.getTracks().forEach(t => t.stop());
+            streamRef.current = null;
+        }
+        setIsRecording(false);
+        clearInterval(recordingTimerRef.current);
+        recordingTimerRef.current = null;
+        audioChunksRef.current = [];
+    };
+
+    const formatDuration = (seconds) => {
+        const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+        const s = (seconds % 60).toString().padStart(2, '0');
+        return `${m}:${s}`;
+    };
+
+    // ── User control actions ──
     const toggleAI = async () => {
         setToggling('ai');
         try {
@@ -145,8 +330,66 @@ const ChatWindow = ({ jid, pushName, messages, loading, onSend, onBack }) => {
 
     const isLid = jid && jid.includes('@lid');
     const rawNumber = jid ? jid.replace(/@.*$/, '').replace(/:\d+$/, '') : '';
-    // Format if it's a normal phone number (not a lid)
     const displaySubtitle = isLid ? 'Número oculto (WhatsApp)' : `+${rawNumber}`;
+
+    // Helper to build media URL pointing to the backend server
+    const mediaUrl = (mediaId) => `${BACKEND_URL}/api/chat/media/${mediaId}`;
+
+    // ── Render a media bubble ──
+    const renderMediaContent = (item) => {
+        if (!item.mediaId) return null;
+
+        const url = mediaUrl(item.mediaId);
+
+        if (item.mediaType === 'image') {
+            return (
+                <div className="chat-media-container">
+                    <img
+                        src={url}
+                        alt="Imagen"
+                        className="chat-media-image"
+                        loading="lazy"
+                        onClick={() => setLightboxSrc(url)}
+                    />
+                </div>
+            );
+        }
+
+        if (item.mediaType === 'audio') {
+            return (
+                <div className="chat-media-container chat-media-audio">
+                    <audio
+                        controls
+                        preload="metadata"
+                        className="chat-audio-player"
+                        src={url}
+                        crossOrigin="anonymous"
+                    >
+                        Tu navegador no soporta audio.
+                    </audio>
+                </div>
+            );
+        }
+
+        if (item.mediaType === 'video') {
+            return (
+                <div className="chat-media-container">
+                    <video
+                        controls
+                        preload="metadata"
+                        className="chat-media-video"
+                        src={url}
+                        crossOrigin="anonymous"
+                    >
+                        Tu navegador no soporta video.
+                    </video>
+                </div>
+            );
+        }
+
+
+        return null;
+    };
 
     return (
         <div className="chat-window">
@@ -154,6 +397,16 @@ const ChatWindow = ({ jid, pushName, messages, loading, onSend, onBack }) => {
             {toast && (
                 <div className={`chat-toast ${toast.type === 'success' ? 'chat-toast-ok' : 'chat-toast-err'}`}>
                     {toast.msg}
+                </div>
+            )}
+
+            {/* Lightbox */}
+            {lightboxSrc && (
+                <div className="chat-lightbox" onClick={() => setLightboxSrc(null)}>
+                    <button className="chat-lightbox-close" onClick={() => setLightboxSrc(null)}>
+                        <X size={24} />
+                    </button>
+                    <img src={lightboxSrc} alt="Vista completa" className="chat-lightbox-img" />
                 </div>
             )}
 
@@ -170,7 +423,7 @@ const ChatWindow = ({ jid, pushName, messages, loading, onSend, onBack }) => {
                     <span className="chat-header-number">{displaySubtitle}</span>
                 </div>
 
-                {/* ── User control buttons ── */}
+                {/* User control buttons */}
                 <div className="chat-header-controls">
                     <button
                         className={`chat-ctrl-btn ${aiEnabled ? 'chat-ctrl-on' : 'chat-ctrl-off'}`}
@@ -214,12 +467,18 @@ const ChatWindow = ({ jid, pushName, messages, loading, onSend, onBack }) => {
                                 </div>
                             );
                         }
+
+                        const hasMedia = !!item.mediaId;
+                        const hasText = item.text && item.text !== '[media]' && item.text !== `[${item.mediaType}]` && item.text !== '[image]' && item.text !== '[audio]' && item.text !== '[video]';
+
                         return (
                             <div
                                 key={item.id || i}
-                                className={`chat-bubble ${item.fromMe ? 'chat-bubble-out' : 'chat-bubble-in'}`}
+                                className={`chat-bubble ${item.fromMe ? 'chat-bubble-out' : 'chat-bubble-in'} ${hasMedia ? 'chat-bubble-media' : ''}`}
                             >
-                                <span className="chat-bubble-text">{item.text}</span>
+                                {hasMedia && renderMediaContent(item)}
+                                {hasText && <span className="chat-bubble-text">{item.text}</span>}
+                                {!hasMedia && !hasText && <span className="chat-bubble-text">{item.text}</span>}
                                 <span className="chat-bubble-time">
                                     {formatTime(item.timestamp)}
                                     {item.fromMe && <span className="chat-bubble-check"> <CheckCheck size={14} /></span>}
@@ -230,25 +489,115 @@ const ChatWindow = ({ jid, pushName, messages, loading, onSend, onBack }) => {
                 )}
             </div>
 
+            {/* File preview panel */}
+            {selectedFile && (
+                <div className="chat-file-preview">
+                    <div className="chat-file-preview-header">
+                        <span className="chat-file-preview-name">
+                            <Paperclip size={14} />
+                            {selectedFile.name}
+                            <span className="chat-file-preview-size">
+                                ({(selectedFile.size / 1024).toFixed(0)} KB)
+                            </span>
+                        </span>
+                        <button className="chat-file-preview-close" onClick={cancelFileSelection}>
+                            <X size={16} />
+                        </button>
+                    </div>
+                    {filePreview && selectedFile.type.startsWith('image/') && (
+                        <img src={filePreview} alt="Preview" className="chat-file-preview-img" />
+                    )}
+                    {filePreview && selectedFile.type.startsWith('video/') && (
+                        <video src={filePreview} className="chat-file-preview-video" controls />
+                    )}
+                    <div className="chat-file-preview-actions">
+                        <input
+                            type="text"
+                            className="chat-file-caption-input"
+                            placeholder="Añadir descripción..."
+                            value={caption}
+                            onChange={e => setCaption(e.target.value)}
+                            onKeyDown={e => { if (e.key === 'Enter') sendMedia(); }}
+                        />
+                        <button
+                            className="chat-send-btn chat-send-media-btn"
+                            onClick={sendMedia}
+                            disabled={uploadingMedia}
+                        >
+                            {uploadingMedia ? <Loader2 size={18} className="chat-spin" /> : <Send size={18} />}
+                        </button>
+                    </div>
+                </div>
+            )}
+
             {/* Input area */}
             <div className="chat-input-bar">
+                {/* Hidden file input */}
                 <input
-                    ref={inputRef}
-                    type="text"
-                    className="chat-input"
-                    placeholder="Escribe un mensaje..."
-                    value={inputText}
-                    onChange={e => setInputText(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    disabled={sending}
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*,video/*"
+                    style={{ display: 'none' }}
+                    onChange={handleFileSelect}
                 />
-                <button
-                    className="chat-send-btn"
-                    onClick={handleSend}
-                    disabled={!inputText.trim() || sending}
-                >
-                    {sending ? <Loader2 size={18} className="chat-spin" /> : <Send size={18} />}
-                </button>
+
+                {isRecording ? (
+                    /* Recording mode */
+                    <div className="chat-recording-bar">
+                        <button className="chat-recording-cancel" onClick={cancelRecording} title="Cancelar">
+                            <X size={18} />
+                        </button>
+                        <div className="chat-recording-indicator">
+                            <span className="chat-recording-dot"></span>
+                            <span className="chat-recording-time">{formatDuration(recordingDuration)}</span>
+                        </div>
+                        <button className="chat-recording-stop" onClick={stopRecording} title="Enviar audio">
+                            <Send size={18} />
+                        </button>
+                    </div>
+                ) : (
+                    /* Normal mode */
+                    <>
+                        <button
+                            className="chat-attach-btn"
+                            onClick={() => fileInputRef.current?.click()}
+                            title="Adjuntar imagen o video"
+                            disabled={sending || uploadingMedia}
+                        >
+                            <Paperclip size={18} />
+                        </button>
+
+                        <input
+                            ref={inputRef}
+                            type="text"
+                            className="chat-input"
+                            placeholder="Escribe un mensaje..."
+                            value={inputText}
+                            onChange={e => setInputText(e.target.value)}
+                            onKeyDown={handleKeyDown}
+                            disabled={sending || uploadingMedia}
+                        />
+
+                        {inputText.trim() ? (
+                            <button
+                                className="chat-send-btn"
+                                onClick={handleSend}
+                                disabled={!inputText.trim() || sending}
+                            >
+                                {sending ? <Loader2 size={18} className="chat-spin" /> : <Send size={18} />}
+                            </button>
+                        ) : (
+                            <button
+                                className="chat-mic-btn"
+                                onClick={startRecording}
+                                disabled={uploadingMedia}
+                                title="Grabar audio"
+                            >
+                                <Mic size={18} />
+                            </button>
+                        )}
+                    </>
+                )}
             </div>
         </div>
     );

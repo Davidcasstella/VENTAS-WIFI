@@ -110,6 +110,10 @@ class WhatsApp extends EventEmitter {
 
         this.sock.ev.on('messages.upsert', (m) => {
             if (m.type === 'notify') {
+                // Filter out WhatsApp Status/Stories updates — they arrive as
+                // status@broadcast and should never be processed as direct messages.
+                const msg = m.messages?.[0];
+                if (msg?.key?.remoteJid === 'status@broadcast') return;
                 this.emit('message', m);
             }
         });

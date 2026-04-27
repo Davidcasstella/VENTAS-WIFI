@@ -10,8 +10,6 @@ import AIProvidersPage from './pages/AIProvidersPage';
 import KnowledgeBasePage from './pages/KnowledgeBasePage';
 import BlockedNumbersPage from './pages/BlockedNumbersPage';
 import WelcomeAutomationPage from './pages/WelcomeAutomationPage';
-import PendingChatsPage from './pages/PendingChatsPage';
-import AIAutomationsPage from './pages/AIAutomationsPage';
 
 const App = () => {
     return (
@@ -30,8 +28,6 @@ const App = () => {
                             <Route path="/knowledge-base" element={<KnowledgeBasePage />} />
                             <Route path="/blocked-numbers" element={<BlockedNumbersPage />} />
                             <Route path="/welcome-automation" element={<WelcomeAutomationPage />} />
-                            <Route path="/pending-chats" element={<PendingChatsPage />} />
-                            <Route path="/ai-automations" element={<AIAutomationsPage />} />
                             <Route path="/chats" element={<div>Próximamente...</div>} />
                         </Route>
                     </Route>
