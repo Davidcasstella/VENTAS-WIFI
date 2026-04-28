@@ -15,6 +15,9 @@ const DEFAULT_CONFIG = {
     videoEnabled: false,   // toggle video sending independently
     imageFilePath: null,   // absolute path to image file on disk
     imageEnabled: false,   // toggle image sending independently
+    messageDelays: [],     // per-message delays in seconds (delay BEFORE message i+1)
+    responseDelay: 1.0,    // multiplier for AI response speed (0.5 = fast, 1.0 = normal, 3.0 = slow)
+    greetingByTimeEnabled: false, // replace 3rd message with time-based greeting (Colombia TZ)
     cooldownHours: 24,
     updatedAt: null
 };
@@ -39,6 +42,30 @@ class WelcomeAutomationService {
         }
         if (!fs.existsSync(STATES_PATH)) {
             fs.writeJsonSync(STATES_PATH, {}, { spaces: 2 });
+        }
+    }
+
+    // ── Colombia timezone greeting ───────────────────────────────────────
+    // Returns "Buenos días", "Buenas tardes", or "Buenas noches"
+    // based on current hour in America/Bogota (UTC-5). Uses native Intl API
+    // so it works correctly regardless of where the server is hosted.
+    _getColombiaGreeting() {
+        const now = new Date();
+        // Get current hour in Colombia timezone (always UTC-5)
+        const colombiaHour = parseInt(
+            new Intl.DateTimeFormat('es-CO', {
+                timeZone: 'America/Bogota',
+                hour: 'numeric',
+                hour12: false
+            }).format(now)
+        );
+
+        if (colombiaHour >= 5 && colombiaHour < 12) {
+            return 'Buenos días';
+        } else if (colombiaHour >= 12 && colombiaHour < 18) {
+            return 'Buenas tardes';
+        } else {
+            return 'Buenas noches';
         }
     }
 
@@ -158,7 +185,14 @@ class WelcomeAutomationService {
         return this.setUserAI(jid, false);
     }
 
-    // ── Per-user cooldown toggle ─────────────────────────────────────────
+    // ── Promo video dedup (persisted across restarts) ─────────────────────
+    async markPromoSent(jid) {
+        const states = await this._readStates();
+        const existing = states[jid] || {};
+        states[jid] = { ...existing, promoVideoSent: true };
+        await this._writeStates(states);
+        console.log(`🎥 Promo video marked as sent for ${jid}`);
+    }
 
     async setUserCooldown(jid, enabled) {
         const states = await this._readStates();
@@ -275,17 +309,32 @@ class WelcomeAutomationService {
         // 2. Send text message(s)
         // Supports multi-message: split on "---MSG---" separator
         if (config.messageText && config.messageText.trim()) {
-            const RESPONSE_DELAY = parseInt(process.env.RESPONSE_DELAY, 10) || 2000;
+            const DEFAULT_DELAY_MS = 2000; // fallback delay in ms when no custom delay is configured
+            const delays = Array.isArray(config.messageDelays) ? config.messageDelays : [];
             const messageParts = config.messageText.split('---MSG---').map(p => p.trim()).filter(p => p.length > 0);
+
+            // If greeting-by-time is enabled, replace the 3rd message (index 2) with a time-based greeting
+            if (config.greetingByTimeEnabled && messageParts.length >= 3) {
+                messageParts[2] = this._getColombiaGreeting();
+                console.log(`🕐 Greeting by time enabled — message 3 replaced with: "${messageParts[2]}"`);
+            }
 
             for (let i = 0; i < messageParts.length; i++) {
                 try {
-                    // Delay between messages (skip for the first one)
+                    // Delay between messages: use custom per-message delay or fallback
                     if (i > 0) {
-                        await new Promise(resolve => setTimeout(resolve, RESPONSE_DELAY));
+                        // delays[i-1] is the configured delay (in seconds) BEFORE message i
+                        const delaySec = (delays[i - 1] !== undefined && delays[i - 1] !== null)
+                            ? Number(delays[i - 1])
+                            : (DEFAULT_DELAY_MS / 1000);
+                        const delayMs = Math.max(0, Math.round(delaySec * 1000));
+                        if (delayMs > 0) {
+                            await new Promise(resolve => setTimeout(resolve, delayMs));
+                        }
+                        console.log(`⏱️ Delay before message ${i + 1}: ${delaySec}s`);
                     } else {
-                        // Short pause before the first message
-                        await new Promise(resolve => setTimeout(resolve, Math.floor(RESPONSE_DELAY * 0.5)));
+                        // Short pause before the first message (1 second)
+                        await new Promise(resolve => setTimeout(resolve, 1000));
                     }
 
                     this.markBotSent(jid);
@@ -301,8 +350,8 @@ class WelcomeAutomationService {
                     // Send image after the first text part
                     if (i === 0 && config.imageEnabled && config.imageFilePath && fs.existsSync(config.imageFilePath)) {
                         try {
-                            // Short pause before the image
-                            await new Promise(resolve => setTimeout(resolve, Math.floor(RESPONSE_DELAY * 0.5)));
+                            // Short pause before the image (1 second)
+                            await new Promise(resolve => setTimeout(resolve, 1000));
                             this.markBotSent(jid);
                             await sock.sendMessage(jid, {
                                 image: { url: config.imageFilePath },

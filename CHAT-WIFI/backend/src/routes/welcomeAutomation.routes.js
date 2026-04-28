@@ -96,13 +96,16 @@ router.get('/config', async (req, res) => {
 // ── PUT /api/welcome-automation/config ─────────────────────────────────────
 router.put('/config', async (req, res) => {
     try {
-        const { isEnabled, messageText, cooldownHours, videoEnabled, imageEnabled } = req.body;
+        const { isEnabled, messageText, cooldownHours, videoEnabled, imageEnabled, messageDelays, responseDelay, greetingByTimeEnabled } = req.body;
         const updated = await welcomeService.saveConfig({
             ...(isEnabled !== undefined && { isEnabled: Boolean(isEnabled) }),
             ...(messageText !== undefined && { messageText: String(messageText) }),
             ...(cooldownHours !== undefined && { cooldownHours: Number(cooldownHours) }),
             ...(videoEnabled !== undefined && { videoEnabled: Boolean(videoEnabled) }),
-            ...(imageEnabled !== undefined && { imageEnabled: Boolean(imageEnabled) })
+            ...(imageEnabled !== undefined && { imageEnabled: Boolean(imageEnabled) }),
+            ...(messageDelays !== undefined && { messageDelays: Array.isArray(messageDelays) ? messageDelays.map(Number) : [] }),
+            ...(responseDelay !== undefined && { responseDelay: Math.max(0.1, Math.min(10.0, Number(responseDelay) || 1.0)) }),
+            ...(greetingByTimeEnabled !== undefined && { greetingByTimeEnabled: Boolean(greetingByTimeEnabled) })
         });
         console.log(`⚙️ Welcome config updated: enabled=${updated.isEnabled}, cooldown=${updated.cooldownHours}h`);
         res.json({ success: true, data: updated });

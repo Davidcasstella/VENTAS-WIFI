@@ -28,7 +28,7 @@ const { verifyToken } = require('./middleware/auth.middleware');
 // ============================================================
 global.aiEnabled = true;
 
-// Estado en memoria para evitar enviar el video promocional multiples veces al mismo numero
+// Promo video deduplication: fast in-memory guard + persistent state via welcomeAutomationService
 const sentPromoJids = new Set();
 
 // ── Deduplication guard for reconnection message replays ──────────────────
@@ -672,20 +672,27 @@ whatsapp.on('message', async (m) => {
                 let finalResponse = response;
                 let sendPromoVideo = false;
                 if (finalResponse.includes('[VIDEO_PROMO]')) {
-                    if (!sentPromoJids.has(remoteJid)) {
+                    // Fast in-memory guard (prevents race conditions)
+                    // + persistent state check (survives server restarts)
+                    const userState = await welcomeAutomationService.getUserState(remoteJid);
+                    if (!sentPromoJids.has(remoteJid) && !userState?.promoVideoSent) {
                         sendPromoVideo = true;
+                        sentPromoJids.add(remoteJid); // lock immediately to prevent races
                     }
-                    finalResponse = finalResponse.replace('[VIDEO_PROMO]', '').trim();
+                    finalResponse = finalResponse.replaceAll('[VIDEO_PROMO]', '').trim();
                 }
+
+                // Read global speed multiplier from welcome config
+                const welcomeConfig = await welcomeAutomationService.getConfig();
+                const delayMultiplier = welcomeConfig.responseDelay || 1.0;
 
                 await humanResponse.sendHumanLike(
                     whatsapp.sock,
                     remoteJid,
                     finalResponse,
                     (jid) => welcomeAutomationService.markBotSent(jid),
-                    { isPostWelcomeFlow: welcomeWasSent }
+                    { isPostWelcomeFlow: welcomeWasSent, delayMultiplier }
                 );
-                console.log(`🤖 Respuesta enviada con IA (human-like): ${finalResponse}`);
 
                 // Track outgoing response for analytics
                 try { analyticsService.trackOutgoing(); } catch (_) { }
@@ -706,7 +713,8 @@ whatsapp.on('message', async (m) => {
                                 caption: "Mira bro un resumen de todo lo que trae este super pack 🔥👇",
                                 mimetype: 'video/mp4'
                             });
-                            sentPromoJids.add(remoteJid);
+                            // Persist promo-sent state so it survives restarts
+                            try { await welcomeAutomationService.markPromoSent(remoteJid); } catch (_) { }
                             console.log(`✅ Promo video delivered to ${remoteJid}`);
                         } else {
                             console.log(`⚠️ Promo video not found at ${promoPath}`);

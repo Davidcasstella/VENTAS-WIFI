@@ -1,11 +1,18 @@
 {
   "isEnabled": true,
-  "messageText": "🚨 PACK PREMIUM DE CIBERSEGURIDAD Y HACKING 2026 🚨\nBro, gracias por tu interés. Esto es lo que te lleva el pack definitivo:\n\n🔥 ¿Qué vas a aprender?\n\n✅ A protegerte de ciberataques como un profesional\n✅ A auditar sistemas y encontrar vulnerabilidades\n✅ A usar herramientas de hacking ético paso a paso\n✅ A realizar búsquedas avanzadas con Google Hacking\n✅ A automatizar tareas y extraer datos con Web Scraping\n✅ A asegurar redes y proteger tu información\n✅ Más de 15 cursos 100% prácticos, sin teoría aburrida\n✅ Explicaciones para que domines el mundo digital al toque\n\n🎯 ¿Para quién es?\n✅ Para ti, que quieres convertirte en un experto digital\n✅ Para quien busca conocimientos con demanda laboral\n✅ Para el que quiere aprender algo útil y potente\n✅ Para el que está listo para dominar la tecnología\n⏱ Duración:\nMás de 15 cursos completos con acceso de por vida\nAcceso 100% grabado para que lo veas cuando quieras\nLo estudias desde tu celu o la compu\n💰 Inversión:\nSolo $15.000 pesos. Antes $60 mil\n\n---MSG---\nMás de 600 horas de contenido\n---MSG---\nHola bro como vas ?\n---MSG---\nya has hackeado algo alguna vez ?",
+  "messageText": "🚨 PACK PREMIUM DE CIBERSEGURIDAD Y HACKING 2026 🚨\nBro, gracias por tu interés. Esto es lo que te lleva el pack definitivo:\n\n🔥 ¿Qué vas a aprender?\n\n✅ A protegerte de ciberataques como un profesional\n✅ A auditar sistemas y encontrar vulnerabilidades\n✅ A usar herramientas de hacking ético paso a paso\n✅ A realizar búsquedas avanzadas con Google Hacking\n✅ A automatizar tareas y extraer datos con Web Scraping\n✅ A asegurar redes y proteger tu información\n✅ Más de 15 cursos 100% prácticos, sin teoría aburrida\n✅ Explicaciones para que domines el mundo digital al toque\n\n🎯 ¿Para quién es?\n✅ Para ti, que quieres convertirte en un experto digital\n✅ Para quien busca conocimientos con demanda laboral\n✅ Para el que quiere aprender algo útil y potente\n✅ Para el que está listo para dominar la tecnología\n⏱ Duración:\nMás de 15 cursos completos con acceso de por vida\nAcceso 100% grabado para que lo veas cuando quieras\nLo estudias desde tu celu o la compu\n💰 Inversión:\nSolo $15.000 pesos. Antes $60 mil\n\n---MSG---\nMás de 600 horas de contenido\n---MSG---\nHola bro como vas ?\n---MSG---\nya has hackeado algo alguna vez ?\n",
   "audioFilePath": "C:\\Users\\David\\Desktop\\VENTAS-WIFI\\VENTAS-WIFI\\CHAT-WIFI\\backend\\public\\uploads\\welcome-audio.ogg",
-  "cooldownHours": 24,
-  "updatedAt": "2026-04-24T07:16:43.607Z",
+  "cooldownHours": 48,
+  "updatedAt": "2026-04-28T06:09:10.013Z",
   "videoFilePath": "C:\\Users\\David\\Desktop\\VENTAS-WIFI\\VENTAS-WIFI\\CHAT-WIFI\\backend\\public\\uploads\\welcome-video.mp4",
   "videoEnabled": false,
   "imageFilePath": "C:\\Users\\David\\Desktop\\VENTAS-WIFI\\VENTAS-WIFI\\CHAT-WIFI\\backend\\public\\uploads\\welcome-image.jpeg",
-  "imageEnabled": true
+  "imageEnabled": true,
+  "messageDelays": [
+    0,
+    12,
+    2
+  ],
+  "responseDelay": 6,
+  "greetingByTimeEnabled": true
 }

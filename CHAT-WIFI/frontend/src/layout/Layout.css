@@ -2737,8 +2737,365 @@
 }
 
 /* ================================================================
+   WELCOME AUTOMATION — MESSAGE DELAYS CONFIG
+   ================================================================ */
+
+.wa-delays-section {
+    margin-top: 0.5rem;
+    padding: 1.25rem;
+    background: rgba(255, 170, 0, 0.03);
+    border: 1px solid rgba(255, 170, 0, 0.1);
+    border-radius: 14px;
+}
+
+.wa-delays-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.wa-delays-title {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #ffaa00;
+}
+
+.wa-delays-subtitle {
+    width: 100%;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    line-height: 1.3;
+}
+
+.wa-delays-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+/* ── Message preview row ── */
+.wa-delay-msg-preview {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    padding: 0.65rem 0.85rem;
+    background: rgba(0, 255, 0, 0.04);
+    border: 1px solid rgba(0, 255, 0, 0.08);
+    border-radius: 10px;
+}
+
+.wa-delay-msg-num {
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    border-radius: 50%;
+    background: var(--primary-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: #003300;
+    margin-top: 1px;
+}
+
+.wa-delay-msg-text {
+    font-size: 0.78rem;
+    color: rgba(0, 255, 0, 0.65);
+    line-height: 1.4;
+    word-break: break-word;
+    flex: 1;
+}
+
+.wa-delay-msg-empty {
+    border-style: dashed;
+    border-color: rgba(255, 170, 0, 0.15);
+    background: rgba(255, 170, 0, 0.02);
+}
+
+.wa-delay-msg-empty .wa-delay-msg-text {
+    color: var(--text-muted);
+    font-style: italic;
+    font-size: 0.75rem;
+}
+
+/* ── Delay control row (between messages) ── */
+.wa-delay-control {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 0.85rem 0.5rem 1rem;
+    margin: 0.15rem 0 0.15rem 12px;
+    border-left: 2px dashed rgba(255, 170, 0, 0.25);
+    position: relative;
+}
+
+.wa-delay-control-icon {
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+/* ── Custom range slider ── */
+.wa-delay-slider {
+    flex: 1;
+    height: 6px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: rgba(255, 170, 0, 0.12);
+    border-radius: 99px;
+    outline: none;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.wa-delay-slider:hover {
+    background: rgba(255, 170, 0, 0.2);
+}
+
+.wa-delay-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #ffaa00;
+    border: 2px solid rgba(0, 0, 0, 0.3);
+    cursor: grab;
+    box-shadow: 0 2px 8px rgba(255, 170, 0, 0.4);
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.wa-delay-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+    box-shadow: 0 3px 12px rgba(255, 170, 0, 0.5);
+}
+
+.wa-delay-slider::-webkit-slider-thumb:active {
+    cursor: grabbing;
+    transform: scale(1.05);
+}
+
+.wa-delay-slider::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #ffaa00;
+    border: 2px solid rgba(0, 0, 0, 0.3);
+    cursor: grab;
+    box-shadow: 0 2px 8px rgba(255, 170, 0, 0.4);
+}
+
+/* ── Numeric input beside slider ── */
+.wa-delay-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    flex-shrink: 0;
+}
+
+.wa-delay-input {
+    width: 48px;
+    padding: 0.35rem 0.3rem;
+    background: rgba(255, 170, 0, 0.08);
+    border: 1px solid rgba(255, 170, 0, 0.2);
+    border-radius: 8px;
+    color: #ffaa00;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+.wa-delay-input:focus {
+    outline: none;
+    border-color: rgba(255, 170, 0, 0.5);
+    box-shadow: 0 0 0 3px rgba(255, 170, 0, 0.1);
+}
+
+/* Hide spin buttons on number input */
+.wa-delay-input::-webkit-inner-spin-button,
+.wa-delay-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.wa-delay-input[type=number] {
+    -moz-appearance: textfield;
+}
+
+.wa-delay-unit {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+/* ── Responsive delays ── */
+@media (max-width: 640px) {
+    .wa-delay-control {
+        flex-wrap: wrap;
+        gap: 0.4rem;
+    }
+
+    .wa-delay-slider {
+        min-width: 100px;
+    }
+}
+
+/* ================================================================
+   WELCOME AUTOMATION — SPEED SLIDER (AI Response Speed)
+   ================================================================ */
+.wa-speed-control {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 0.5rem;
+    background: rgba(255, 170, 0, 0.04);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 170, 0, 0.08);
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.wa-speed-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.wa-speed-fast {
+    color: #00ff41;
+}
+
+.wa-speed-slow {
+    color: #ff6b35;
+}
+
+.wa-speed-slider {
+    flex: 1;
+    min-width: 140px;
+}
+
+.wa-speed-value {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 42px;
+    padding: 0.25rem 0.5rem;
+    background: rgba(255, 170, 0, 0.12);
+    border: 1px solid rgba(255, 170, 0, 0.3);
+    border-radius: 8px;
+    color: #ffaa00;
+    font-size: 0.85rem;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* ================================================================
+   WELCOME AUTOMATION — GREETING BY TIME
+   ================================================================ */
+.wa-greeting-preview {
+    margin-top: 0.5rem;
+    padding: 0.75rem;
+    background: rgba(0, 255, 65, 0.04);
+    border: 1px solid rgba(0, 255, 65, 0.1);
+    border-radius: 10px;
+}
+
+.wa-greeting-times {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.wa-greeting-time-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.4rem 0.6rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+}
+
+.wa-greeting-icon {
+    font-size: 1.1rem;
+}
+
+.wa-greeting-text {
+    margin-left: auto;
+    font-weight: 700;
+    color: #00ff41;
+    font-size: 0.85rem;
+}
+
+.wa-greeting-current {
+    margin-top: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    background: rgba(255, 170, 0, 0.08);
+    border: 1px solid rgba(255, 170, 0, 0.2);
+    border-radius: 8px;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+.wa-greeting-current strong {
+    color: #ffaa00;
+}
+
+/* Toggle switch for greeting */
+.wa-toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    cursor: pointer;
+}
+
+.wa-toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.wa-toggle-slider {
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    transition: all 0.3s ease;
+}
+
+.wa-toggle-slider::before {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    left: 3px;
+    bottom: 3px;
+    background: #888;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.wa-toggle-switch input:checked + .wa-toggle-slider {
+    background: rgba(0, 255, 65, 0.2);
+    border: 1px solid rgba(0, 255, 65, 0.4);
+}
+
+.wa-toggle-switch input:checked + .wa-toggle-slider::before {
+    transform: translateX(20px);
+    background: #00ff41;
+    box-shadow: 0 0 8px rgba(0, 255, 65, 0.5);
+}
+
+/* ================================================================
    WELCOME AUTOMATION — ACTION BUTTONS ROW
    ================================================================ */
+
 
 .wa-action-buttons {
     display: flex;

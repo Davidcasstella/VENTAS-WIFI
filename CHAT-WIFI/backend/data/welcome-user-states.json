@@ -1,10 +1,11 @@
 {
   "573028599105@s.whatsapp.net": {
-    "lastMessageText": "ds",
-    "lastMessageAt": "2026-04-25T02:33:04.235Z",
-    "aiEnabled": false,
+    "lastMessageText": "muestralo",
+    "lastMessageAt": "2026-04-28T06:13:29.343Z",
+    "aiEnabled": true,
     "cooldownEnabled": true,
-    "lastWelcomeSentAt": "2026-04-24T07:18:49.098Z"
+    "promoVideoSent": true,
+    "lastWelcomeSentAt": "2026-04-28T06:09:16.317Z"
   },
   "151771427143897@lid": {
     "lastMessageText": "Que es la vida ?",

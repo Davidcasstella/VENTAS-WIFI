@@ -4,7 +4,7 @@ import {
     BellRing, Power, Upload, Trash2, Clock, MessageSquare,
     CheckCircle, XCircle, Users, Calendar, AlertCircle, Save,
     RotateCcw, Search, RefreshCw, Settings2, Video, Phone,
-    Zap, CreditCard, Mic, Loader2
+    Zap, CreditCard, Mic, Loader2, Timer
 } from 'lucide-react';
 
 const WelcomeAutomationPage = () => {
@@ -35,6 +35,9 @@ const WelcomeAutomationPage = () => {
     const [videoEnabled, setVideoEnabled] = useState(false);
     const [imageFileName, setImageFileName] = useState(null);
     const [imageEnabled, setImageEnabled] = useState(false);
+    const [messageDelays, setMessageDelays] = useState([]);
+    const [responseDelay, setResponseDelay] = useState(1.0);
+    const [greetingByTimeEnabled, setGreetingByTimeEnabled] = useState(false);
 
     const fileInputRef = useRef(null);
     const videoInputRef = useRef(null);
@@ -81,6 +84,9 @@ const WelcomeAutomationPage = () => {
                 setImageFileName(null);
             }
             setImageEnabled(cfg.imageEnabled || false);
+            setMessageDelays(Array.isArray(cfg.messageDelays) ? cfg.messageDelays : []);
+            setResponseDelay(cfg.responseDelay ?? 1.0);
+            setGreetingByTimeEnabled(cfg.greetingByTimeEnabled || false);
             setStats(statsRes.data.data);
             // Load admin number from fallback config
             const fbCfg = fallbackCfgRes.data.data;
@@ -111,7 +117,10 @@ const WelcomeAutomationPage = () => {
                 messageText,
                 cooldownHours: Number(cooldownHours),
                 videoEnabled,
-                imageEnabled
+                imageEnabled,
+                messageDelays,
+                responseDelay,
+                greetingByTimeEnabled
             });
             setConfig(data.data);
             showToast('success', 'Configuración guardada correctamente');
@@ -139,6 +148,9 @@ const WelcomeAutomationPage = () => {
             setVideoEnabled(false);
             setImageFileName(null);
             setImageEnabled(false);
+            setMessageDelays([]);
+            setResponseDelay(1.0);
+            setGreetingByTimeEnabled(false);
             showToast('success', 'Configuración reseteada a valores por defecto');
         } catch {
             showToast('error', 'Error al resetear configuración');
@@ -482,6 +494,151 @@ const WelcomeAutomationPage = () => {
                                 </button>
                                 <div className="wa-char-count" style={{ marginTop: 0 }}>{messageText.length} / 10000</div>
                             </div>
+
+                            {/* ── Message Delays Preview ── */}
+                            {(() => {
+                                // Keep empty parts so delay controls appear immediately when adding a new message
+                                const rawParts = messageText.split('---MSG---').map(p => p.trim());
+                                // Only filter empty parts if there's no separator at all (single message)
+                                const parts = rawParts.length > 1 ? rawParts : rawParts.filter(p => p.length > 0);
+                                if (parts.length <= 1) return null;
+                                return (
+                                    <div className="wa-delays-section">
+                                        <div className="wa-delays-header">
+                                            <Timer size={18} style={{ color: '#ffaa00' }} />
+                                            <span className="wa-delays-title">Tiempos de espera entre mensajes</span>
+                                            <span className="wa-delays-subtitle">Configura cuántos segundos esperar antes de cada mensaje</span>
+                                        </div>
+                                        <div className="wa-delays-list">
+                                            {parts.map((part, idx) => {
+                                                const preview = part.length > 80 ? part.substring(0, 80) + '…' : (part || '(mensaje vacío — escribe el texto arriba)');
+                                                const isEmpty = !part;
+                                                return (
+                                                    <React.Fragment key={idx}>
+                                                        <div className={`wa-delay-msg-preview ${isEmpty ? 'wa-delay-msg-empty' : ''}`}>
+                                                            <div className="wa-delay-msg-num">{idx + 1}</div>
+                                                            <div className="wa-delay-msg-text">{preview}</div>
+                                                        </div>
+                                                        {idx < parts.length - 1 && (
+                                                            <div className="wa-delay-control">
+                                                                <div className="wa-delay-control-icon">⏳</div>
+                                                                <input
+                                                                    type="range"
+                                                                    className="wa-delay-slider"
+                                                                    min={0}
+                                                                    max={60}
+                                                                    step={1}
+                                                                    value={messageDelays[idx] ?? 2}
+                                                                    onChange={e => {
+                                                                        const val = Number(e.target.value);
+                                                                        setMessageDelays(prev => {
+                                                                            const next = [...prev];
+                                                                            // Ensure array is long enough
+                                                                            while (next.length <= idx) next.push(2);
+                                                                            next[idx] = val;
+                                                                            return next;
+                                                                        });
+                                                                    }}
+                                                                />
+                                                                <div className="wa-delay-input-wrap">
+                                                                    <input
+                                                                        type="number"
+                                                                        className="wa-delay-input"
+                                                                        min={0}
+                                                                        max={60}
+                                                                        value={messageDelays[idx] ?? 2}
+                                                                        onChange={e => {
+                                                                            const val = Math.max(0, Math.min(60, Number(e.target.value) || 0));
+                                                                            setMessageDelays(prev => {
+                                                                                const next = [...prev];
+                                                                                while (next.length <= idx) next.push(2);
+                                                                                next[idx] = val;
+                                                                                return next;
+                                                                            });
+                                                                        }}
+                                                                    />
+                                                                    <span className="wa-delay-unit">seg</span>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </React.Fragment>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                );
+                            })()}
+                        </div>
+
+                        {/* Response Speed Slider */}
+                        <div className="premium-card wa-card">
+                            <div className="wa-card-header">
+                                <Zap size={20} style={{ color: responseDelay <= 0.8 ? '#00ff41' : responseDelay >= 2.0 ? '#ff4444' : '#ffaa00' }} />
+                                <span className="wa-card-title">Velocidad de respuestas IA</span>
+                            </div>
+                            <p className="wa-card-desc">
+                                Controla qué tan rápido o lento responde la IA entre mensajes. Un valor más alto simula mejor a un humano escribiendo.
+                            </p>
+                            <div className="wa-speed-control">
+                                <span className="wa-speed-label wa-speed-fast">⚡ Rápido</span>
+                                <input
+                                    type="range"
+                                    className="wa-delay-slider wa-speed-slider"
+                                    min={0.5}
+                                    max={10.0}
+                                    step={0.5}
+                                    value={responseDelay}
+                                    onChange={e => setResponseDelay(Number(e.target.value))}
+                                />
+                                <span className="wa-speed-label wa-speed-slow">🐢 Lento</span>
+                                <div className="wa-speed-value">{responseDelay.toFixed(1)}x</div>
+                            </div>
+                        </div>
+
+                        {/* Greeting by Time Toggle */}
+                        <div className="premium-card wa-card">
+                            <div className="wa-card-header">
+                                <Clock size={20} style={{ color: greetingByTimeEnabled ? '#00ff41' : '#666' }} />
+                                <span className="wa-card-title">Saludo por hora (Mensaje 3)</span>
+                                <label className="wa-toggle-switch" style={{ marginLeft: 'auto' }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={greetingByTimeEnabled}
+                                        onChange={e => setGreetingByTimeEnabled(e.target.checked)}
+                                    />
+                                    <span className="wa-toggle-slider"></span>
+                                </label>
+                            </div>
+                            <p className="wa-card-desc">
+                                Cuando está activo, el <strong>tercer mensaje</strong> de bienvenida se reemplaza automáticamente con un saludo según la hora actual en Colombia.
+                            </p>
+                            {greetingByTimeEnabled && (
+                                <div className="wa-greeting-preview">
+                                    <div className="wa-greeting-times">
+                                        <div className="wa-greeting-time-item">
+                                            <span className="wa-greeting-icon">🌅</span>
+                                            <span>5:00 – 11:59</span>
+                                            <span className="wa-greeting-text">Buenos días</span>
+                                        </div>
+                                        <div className="wa-greeting-time-item">
+                                            <span className="wa-greeting-icon">☀️</span>
+                                            <span>12:00 – 17:59</span>
+                                            <span className="wa-greeting-text">Buenas tardes</span>
+                                        </div>
+                                        <div className="wa-greeting-time-item">
+                                            <span className="wa-greeting-icon">🌙</span>
+                                            <span>18:00 – 4:59</span>
+                                            <span className="wa-greeting-text">Buenas noches</span>
+                                        </div>
+                                    </div>
+                                    <div className="wa-greeting-current">
+                                        Ahora en Colombia → <strong>{(() => {
+                                            const h = parseInt(new Intl.DateTimeFormat('es-CO', { timeZone: 'America/Bogota', hour: 'numeric', hour12: false }).format(new Date()));
+                                            return h >= 5 && h < 12 ? '🌅 Buenos días' : h >= 12 && h < 18 ? '☀️ Buenas tardes' : '🌙 Buenas noches';
+                                        })()}</strong>
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         {/* Cooldown */}
