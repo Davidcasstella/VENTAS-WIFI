@@ -1,7 +1,7 @@
 const fs = require('fs-extra');
 const path = require('path');
 
-// ── Persistence ──────────────────────────────────────────────────────
+// ── Persistence  se hicieron algunos cambios──────────────────────────────────────────────────────
 const DATA_DIR = path.join(__dirname, '../../data');
 const CONFIG_PATH = path.join(DATA_DIR, 'ai-automations.json');
 
