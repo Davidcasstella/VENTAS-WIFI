@@ -100,14 +100,22 @@ class HumanResponseService {
     }
 
     async _showTyping(sock, jid) {
-        // Intentionally disabled: sendPresenceUpdate('composing') tells WhatsApp
-        // the owner is typing, which automatically marks all previous messages as
-        // read — silencing notifications on the owner's physical phone.
-        // The bot still responds normally; it just won't show a typing indicator.
+        // Show "escribiendo..." indicator on the client's WhatsApp.
+        // Note: this also marks previous messages as read on the owner's phone.
+        try {
+            if (sock && jid) {
+                await sock.sendPresenceUpdate('composing', jid);
+            }
+        } catch (_) { /* ignore if socket is unavailable */ }
     }
 
     async _clearTyping(sock, jid) {
-        // Intentionally disabled: paired with _showTyping above.
+        // Clear the typing indicator after sending the message.
+        try {
+            if (sock && jid) {
+                await sock.sendPresenceUpdate('paused', jid);
+            }
+        } catch (_) { /* ignore if socket is unavailable */ }
     }
 
     /**
@@ -175,16 +183,44 @@ class HumanResponseService {
 
         const flowTag = options.isPostWelcomeFlow ? ' [post-flow]' : '';
         const delayMultiplier = options.delayMultiplier || 1.0;
-        console.log(`🧑 [HumanResponse] Sending ${partCount}-part response to ${jid} (speed: ${delayMultiplier}x)${flowTag}`);
+
+        // enableTypingIndicator: true = show "escribiendo...", false = silent (owner gets phone notifications)
+        const enableTyping = options.enableTypingIndicator !== false;
+
+        console.log(`🧑 [HumanResponse] Sending ${partCount}-part response to ${jid} (speed: ${delayMultiplier}x, typing: ${enableTyping})${flowTag}`);
 
         for (let i = 0; i < parts.length; i++) {
             try {
-                await this._showTyping(sock, jid);
+                // Show typing indicator BEFORE the delay so the client sees
+                // "escribiendo..." while the bot is "thinking"
+                if (enableTyping) {
+                    await this._showTyping(sock, jid);
+                }
 
                 // Human-like delay: variable based on text length + randomization + multiplier
                 const typingDelay = this._humanDelay(parts[i], i === 0, delayMultiplier);
 
-                await this._sleep(typingDelay);
+                if (enableTyping) {
+                    // Keep refreshing the composing state every 4s during long delays
+                    // (WhatsApp auto-clears the typing indicator after ~5s of inactivity)
+                    let elapsed = 0;
+                    const refreshInterval = 4000;
+                    while (elapsed < typingDelay) {
+                        const wait = Math.min(refreshInterval, typingDelay - elapsed);
+                        await this._sleep(wait);
+                        elapsed += wait;
+                        // Re-send composing if there's still time left
+                        if (elapsed < typingDelay) {
+                            await this._showTyping(sock, jid);
+                        }
+                    }
+                    // Stop typing indicator, then send the message
+                    await this._clearTyping(sock, jid);
+                } else {
+                    // No typing indicator: just wait the natural delay silently
+                    await this._sleep(typingDelay);
+                }
+
                 markBotSentFn(jid);
                 await sock.sendMessage(jid, { text: parts[i] });
 
@@ -197,7 +233,9 @@ class HumanResponseService {
             }
         }
 
-        await this._clearTyping(sock, jid);
+        if (enableTyping) {
+            await this._clearTyping(sock, jid);
+        }
         console.log(`✅ [HumanResponse] Full ${partCount}-part response delivered to ${jid}`);
     }
 }

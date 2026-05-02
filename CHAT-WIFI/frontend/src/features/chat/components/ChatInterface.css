@@ -168,6 +168,31 @@
     font-weight: 600;
     color: #fff;
     flex-shrink: 0;
+    overflow: hidden;
+}
+
+.conv-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.conv-avatar-initial {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+.conv-phone-number {
+    font-size: 0.68rem;
+    color: #6a7a84;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: -1px;
 }
 
 .conv-info {
@@ -625,6 +650,22 @@
     font-weight: 600;
     color: #fff;
     flex-shrink: 0;
+    overflow: hidden;
+}
+
+.chat-header-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.chat-header-avatar-initial {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
 }
 
 .chat-header-info {

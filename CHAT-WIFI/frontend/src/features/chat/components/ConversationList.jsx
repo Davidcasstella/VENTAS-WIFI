@@ -2,6 +2,11 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Search, MessageSquare, Trash2, Check, CheckCheck, Star, X, Users, Edit2, Plus, Tag, FolderOpen, Clock, XCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import api from '../../../services/api';
 
+// Backend base URL for profile picture requests
+const BACKEND_URL = window.location.hostname === 'localhost'
+    ? 'http://localhost:3000'
+    : window.location.origin;
+
 // Persist leads in localStorage so they survive page reloads
 const LEADS_KEY = 'chatwifi_leads';
 const CATEGORIES_KEY = 'chatwifi_categories';
@@ -85,6 +90,7 @@ const ConversationList = ({ conversations, activeJid, onSelect, onDelete, search
     const [leads, setLeads]                   = useState(loadLeads);
     const [contextMenu, setContextMenu]       = useState(null); // { jid, x, y }
     const [followUpJids, setFollowUpJids]     = useState(new Set()); // JIDs with active follow-up
+    const [profilePics, setProfilePics]       = useState({}); // { jid: url | null }
 
     // Custom categories state
     const [categories, setCategories]         = useState(loadCategories);       // [{ id, label }]
@@ -101,6 +107,24 @@ const ConversationList = ({ conversations, activeJid, onSelect, onDelete, search
     const pressTarget = useRef(null);
     const newCatInputRef = useRef(null);
     const editCatInputRef = useRef(null);
+
+    // ── Fetch profile pictures lazily ──────────────────────────────────
+    useEffect(() => {
+        const fetchPics = async () => {
+            for (const conv of conversations) {
+                // Skip if already fetched (even if null)
+                if (conv.jid in profilePics) continue;
+                try {
+                    const res = await fetch(`${BACKEND_URL}/api/chat/profile-pic/${encodeURIComponent(conv.jid)}`);
+                    const data = await res.json();
+                    setProfilePics(prev => ({ ...prev, [conv.jid]: data.url || null }));
+                } catch {
+                    setProfilePics(prev => ({ ...prev, [conv.jid]: null }));
+                }
+            }
+        };
+        fetchPics();
+    }, [conversations]);
 
     // Persist leads whenever they change
     useEffect(() => { saveLeads(leads); }, [leads]);
@@ -324,6 +348,14 @@ const ConversationList = ({ conversations, activeJid, onSelect, onDelete, search
         return colors[Math.abs(hash) % colors.length];
     };
 
+    // Format phone number for display
+    const formatPhoneNumber = (jid) => {
+        if (!jid) return '';
+        if (jid.includes('@lid')) return 'Número oculto';
+        const raw = jid.replace(/@.*$/, '').replace(/:\d+$/, '');
+        return `+${raw}`;
+    };
+
     const seguimientoCount = followUpJids.size;
     const leadsCount = leads.size;
 
@@ -503,9 +535,19 @@ const ConversationList = ({ conversations, activeJid, onSelect, onDelete, search
                         >
                             <div
                                 className="conv-avatar"
-                                style={{ backgroundColor: getAvatarColor(conv.jid) }}
+                                style={{ backgroundColor: profilePics[conv.jid] ? 'transparent' : getAvatarColor(conv.jid) }}
                             >
-                                {getInitial(customNames[conv.jid] || conv.pushName)}
+                                {profilePics[conv.jid] ? (
+                                    <img
+                                        src={profilePics[conv.jid]}
+                                        alt=""
+                                        className="conv-avatar-img"
+                                        onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
+                                    />
+                                ) : null}
+                                <span className="conv-avatar-initial" style={profilePics[conv.jid] ? { display: 'none' } : {}}>
+                                    {getInitial(customNames[conv.jid] || conv.pushName)}
+                                </span>
                                 {/* Lead star badge on avatar */}
                                 {leads.has(conv.jid) && (
                                     <span className="conv-avatar-lead-dot" title="Lead">⭐</span>
@@ -521,6 +563,9 @@ const ConversationList = ({ conversations, activeJid, onSelect, onDelete, search
                                     <span className={`conv-time ${conv.unreadCount > 0 ? 'conv-time-unread' : ''}`}>
                                         {formatTime(conv.lastMessageTime)}
                                     </span>
+                                </div>
+                                <div className="conv-phone-number">
+                                    {formatPhoneNumber(conv.jid)}
                                 </div>
                                 <div className="conv-info-bottom">
                                     <span className="conv-last-msg">

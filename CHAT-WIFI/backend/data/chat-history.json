@@ -565,7 +565,8 @@
         "text": "nose nada",
         "fromMe": false,
         "sender": "client",
-        "timestamp": "2026-04-28T06:09:52.057Z"
+        "timestamp": "2026-04-28T06:09:52.057Z",
+        "read": true
       },
       {
         "id": "f5392e7e7546cee0",
@@ -579,7 +580,8 @@
         "text": "excelente",
         "fromMe": false,
         "sender": "client",
-        "timestamp": "2026-04-28T06:10:36.777Z"
+        "timestamp": "2026-04-28T06:10:36.777Z",
+        "read": true
       },
       {
         "id": "f2d3b6c40bcf9124",
@@ -607,7 +609,8 @@
         "text": "si",
         "fromMe": false,
         "sender": "client",
-        "timestamp": "2026-04-28T06:11:17.135Z"
+        "timestamp": "2026-04-28T06:11:17.135Z",
+        "read": true
       },
       {
         "id": "b9ceb746e9559e0a",
@@ -635,7 +638,8 @@
         "text": "listo manda nequi",
         "fromMe": false,
         "sender": "client",
-        "timestamp": "2026-04-28T06:11:53.127Z"
+        "timestamp": "2026-04-28T06:11:53.127Z",
+        "read": true
       },
       {
         "id": "4ba4a053a4e2631f",
@@ -656,7 +660,8 @@
         "text": "me puede enviar el video",
         "fromMe": false,
         "sender": "client",
-        "timestamp": "2026-04-28T06:12:31.573Z"
+        "timestamp": "2026-04-28T06:12:31.573Z",
+        "read": true
       },
       {
         "id": "bfe2a966704ec723",
@@ -691,7 +696,8 @@
         "text": "muestralo",
         "fromMe": false,
         "sender": "client",
-        "timestamp": "2026-04-28T06:13:29.341Z"
+        "timestamp": "2026-04-28T06:13:29.341Z",
+        "read": true
       },
       {
         "id": "646541d6ff2fc3ed",
@@ -1052,6 +1058,19 @@
         "fromMe": true,
         "sender": "agent",
         "timestamp": "2026-04-24T06:06:14.255Z"
+      }
+    ]
+  },
+  "151771427143897@lid": {
+    "pushName": "Karen 🌻",
+    "messages": [
+      {
+        "id": "aec73fba761b96c4",
+        "text": "JHSDLFK",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-05-02T01:01:51.665Z",
+        "read": true
       }
     ]
   }

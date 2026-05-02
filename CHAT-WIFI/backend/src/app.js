@@ -686,12 +686,30 @@ whatsapp.on('message', async (m) => {
                 const welcomeConfig = await welcomeAutomationService.getConfig();
                 const delayMultiplier = welcomeConfig.responseDelay || 1.0;
 
+                // ── SMART TYPING INDICATOR ────────────────────────────────────
+                // First 2 messages from a new client: DON'T show typing indicator.
+                // This keeps the messages UNREAD on the owner's phone so they
+                // receive a notification and can monitor new contacts.
+                // From message 3+: show typing indicator for a human-like feel.
+                // When AI is disabled: typing is never shown (notifications resume).
+                let enableTypingIndicator = true;
+                try {
+                    const conv = await chatHistoryService.getMessages(remoteJid);
+                    const clientMsgCount = conv.messages.filter(m => !m.fromMe).length;
+                    if (clientMsgCount <= 2) {
+                        enableTypingIndicator = false;
+                        console.log(`🔔 [TypingIndicator] Disabled for ${remoteJid} (message ${clientMsgCount}/2 — owner will be notified)`);
+                    } else {
+                        console.log(`⌨️  [TypingIndicator] Enabled for ${remoteJid} (message ${clientMsgCount})`);
+                    }
+                } catch (_) { /* fallback: show typing if count check fails */ }
+
                 await humanResponse.sendHumanLike(
                     whatsapp.sock,
                     remoteJid,
                     finalResponse,
                     (jid) => welcomeAutomationService.markBotSent(jid),
-                    { isPostWelcomeFlow: welcomeWasSent, delayMultiplier }
+                    { isPostWelcomeFlow: welcomeWasSent, delayMultiplier, enableTypingIndicator }
                 );
 
                 // Track outgoing response for analytics

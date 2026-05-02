@@ -84,7 +84,7 @@ const ChatInterface = ({ setDashboardTab }) => {
                     // New conversation
                     return [{
                         jid,
-                        pushName: jid.replace('@s.whatsapp.net', ''),
+                        pushName: jid.replace(/@.*$/, ''),
                         lastMessage: message.text,
                         lastMessageTime: message.timestamp,
                         lastMessageFromMe: message.fromMe,
@@ -191,7 +191,7 @@ const ChatInterface = ({ setDashboardTab }) => {
                 {activeJid ? (
                     <ChatWindow
                         jid={activeJid}
-                        pushName={customNames[activeJid] || activeConversation?.pushName || activeJid.replace('@s.whatsapp.net', '')}
+                        pushName={customNames[activeJid] || activeConversation?.pushName || activeJid.replace(/@.*$/, '')}
                         messages={messages}
                         loading={loading}
                         onSend={sendMessage}

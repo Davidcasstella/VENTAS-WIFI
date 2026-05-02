@@ -51,6 +51,22 @@ const ChatWindow = ({ jid, pushName, messages, loading, onSend, onBack }) => {
         loadUserState();
     }, [jid]);
 
+    // Profile picture state
+    const [profilePicUrl, setProfilePicUrl] = useState(null);
+
+    useEffect(() => {
+        if (!jid) return;
+        setProfilePicUrl(null); // Reset when changing chat
+        const fetchPic = async () => {
+            try {
+                const res = await fetch(`${BACKEND_URL}/api/chat/profile-pic/${encodeURIComponent(jid)}`);
+                const data = await res.json();
+                if (data.url) setProfilePicUrl(data.url);
+            } catch (_) { /* ignore */ }
+        };
+        fetchPic();
+    }, [jid]);
+
     // Scroll helper — scrolls the messages container to the very bottom
     const scrollToBottom = useCallback(() => {
         if (messagesContainerRef.current) {
@@ -416,7 +432,17 @@ const ChatWindow = ({ jid, pushName, messages, loading, onSend, onBack }) => {
                     <ArrowLeft size={20} />
                 </button>
                 <div className="chat-header-avatar">
-                    {(pushName || '?').charAt(0).toUpperCase()}
+                    {profilePicUrl ? (
+                        <img
+                            src={profilePicUrl}
+                            alt=""
+                            className="chat-header-avatar-img"
+                            onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
+                        />
+                    ) : null}
+                    <span className="chat-header-avatar-initial" style={profilePicUrl ? { display: 'none' } : {}}>
+                        {(pushName || '?').charAt(0).toUpperCase()}
+                    </span>
                 </div>
                 <div className="chat-header-info">
                     <span className="chat-header-name">{pushName}</span>

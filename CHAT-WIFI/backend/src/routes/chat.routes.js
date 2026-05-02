@@ -105,6 +105,50 @@ router.get('/media/:id', async (req, res) => {
 });
 
 
+/**
+ * GET /api/chat/profile-pic/:jid
+ * Returns the WhatsApp profile picture URL for a given JID.
+ * Public route — browser <img> tags cannot send JWT headers.
+ * Uses an in-memory cache (5 min TTL) to avoid spamming the WA API.
+ */
+const profilePicCache = new Map(); // jid -> { url, fetchedAt }
+const PROFILE_PIC_TTL = 5 * 60 * 1000; // 5 minutes
+
+router.get('/profile-pic/:jid', async (req, res) => {
+    try {
+        const jid = decodeURIComponent(req.params.jid);
+
+        // Check cache first
+        const cached = profilePicCache.get(jid);
+        if (cached && (Date.now() - cached.fetchedAt) < PROFILE_PIC_TTL) {
+            return res.json({ success: true, url: cached.url });
+        }
+
+        if (!whatsapp.sock) {
+            return res.json({ success: true, url: null });
+        }
+
+        let url = null;
+        try {
+            // 'image' = full resolution, 'preview' = thumbnail
+            url = await whatsapp.sock.profilePictureUrl(jid, 'image');
+        } catch (err) {
+            // User has no profile picture or privacy settings prevent access
+            // Error code 401 or 404 means "no picture" — this is normal
+            url = null;
+        }
+
+        // Cache the result (even null, to avoid re-fetching)
+        profilePicCache.set(jid, { url, fetchedAt: Date.now() });
+
+        res.json({ success: true, url });
+    } catch (error) {
+        console.error('Error fetching profile pic:', error);
+        res.json({ success: true, url: null }); // Graceful fallback
+    }
+});
+
+
 // All routes below require authentication
 router.use(verifyToken);
 

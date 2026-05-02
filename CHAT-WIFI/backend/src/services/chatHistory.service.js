@@ -64,7 +64,7 @@ class ChatHistoryService {
 
         if (!data[jid]) {
             data[jid] = {
-                pushName: pushName || jid.replace('@s.whatsapp.net', ''),
+                pushName: pushName || jid.replace(/@.*$/, ''),
                 messages: []
             };
         }
@@ -107,7 +107,7 @@ class ChatHistoryService {
     async getMessages(rawJid) {
         const jid = this._normalizeJid(rawJid);
         const data = await this._read();
-        return data[jid] || { pushName: jid.replace('@s.whatsapp.net', ''), messages: [] };
+        return data[jid] || { pushName: jid.replace(/@.*$/, ''), messages: [] };
     }
 
     /**
@@ -130,7 +130,7 @@ class ChatHistoryService {
 
                 return {
                     jid,
-                    pushName: conv.pushName || jid.replace('@s.whatsapp.net', ''),
+                    pushName: conv.pushName || jid.replace(/@.*$/, ''),
                     lastMessage: lastMsg ? lastMsg.text : '',
                     lastMessageTime: lastMsg ? lastMsg.timestamp : null,
                     lastMessageFromMe: lastMsg ? lastMsg.fromMe : false,
