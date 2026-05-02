@@ -107,16 +107,21 @@ const ConversationList = ({ conversations, activeJid, onSelect, onDelete, search
     const pressTarget = useRef(null);
     const newCatInputRef = useRef(null);
     const editCatInputRef = useRef(null);
+    // Tracks which JIDs we've already requested a profile pic for (avoids stale closure)
+    const fetchedJidsRef = useRef(new Set());
 
     // ── Fetch profile pictures lazily ──────────────────────────────────
+    // Uses a ref (not state) to track fetched JIDs to avoid stale closure issues
     useEffect(() => {
         const fetchPics = async () => {
             for (const conv of conversations) {
-                // Skip if already fetched (even if null)
-                if (conv.jid in profilePics) continue;
+                // Skip if we already sent a request for this JID
+                if (fetchedJidsRef.current.has(conv.jid)) continue;
+                fetchedJidsRef.current.add(conv.jid); // Mark immediately to avoid parallel duplicate requests
                 try {
                     const res = await fetch(`${BACKEND_URL}/api/chat/profile-pic/${encodeURIComponent(conv.jid)}`);
                     const data = await res.json();
+                    // Only update state if we got a real URL
                     setProfilePics(prev => ({ ...prev, [conv.jid]: data.url || null }));
                 } catch {
                     setProfilePics(prev => ({ ...prev, [conv.jid]: null }));
@@ -124,7 +129,7 @@ const ConversationList = ({ conversations, activeJid, onSelect, onDelete, search
             }
         };
         fetchPics();
-    }, [conversations]);
+    }, [conversations]); // Safe: fetchedJidsRef is a ref, not state — no stale closure
 
     // Persist leads whenever they change
     useEffect(() => { saveLeads(leads); }, [leads]);
@@ -349,9 +354,11 @@ const ConversationList = ({ conversations, activeJid, onSelect, onDelete, search
     };
 
     // Format phone number for display
+    // @lid JIDs have no real phone number (WhatsApp Linked Identity) — show nothing
+    // @s.whatsapp.net JIDs contain the real phone number
     const formatPhoneNumber = (jid) => {
         if (!jid) return '';
-        if (jid.includes('@lid')) return 'Número oculto';
+        if (jid.includes('@lid')) return ''; // No real number available
         const raw = jid.replace(/@.*$/, '').replace(/:\d+$/, '');
         return `+${raw}`;
     };

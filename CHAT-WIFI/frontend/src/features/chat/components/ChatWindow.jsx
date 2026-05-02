@@ -346,7 +346,7 @@ const ChatWindow = ({ jid, pushName, messages, loading, onSend, onBack }) => {
 
     const isLid = jid && jid.includes('@lid');
     const rawNumber = jid ? jid.replace(/@.*$/, '').replace(/:\d+$/, '') : '';
-    const displaySubtitle = isLid ? 'Número oculto (WhatsApp)' : `+${rawNumber}`;
+    const displaySubtitle = isLid ? '' : `+${rawNumber}`;
 
     // Helper to build media URL pointing to the backend server
     const mediaUrl = (mediaId) => `${BACKEND_URL}/api/chat/media/${mediaId}`;

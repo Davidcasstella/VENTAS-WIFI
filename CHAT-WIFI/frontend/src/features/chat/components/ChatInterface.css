@@ -195,6 +195,10 @@
     margin-top: -1px;
 }
 
+.conv-phone-number:empty {
+    display: none;
+}
+
 .conv-info {
     flex: 1;
     min-width: 0;
