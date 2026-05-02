@@ -29,7 +29,9 @@ const { verifyToken } = require('./middleware/auth.middleware');
 global.aiEnabled = true;
 
 // Promo video deduplication: fast in-memory guard + persistent state via welcomeAutomationService
-const sentPromoJids = new Set();
+// Exposed globally so resetUserState can clear entries and allow re-sending
+global.sentPromoJids = new Set();
+const sentPromoJids = global.sentPromoJids;
 
 // ── Deduplication guard for reconnection message replays ──────────────────
 // When WiFi drops and Baileys reconnects, WhatsApp re-delivers pending messages.
@@ -583,7 +585,7 @@ whatsapp.on('message', async (m) => {
             ];
             const isPaymentAccountQuery = PAYMENT_ACCOUNT_PATTERNS.some(p => p.test(textLower));
             if (isPaymentAccountQuery) {
-                const PAYMENT_FIXED_RESPONSE = `Métodos de pago\nNequi o Daviplata\n\n\nCuenta:\n3028599105`;
+                const PAYMENT_FIXED_RESPONSE = `Nequi o Daviplata\n\nCuenta:\n3028599105`;
                 if (whatsapp.sock) {
                     welcomeAutomationService.markBotSent(remoteJid);
                     await whatsapp.sock.sendMessage(remoteJid, { text: PAYMENT_FIXED_RESPONSE });
@@ -628,6 +630,11 @@ whatsapp.on('message', async (m) => {
             // force the promo video without relying on the AI to include [VIDEO_PROMO].
             let recentConvHistory = [];
             let forcePromoVideo = false;
+
+            // Check if the promo video was already sent to this user
+            const preCheckState = await welcomeAutomationService.getUserState(remoteJid);
+            const promoAlreadySent = !!(preCheckState?.promoVideoSent) || sentPromoJids.has(remoteJid);
+
             try {
                 const conv = await chatHistoryService.getMessages(remoteJid);
                 // Take last 8 messages (already includes the current incoming one)
@@ -646,8 +653,8 @@ whatsapp.on('message', async (m) => {
                     .replace(/[!?.]/g, '').trim();
                 const isAffirmative = AFFIRMATIVE_TRIGGERS.includes(textNorm);
 
-                if (isAffirmative) {
-                    // Check the last few bot messages for a video offer
+                if (isAffirmative && !promoAlreadySent) {
+                    // Only force promo video if it hasn't been sent yet
                     const recentBotMsgs = conv.messages
                         .filter(m => m.fromMe)
                         .slice(-4)
@@ -658,11 +665,13 @@ whatsapp.on('message', async (m) => {
                         forcePromoVideo = true;
                         console.log(`🎥 [VideoOffer] Affirmative ("${text}") to video offer from ${remoteJid} — forcing promo video`);
                     }
+                } else if (isAffirmative && promoAlreadySent) {
+                    console.log(`🎥 [VideoOffer] Promo already sent to ${remoteJid} — AI will push for sale instead`);
                 }
             } catch (_) { }
 
-            // Generar respuesta con el proveedor activo (passing history for context)
-            const response = await aiResponseService.generateResponse(text, recentConvHistory);
+            // Generar respuesta con el proveedor activo (passing history + promo state for context)
+            const response = await aiResponseService.generateResponse(text, recentConvHistory, { promoVideoAlreadySent: promoAlreadySent });
             console.log(`✅ AI response received: "${response}"`);
 
             // === ALL PROVIDERS EXHAUSTED CHECK ===
@@ -719,6 +728,11 @@ whatsapp.on('message', async (m) => {
                         sentPromoJids.add(remoteJid); // lock immediately to prevent races
                     }
                     finalResponse = finalResponse.replaceAll('[VIDEO_PROMO]', '').trim();
+                    // When the video IS being sent, only keep the first message part
+                    // so "es un pack increible te va a gustar" doesn't appear alongside the video
+                    if (sendPromoVideo && finalResponse.includes('|||')) {
+                        finalResponse = finalResponse.split('|||')[0].trim();
+                    }
                 }
 
                 // Read global speed multiplier from welcome config
@@ -773,6 +787,39 @@ whatsapp.on('message', async (m) => {
                             // Persist promo-sent state so it survives restarts
                             try { await welcomeAutomationService.markPromoSent(remoteJid); } catch (_) { }
                             console.log(`✅ Promo video delivered to ${remoteJid}`);
+
+                            // Follow-up: send configurable post-video messages (supports ---MSG--- separator)
+                            try {
+                                const postVideoText = welcomeConfig.postVideoMessage || 'si tienes alguna duda me preguntas bro';
+                                if (postVideoText.trim()) {
+                                    const pvParts = postVideoText.split('---MSG---').map(p => p.trim()).filter(p => p.length > 0);
+                                    const pvDelays = Array.isArray(welcomeConfig.postVideoDelays) ? welcomeConfig.postVideoDelays : [];
+                                    const DEFAULT_PV_DELAY = 3; // seconds
+
+                                    for (let pvi = 0; pvi < pvParts.length; pvi++) {
+                                        // Delay before each message
+                                        const delaySec = pvi === 0
+                                            ? (pvDelays[0] !== undefined && pvDelays[0] !== null ? Number(pvDelays[0]) : DEFAULT_PV_DELAY)
+                                            : (pvDelays[pvi] !== undefined && pvDelays[pvi] !== null ? Number(pvDelays[pvi]) : 2);
+                                        const delayMs = Math.max(0, Math.round(delaySec * 1000));
+                                        if (delayMs > 0) {
+                                            await new Promise(r => setTimeout(r, delayMs));
+                                        }
+
+                                        welcomeAutomationService.markBotSent(remoteJid);
+                                        await whatsapp.sock.sendMessage(remoteJid, { text: pvParts[pvi] });
+                                        console.log(`💬 Post-video message ${pvi + 1}/${pvParts.length} sent to ${remoteJid} (delay: ${delaySec}s)`);
+                                        if (chatHistoryService && io) {
+                                            try {
+                                                const savedMsg = await chatHistoryService.addMessage(remoteJid, pvParts[pvi], true, 'System', 'bot');
+                                                io.emit('chat:message', { jid: remoteJid, message: savedMsg });
+                                            } catch (_) { }
+                                        }
+                                    }
+                                }
+                            } catch (followUpErr) {
+                                console.error(`⚠️ Post-video follow-up failed: ${followUpErr.message}`);
+                            }
                         } else {
                             console.log(`⚠️ Promo video not found at ${promoPath}`);
                         }

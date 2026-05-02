@@ -38,6 +38,8 @@ const WelcomeAutomationPage = () => {
     const [messageDelays, setMessageDelays] = useState([]);
     const [responseDelay, setResponseDelay] = useState(1.0);
     const [greetingByTimeEnabled, setGreetingByTimeEnabled] = useState(false);
+    const [postVideoMessage, setPostVideoMessage] = useState('');
+    const [postVideoDelays, setPostVideoDelays] = useState([]);
 
     const fileInputRef = useRef(null);
     const videoInputRef = useRef(null);
@@ -87,6 +89,8 @@ const WelcomeAutomationPage = () => {
             setMessageDelays(Array.isArray(cfg.messageDelays) ? cfg.messageDelays : []);
             setResponseDelay(cfg.responseDelay ?? 1.0);
             setGreetingByTimeEnabled(cfg.greetingByTimeEnabled || false);
+            setPostVideoMessage(cfg.postVideoMessage || 'si tienes alguna duda me preguntas bro');
+            setPostVideoDelays(Array.isArray(cfg.postVideoDelays) ? cfg.postVideoDelays : []);
             setStats(statsRes.data.data);
             // Load admin number from fallback config
             const fbCfg = fallbackCfgRes.data.data;
@@ -120,7 +124,9 @@ const WelcomeAutomationPage = () => {
                 imageEnabled,
                 messageDelays,
                 responseDelay,
-                greetingByTimeEnabled
+                greetingByTimeEnabled,
+                postVideoMessage,
+                postVideoDelays
             });
             setConfig(data.data);
             showToast('success', 'Configuración guardada correctamente');
@@ -151,6 +157,8 @@ const WelcomeAutomationPage = () => {
             setMessageDelays([]);
             setResponseDelay(1.0);
             setGreetingByTimeEnabled(false);
+            setPostVideoMessage('si tienes alguna duda me preguntas bro');
+            setPostVideoDelays([]);
             showToast('success', 'Configuración reseteada a valores por defecto');
         } catch {
             showToast('error', 'Error al resetear configuración');
@@ -639,6 +647,110 @@ const WelcomeAutomationPage = () => {
                                     </div>
                                 </div>
                             )}
+                        </div>
+
+                        {/* Post-Video Follow-up Messages */}
+                        <div className="premium-card wa-card">
+                            <div className="wa-card-header">
+                                <Video size={20} style={{ color: '#00ff00' }} />
+                                <span className="wa-card-title">Mensajes después del video</span>
+                            </div>
+                            <p className="wa-card-desc" style={{ marginBottom: '1rem' }}>
+                                Estos mensajes se envían automáticamente <strong>después de enviar el video promo</strong>. Déjalo vacío para no enviar nada.<br/>
+                                <span style={{ color: '#00ff00', fontSize: '0.85rem' }}>💡 Tip: Usa "+ Añadir otro globo" para enviar múltiples mensajes separados con tiempos configurables.</span>
+                            </p>
+                            <textarea
+                                className="wa-textarea"
+                                value={postVideoMessage}
+                                onChange={e => setPostVideoMessage(e.target.value)}
+                                placeholder="Ej: si tienes alguna duda me preguntas bro"
+                                rows={4}
+                                maxLength={2000}
+                            />
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem' }}>
+                                <button 
+                                    className="wa-refresh-btn" 
+                                    style={{ margin: 0, padding: '6px 12px', fontSize: '0.85rem', background: 'rgba(0, 255, 0, 0.1)', color: '#00ff00', border: '1px solid rgba(0, 255, 0, 0.2)' }}
+                                    onClick={() => setPostVideoMessage(prev => prev + '\n\n---MSG---\n\n')}
+                                    title="Separa el texto en múltiples globos de mensaje"
+                                >
+                                    + Añadir otro globo de mensaje
+                                </button>
+                                <div className="wa-char-count" style={{ marginTop: 0 }}>{postVideoMessage.length} / 2000</div>
+                            </div>
+
+                            {/* Post-video Message Delays Preview */}
+                            {(() => {
+                                const rawParts = postVideoMessage.split('---MSG---').map(p => p.trim());
+                                const parts = rawParts.length > 1 ? rawParts : rawParts.filter(p => p.length > 0);
+                                if (parts.length < 1) return null;
+                                return (
+                                    <div className="wa-delays-section">
+                                        <div className="wa-delays-header">
+                                            <Timer size={18} style={{ color: '#ffaa00' }} />
+                                            <span className="wa-delays-title">Tiempos de espera</span>
+                                            <span className="wa-delays-subtitle">Tiempo antes de cada mensaje (el primero es después del video)</span>
+                                        </div>
+                                        <div className="wa-delays-list">
+                                            {parts.map((part, idx) => {
+                                                const preview = part.length > 80 ? part.substring(0, 80) + '…' : (part || '(mensaje vacío)');
+                                                const isEmpty = !part;
+                                                return (
+                                                    <React.Fragment key={idx}>
+                                                        <div className={`wa-delay-msg-preview ${isEmpty ? 'wa-delay-msg-empty' : ''}`}>
+                                                            <div className="wa-delay-msg-num">{idx + 1}</div>
+                                                            <div className="wa-delay-msg-text">{preview}</div>
+                                                        </div>
+                                                        {/* Delay control BEFORE this message */}
+                                                        <div className="wa-delay-control">
+                                                            <div className="wa-delay-control-icon">⏳</div>
+                                                            <input
+                                                                type="range"
+                                                                className="wa-delay-slider"
+                                                                min={0}
+                                                                max={60}
+                                                                step={1}
+                                                                value={postVideoDelays[idx] ?? (idx === 0 ? 3 : 2)}
+                                                                onChange={e => {
+                                                                    const val = Number(e.target.value);
+                                                                    setPostVideoDelays(prev => {
+                                                                        const next = [...prev];
+                                                                        while (next.length <= idx) next.push(idx === 0 ? 3 : 2);
+                                                                        next[idx] = val;
+                                                                        return next;
+                                                                    });
+                                                                }}
+                                                            />
+                                                            <div className="wa-delay-input-wrap">
+                                                                <input
+                                                                    type="number"
+                                                                    className="wa-delay-input"
+                                                                    min={0}
+                                                                    max={60}
+                                                                    value={postVideoDelays[idx] ?? (idx === 0 ? 3 : 2)}
+                                                                    onChange={e => {
+                                                                        const val = Math.max(0, Math.min(60, Number(e.target.value) || 0));
+                                                                        setPostVideoDelays(prev => {
+                                                                            const next = [...prev];
+                                                                            while (next.length <= idx) next.push(idx === 0 ? 3 : 2);
+                                                                            next[idx] = val;
+                                                                            return next;
+                                                                        });
+                                                                    }}
+                                                                />
+                                                                <span className="wa-delay-unit">seg</span>
+                                                            </div>
+                                                        </div>
+                                                        {idx < parts.length - 1 && (
+                                                            <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', margin: '4px 0' }} />
+                                                        )}
+                                                    </React.Fragment>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                );
+                            })()}
                         </div>
 
                         {/* Cooldown */}

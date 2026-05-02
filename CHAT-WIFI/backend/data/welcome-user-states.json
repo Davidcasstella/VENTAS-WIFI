@@ -1,11 +1,11 @@
 {
   "573028599105@s.whatsapp.net": {
-    "lastMessageText": "muestralo",
-    "lastMessageAt": "2026-04-28T06:13:29.343Z",
+    "lastMessageText": "nequi",
+    "lastMessageAt": "2026-05-02T05:28:52.499Z",
     "aiEnabled": true,
     "cooldownEnabled": true,
-    "promoVideoSent": true,
-    "lastWelcomeSentAt": "2026-05-02T02:02:35.944Z"
+    "lastWelcomeSentAt": "2026-05-02T05:25:23.966Z",
+    "promoVideoSent": true
   },
   "151771427143897@lid": {
     "lastMessageText": "Nslqpjdjw",
@@ -140,5 +140,13 @@
   "2822447886502@lid": {
     "lastWelcomeSentAt": "2026-05-02T02:55:39.153Z",
     "aiEnabled": false
+  },
+  "128175346548968@lid": {
+    "lastWelcomeSentAt": "2026-05-02T05:30:53.670Z",
+    "lastMessageText": "Si",
+    "lastMessageAt": "2026-05-02T05:31:40.321Z",
+    "aiEnabled": false,
+    "cooldownEnabled": true,
+    "promoVideoSent": true
   }
 }

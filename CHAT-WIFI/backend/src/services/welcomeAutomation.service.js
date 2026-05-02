@@ -18,6 +18,8 @@ const DEFAULT_CONFIG = {
     messageDelays: [],     // per-message delays in seconds (delay BEFORE message i+1)
     responseDelay: 1.0,    // multiplier for AI response speed (0.5 = fast, 1.0 = normal, 3.0 = slow)
     greetingByTimeEnabled: false, // replace 3rd message with time-based greeting (Colombia TZ)
+    postVideoMessage: 'si tienes alguna duda me preguntas bro', // message sent after promo video
+    postVideoDelays: [],   // per-message delays in seconds for post-video messages
     cooldownHours: 24,
     updatedAt: null
 };
@@ -136,12 +138,19 @@ class WelcomeAutomationService {
             delete states[jid].lastWelcomeSentAt;
             // Also re-enable AI when a full reset is requested
             states[jid].aiEnabled = true;
+            // Clear promo video flag so it can be sent again
+            delete states[jid].promoVideoSent;
 
             // Optional: try to clear pending fallback from aiFallback if needed
             // Since this runs in welcomeAutomation, and we just enabled AI, 
             // the AI will answer next time anyway.
         }
         await this._writeStates(states);
+        // Also clear the in-memory guard in app.js so it doesn't block re-sending
+        if (global.sentPromoJids) {
+            global.sentPromoJids.delete(jid);
+        }
+        console.log(`🔄 User state reset for ${jid} (AI re-enabled, promo video unlocked)`);
     }
 
     async deleteUserState(jid) {
