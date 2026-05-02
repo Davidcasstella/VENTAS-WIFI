@@ -107,29 +107,58 @@ const ConversationList = ({ conversations, activeJid, onSelect, onDelete, search
     const pressTarget = useRef(null);
     const newCatInputRef = useRef(null);
     const editCatInputRef = useRef(null);
-    // Tracks which JIDs we've already requested a profile pic for (avoids stale closure)
+    // Tracks which JIDs we've already GOT a valid pic for (avoids re-fetching successful ones)
     const fetchedJidsRef = useRef(new Set());
+    // Tracks JIDs that returned null (no pic yet) with timestamps to allow retries after cooldown
+    const failedJidsRef = useRef(new Map()); // jid -> timestamp of last attempt
+    const RETRY_COOLDOWN = 30_000; // 30 seconds before retrying a failed JID
 
     // ── Fetch profile pictures lazily ──────────────────────────────────
-    // Uses a ref (not state) to track fetched JIDs to avoid stale closure issues
+    // Only marks a JID as "fetched" when we get a real URL back.
+    // If the backend returns null (e.g. WhatsApp not connected yet),
+    // the JID stays eligible for retry after a cooldown period.
     useEffect(() => {
         const fetchPics = async () => {
+            const now = Date.now();
             for (const conv of conversations) {
-                // Skip if we already sent a request for this JID
+                // Skip if we already have a successful picture
                 if (fetchedJidsRef.current.has(conv.jid)) continue;
-                fetchedJidsRef.current.add(conv.jid); // Mark immediately to avoid parallel duplicate requests
+                // Skip if we recently tried and got null (wait for cooldown)
+                const lastFail = failedJidsRef.current.get(conv.jid);
+                if (lastFail && (now - lastFail) < RETRY_COOLDOWN) continue;
+
+                // Mark as "attempting" to prevent parallel duplicates
+                failedJidsRef.current.set(conv.jid, now);
                 try {
                     const res = await fetch(`${BACKEND_URL}/api/chat/profile-pic/${encodeURIComponent(conv.jid)}`);
                     const data = await res.json();
-                    // Only update state if we got a real URL
-                    setProfilePics(prev => ({ ...prev, [conv.jid]: data.url || null }));
+                    if (data.url) {
+                        // Success: cache permanently (no more retries needed)
+                        fetchedJidsRef.current.add(conv.jid);
+                        failedJidsRef.current.delete(conv.jid);
+                        setProfilePics(prev => ({ ...prev, [conv.jid]: data.url }));
+                    } else {
+                        // Null: record timestamp so we retry after cooldown
+                        setProfilePics(prev => ({ ...prev, [conv.jid]: null }));
+                    }
                 } catch {
                     setProfilePics(prev => ({ ...prev, [conv.jid]: null }));
                 }
             }
         };
         fetchPics();
-    }, [conversations]); // Safe: fetchedJidsRef is a ref, not state — no stale closure
+    }, [conversations]);
+
+    // ── Periodic retry for JIDs that returned null ─────────────────────
+    // Every 60s, clear the failed cooldowns so the next render retries them
+    useEffect(() => {
+        const interval = setInterval(() => {
+            if (failedJidsRef.current.size > 0) {
+                failedJidsRef.current.clear();
+            }
+        }, 60_000);
+        return () => clearInterval(interval);
+    }, []);
 
     // Persist leads whenever they change
     useEffect(() => { saveLeads(leads); }, [leads]);

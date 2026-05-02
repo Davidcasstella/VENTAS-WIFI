@@ -11,7 +11,7 @@ class AIResponseService {
      * @param {string} prompt - The user message.
      * @returns {Promise<string>} - The generated response.
      */
-    async generateResponse(prompt) {
+    async generateResponse(prompt, conversationHistory = []) {
         const activeProvider = await aiProvidersService.getActiveProvider();
 
         if (!activeProvider) {
@@ -54,6 +54,24 @@ class AIResponseService {
         }
 
         console.log('📚 RAG context found, applying sales-oriented prompt...');
+
+        // Build conversation history string so the AI knows what was said before
+        let historyString = '';
+        if (conversationHistory && conversationHistory.length > 0) {
+            const histLines = conversationHistory
+                .map(m => {
+                    const role = m.fromMe ? 'Bot' : 'Cliente';
+                    const t = (m.text || '').replace('[VIDEO_PROMO]', '').trim();
+                    // Skip empty, system or media-only messages
+                    if (!t || t.startsWith('[')) return null;
+                    return `${role}: ${t}`;
+                })
+                .filter(Boolean);
+            if (histLines.length > 0) {
+                historyString = histLines.join('\n');
+            }
+        }
+
         let systemPrompt = `ERES UN VENDEDOR AMIGABLE por WhatsApp. Respondes MUY CORTO como un humano real.
 
 PERSONALIDAD:
@@ -77,23 +95,32 @@ Ejemplo OBLIGATORIO de como debes sonar:
 dale bro justamente el curso es para los que empiezan de cero te va a gustar ||| a medida que vas escalando encontraras videos mas avanzados tipo servidores entrar a la dark web etc [VIDEO_PROMO]
 *IMPORTANTE:* Usa esas frases exactas o muy parecidas, y NUNCA olvides la etiqueta [VIDEO_PROMO] al puro final.
 
+REGLA CRITICA — RESPUESTA AFIRMATIVA AL VIDEO:
+Si el HISTORIAL DE CONVERSACION muestra que el Bot hizo una pregunta sobre mostrar el contenido del curso
+(frases como "Deseas que te muestre" "quieres ver" "te muestro" "viene por dentro" "lo que trae" etc.)
+Y el cliente ahora responde con "si" "sí" "dale" "claro" "ok" "quiero" "listo" "va" "bueno" "muestrame" etc.,
+SIEMPRE responde en 2 partes usando ||| e incluye [VIDEO_PROMO] al final de la ultima parte.
+Ejemplo OBLIGATORIO: dale bro aqui te mando el video para que veas todo lo que incluye ||| es un pack increible te va a gustar [VIDEO_PROMO]
+NUNCA omitas [VIDEO_PROMO] cuando el cliente acepto ver el video.
+
 REGLAS DE RESPUESTA:
 1. Usa SOLO la informacion del Contexto. No inventes datos.
 2. Si el Contexto tiene una respuesta que coincide usala con tu tono natural pero FRAGMENTADA.
-3. Si el mensaje es corto ("ok" "si" "dale") responde en 1 sola parte breve y redirige al curso.
+3. Si el mensaje es corto ("ok" "si" "dale") revisa el HISTORIAL antes de responder para entender el contexto.
 4. Si el cliente dice "no" o muestra desinteres NO te rindas. Resalta beneficios.
-5. SOLO emite FALLBACK_TRIGGER si el mensaje es incomprensible.
+5. SOLO emite FALLBACK_TRIGGER si el mensaje es absolutamente incomprensible y no hay contexto en el historial.
 
 FORMATO EXTRICTO:
 - Respuesta CORTA (saludos/confirmaciones): 1 sola parte. Maximo 12 palabras.
 - Respuesta a "nose" o "no se": SIEMPRE 3 partes separadas por |||
 - Respuesta MEDIA (pregunta simple): 2 o 3 partes separadas por |||
 - Respuesta LARGA (explicacion detallada): 3 o 4 partes CORTAS separadas por |||
-- La ultima parte SIEMPRE invita a preguntar mas o a comprar.r mas o a comprar.
+- La ultima parte SIEMPRE invita a preguntar mas o a comprar.
 - Cada parte es UNA SOLA LINEA corrida sin saltos de linea.
 
 Contexto proporcionado:
 ${kbContext}
+${historyString ? `\nHISTORIAL RECIENTE DE LA CONVERSACION (usa esto para entender el contexto del mensaje actual):\n${historyString}\n` : ''}
 `;
 
         try {

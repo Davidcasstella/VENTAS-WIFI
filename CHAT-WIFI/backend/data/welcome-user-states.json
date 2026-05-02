@@ -5,7 +5,7 @@
     "aiEnabled": true,
     "cooldownEnabled": true,
     "promoVideoSent": true,
-    "lastWelcomeSentAt": "2026-04-28T06:09:16.317Z"
+    "lastWelcomeSentAt": "2026-05-02T02:02:35.944Z"
   },
   "151771427143897@lid": {
     "lastMessageText": "Nslqpjdjw",
@@ -136,5 +136,9 @@
     "lastMessageText": "Listo",
     "lastMessageAt": "2026-04-24T06:05:56.345Z",
     "cooldownEnabled": true
+  },
+  "2822447886502@lid": {
+    "lastWelcomeSentAt": "2026-05-02T02:55:39.153Z",
+    "aiEnabled": false
   }
 }

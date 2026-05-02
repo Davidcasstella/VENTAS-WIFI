@@ -622,8 +622,47 @@ whatsapp.on('message', async (m) => {
             }
 
 
-            // Generar respuesta con el proveedor activo
-            const response = await aiResponseService.generateResponse(text);
+            // === FETCH RECENT HISTORY + PRE-CHECK FOR VIDEO OFFER AFFIRMATIVE ===
+            // Pass the last 8 messages to the AI so it knows the conversation context.
+            // Also do a local pre-check: if the user is saying "yes" to the video offer,
+            // force the promo video without relying on the AI to include [VIDEO_PROMO].
+            let recentConvHistory = [];
+            let forcePromoVideo = false;
+            try {
+                const conv = await chatHistoryService.getMessages(remoteJid);
+                // Take last 8 messages (already includes the current incoming one)
+                recentConvHistory = conv.messages.slice(-8);
+
+                // Affirmative words that mean "yes, show me" in Spanish
+                const AFFIRMATIVE_TRIGGERS = ['si', 'sí', 'dale', 'claro', 'ok', 'quiero', 'listo',
+                    'muestrame', 'muéstrame', 'enséñame', 'ensenme', 'enseñame',
+                    'va', 'bueno', 'perfecto', 'venga', 'anda', 'porfa', 'porfavor', 'por favor'];
+                // Keywords that indicate the bot was offering to show video/content
+                const VIDEO_OFFER_KEYWORDS = ['muestre', 'dentro', 'viene por', 'contenido', 'muestro',
+                    'mostrar', 'quieres ver', 'te muestro', 'te enseño', 'lo que trae', 'pack'];
+
+                const textNorm = text.trim().toLowerCase()
+                    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                    .replace(/[!?.]/g, '').trim();
+                const isAffirmative = AFFIRMATIVE_TRIGGERS.includes(textNorm);
+
+                if (isAffirmative) {
+                    // Check the last few bot messages for a video offer
+                    const recentBotMsgs = conv.messages
+                        .filter(m => m.fromMe)
+                        .slice(-4)
+                        .map(m => (m.text || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''));
+                    const combinedBotText = recentBotMsgs.join(' ');
+                    const wasVideoOffer = VIDEO_OFFER_KEYWORDS.some(kw => combinedBotText.includes(kw));
+                    if (wasVideoOffer) {
+                        forcePromoVideo = true;
+                        console.log(`🎥 [VideoOffer] Affirmative ("${text}") to video offer from ${remoteJid} — forcing promo video`);
+                    }
+                }
+            } catch (_) { }
+
+            // Generar respuesta con el proveedor activo (passing history for context)
+            const response = await aiResponseService.generateResponse(text, recentConvHistory);
             console.log(`✅ AI response received: "${response}"`);
 
             // === ALL PROVIDERS EXHAUSTED CHECK ===
@@ -671,7 +710,7 @@ whatsapp.on('message', async (m) => {
                 // Check if we need to send the promo video
                 let finalResponse = response;
                 let sendPromoVideo = false;
-                if (finalResponse.includes('[VIDEO_PROMO]')) {
+                if (finalResponse.includes('[VIDEO_PROMO]') || forcePromoVideo) {
                     // Fast in-memory guard (prevents race conditions)
                     // + persistent state check (survives server restarts)
                     const userState = await welcomeAutomationService.getUserState(remoteJid);
