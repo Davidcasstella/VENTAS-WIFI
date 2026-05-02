@@ -7,6 +7,19 @@ dist/
 .DS_Store
 *.log
 
+# Runtime data — managed by backup.sh / restore.sh / deploy.sh
+# These files live on the server and should never be committed.
+backend/data/chat-history.json
+backend/data/welcome-user-states.json
+backend/data/follow-up-states.json
+backend/data/media/
+backend/data/media.db
+backend/data/media.db-shm
+backend/data/media.db-wal
+backend/data/temp/
+
+# Note: scripts/ is intentionally tracked in git (deploy tools)
+
 # IDEs and Editors
 .vscode/
 .idea/
