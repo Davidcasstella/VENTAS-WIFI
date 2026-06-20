@@ -10,6 +10,9 @@ import AIProvidersPage from './pages/AIProvidersPage';
 import KnowledgeBasePage from './pages/KnowledgeBasePage';
 import BlockedNumbersPage from './pages/BlockedNumbersPage';
 import WelcomeAutomationPage from './pages/WelcomeAutomationPage';
+import AIRulesPage from './pages/AIRulesPage';
+import CourseAccessPage from './pages/CourseAccessPage';
+import EmailManagementPage from './pages/EmailManagementPage';
 
 const App = () => {
     return (
@@ -28,6 +31,9 @@ const App = () => {
                             <Route path="/knowledge-base" element={<KnowledgeBasePage />} />
                             <Route path="/blocked-numbers" element={<BlockedNumbersPage />} />
                             <Route path="/welcome-automation" element={<WelcomeAutomationPage />} />
+                            <Route path="/ai-rules" element={<AIRulesPage />} />
+                            <Route path="/course-access" element={<CourseAccessPage />} />
+                            <Route path="/emails" element={<EmailManagementPage />} />
                             <Route path="/chats" element={<div>Próximamente...</div>} />
                         </Route>
                     </Route>

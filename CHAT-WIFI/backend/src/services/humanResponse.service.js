@@ -53,6 +53,8 @@ class HumanResponseService {
     constructor() {
         this._io = null;
         this._chatHistory = null;
+        // Track active sending operations per JID so we can cancel them on interruption
+        this._activeSenders = new Map();
     }
 
     /**
@@ -70,6 +72,24 @@ class HumanResponseService {
 
     _sleep(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    /**
+     * Cancel any active sending operation for the given JID.
+     * Called when a new message arrives from the same client.
+     */
+    cancelSending(jid) {
+        if (this._activeSenders.has(jid)) {
+            this._activeSenders.set(jid, false);
+            console.log(`🛑 [HumanResponse] Cancelled remaining parts for ${jid} (client interrupted)`);
+        }
+    }
+
+    /**
+     * Check if sending is still active (not cancelled) for the given JID.
+     */
+    _isSendingActive(jid) {
+        return this._activeSenders.get(jid) === true;
     }
 
     /**
@@ -150,14 +170,7 @@ class HumanResponseService {
         }
 
         if (delimiter) {
-            const parts = trimmed.split(delimiter).map(p => p.trim()).filter(p => p.length > 0);
-
-            // Return 1, 2, or 3 parts — exactly as the AI decided
-            if (parts.length >= 3) {
-                return [parts[0], parts[1], parts.slice(2).join('. ')];
-            }
-            // 1 or 2 parts — return as-is
-            return parts;
+            return trimmed.split(delimiter).map(p => p.trim()).filter(p => p.length > 0);
         }
 
         // No delimiter — single message response
@@ -187,9 +200,19 @@ class HumanResponseService {
         // enableTypingIndicator: true = show "escribiendo...", false = silent (owner gets phone notifications)
         const enableTyping = options.enableTypingIndicator !== false;
 
+        // Mark this JID as actively sending
+        this._activeSenders.set(jid, true);
+
         console.log(`🧑 [HumanResponse] Sending ${partCount}-part response to ${jid} (speed: ${delayMultiplier}x, typing: ${enableTyping})${flowTag}`);
 
         for (let i = 0; i < parts.length; i++) {
+            // Check if sending was cancelled (client sent a new message)
+            if (!this._isSendingActive(jid)) {
+                console.log(`🛑 [HumanResponse] Stopped at part ${i + 1}/${partCount} — client interrupted`);
+                if (enableTyping) await this._clearTyping(sock, jid);
+                break;
+            }
+
             try {
                 // Show typing indicator BEFORE the delay so the client sees
                 // "escribiendo..." while the bot is "thinking"
@@ -206,19 +229,27 @@ class HumanResponseService {
                     let elapsed = 0;
                     const refreshInterval = 4000;
                     while (elapsed < typingDelay) {
+                        // Check cancellation during the delay too
+                        if (!this._isSendingActive(jid)) break;
                         const wait = Math.min(refreshInterval, typingDelay - elapsed);
                         await this._sleep(wait);
                         elapsed += wait;
                         // Re-send composing if there's still time left
-                        if (elapsed < typingDelay) {
+                        if (elapsed < typingDelay && this._isSendingActive(jid)) {
                             await this._showTyping(sock, jid);
                         }
+                    }
+                    if (!this._isSendingActive(jid)) {
+                        await this._clearTyping(sock, jid);
+                        console.log(`🛑 [HumanResponse] Stopped at part ${i + 1}/${partCount} during delay — client interrupted`);
+                        break;
                     }
                     // Stop typing indicator, then send the message
                     await this._clearTyping(sock, jid);
                 } else {
                     // No typing indicator: just wait the natural delay silently
                     await this._sleep(typingDelay);
+                    if (!this._isSendingActive(jid)) break;
                 }
 
                 markBotSentFn(jid);
@@ -233,6 +264,8 @@ class HumanResponseService {
             }
         }
 
+        // Clean up
+        this._activeSenders.delete(jid);
         if (enableTyping) {
             await this._clearTyping(sock, jid);
         }

@@ -1,0 +1,4 @@
+# Root .gitignore
+lithe-catbird-*.json
+google-credentials.json
+*.json.private

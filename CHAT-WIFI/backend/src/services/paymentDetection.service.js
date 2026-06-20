@@ -33,11 +33,11 @@ class PaymentDetectionService {
     }
 
     /**
-     * Analyze an image to determine if it's a payment receipt.
+     * Analyze an image to determine if it's a payment receipt and extract the amount.
      * Uses Groq Vision API (Llama 3.2 Vision) with key rotation.
      *
      * @param {Buffer} imageBuffer - The raw image data
-     * @returns {Promise<boolean>} - true if payment receipt detected
+     * @returns {Promise<{isPayment: boolean, amount: number}>} - Analysis result
      */
     async isPaymentReceipt(imageBuffer) {
         const groqKeys = await aiProvidersService.getProvidersByType('groq');
@@ -73,7 +73,7 @@ class PaymentDetectionService {
      * Call Groq Vision API to analyze the image.
      * @param {string} apiKey - Groq API key
      * @param {string} base64Image - Base64 encoded image
-     * @returns {Promise<boolean>} - true if payment receipt
+     * @returns {Promise<{isPayment: boolean, amount: number}>} - Parse result
      */
     async _analyzeWithVision(apiKey, base64Image) {
         const response = await axios.post(
@@ -90,14 +90,18 @@ class PaymentDetectionService {
 
 Busca señales como:
 - Números de transacción o referencia
-- Logos de bancos o aplicaciones de pago
+- Logos de bancos o aplicaciones de pago (Nequi, Daviplata, etc.)
 - Palabras como: pago, transferencia, comprobante, enviado, monto, referencia, exitoso, aprobado
 - Tablas o campos de montos de dinero
 - Confirmaciones de transacción
 
-Responde EXACTAMENTE con una sola palabra:
-- SI (si parece un comprobante de pago)
-- NO (si NO parece un comprobante de pago)`
+Retorna el resultado formateado exactamente así:
+RESULTADO: SI
+MONTO: 15000
+
+Si no es un comprobante de pago o transferencia, responde:
+RESULTADO: NO
+MONTO: 0`
                             },
                             {
                                 type: 'image_url',
@@ -108,7 +112,7 @@ Responde EXACTAMENTE con una sola palabra:
                         ]
                     }
                 ],
-                max_tokens: 10,
+                max_tokens: 50,
                 temperature: 0.1
             },
             {
@@ -120,15 +124,34 @@ Responde EXACTAMENTE con una sola palabra:
             }
         );
 
-        const answer = (response.data?.choices?.[0]?.message?.content || '').trim().toUpperCase();
-        console.log(`🔍 Payment detection result: "${answer}"`);
-        return answer.startsWith('SI') || answer === 'SÍ';
+        const content = (response.data?.choices?.[0]?.message?.content || '').trim();
+        console.log(`🔍 Vision analysis raw response:\n${content}`);
+
+        const lines = content.split('\n');
+        let isPayment = false;
+        let amount = 0;
+
+        for (const line of lines) {
+            const upperLine = line.toUpperCase();
+            if (upperLine.includes('RESULTADO:')) {
+                isPayment = upperLine.includes('SI') || upperLine.includes('SÍ');
+            }
+            if (upperLine.includes('MONTO:')) {
+                const num = parseInt(line.replace(/[^0-9]/g, ''), 10);
+                if (!isNaN(num)) {
+                    amount = num;
+                }
+            }
+        }
+
+        console.log(`🔍 Payment detection result: isPayment=${isPayment}, amount=${amount}`);
+        return { isPayment, amount };
     }
 
     /**
      * Full pipeline: download image → analyze for payment receipt.
      * @param {object} msg - The Baileys message object
-     * @returns {Promise<boolean>} - true if payment receipt detected
+     * @returns {Promise<{isPayment: boolean, amount: number}>} - Analysis result
      */
     async analyzeMessage(msg) {
         const imageBuffer = await this.downloadImage(msg);

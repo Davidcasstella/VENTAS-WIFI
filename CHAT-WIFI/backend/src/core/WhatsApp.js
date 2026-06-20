@@ -18,8 +18,12 @@ class WhatsApp extends EventEmitter {
         this.sock = null;
         this.state = null;
         this.saveCreds = null;
-        this.status = 'disconnected'; // disconnected, connecting, waiting_qr, connected
+        this.status = 'disconnected'; // disconnected, connecting, waiting_qr, waiting_pairing_code, connected
         this.qr = null;
+        this.pairingCode = null;
+        this.pendingPairingPhone = null;
+        this._pairingResolve = null; // Promise resolver for pairing code flow
+        this._pairingReject = null;  // Promise rejecter for pairing code flow
         this.logger = pino({ level: config.logs.level });
         this.isRestarting = false;
         this.sessionPath = path.join(process.cwd(), 'session', config.whatsapp.sessionPath);
@@ -44,7 +48,8 @@ class WhatsApp extends EventEmitter {
             this.sock = makeWASocket({
                 version,
                 auth: this.state,
-                printQRInTerminal: true,
+                // Suppress QR in terminal when using pairing code method
+                printQRInTerminal: !this.pendingPairingPhone,
                 browser: config.whatsapp.browser,
                 logger: this.logger.child({ module: 'baileys' }),
                 // Keep bot offline so it does NOT mark messages as read on the owner's phone.
@@ -76,6 +81,34 @@ class WhatsApp extends EventEmitter {
             const { connection, lastDisconnect, qr } = update;
 
             if (qr) {
+                // Pairing code flow: intercept the first QR event to request a pairing code instead
+                if (this.pendingPairingPhone) {
+                    const phone = this.pendingPairingPhone;
+                    this.pendingPairingPhone = null; // Consume the flag (one-shot)
+                    try {
+                        this.logger.info(`Requesting pairing code for ${phone}...`);
+                        const code = await this.sock.requestPairingCode(phone);
+                        this.pairingCode = code;
+                        this.updateStatus('waiting_pairing_code');
+                        this.logger.info(`Pairing code generated: ${code}`);
+                        // Resolve the promise so the REST endpoint can return the code
+                        if (this._pairingResolve) {
+                            this._pairingResolve(code);
+                            this._pairingResolve = null;
+                            this._pairingReject = null;
+                        }
+                    } catch (err) {
+                        this.logger.error({ err }, 'Error requesting pairing code');
+                        if (this._pairingReject) {
+                            this._pairingReject(err);
+                            this._pairingResolve = null;
+                            this._pairingReject = null;
+                        }
+                    }
+                    return; // Skip QR generation
+                }
+
+                // Normal QR flow
                 try {
                     this.qr = await QRCode.toDataURL(qr);
                     this.updateStatus('waiting_qr');
@@ -104,6 +137,7 @@ class WhatsApp extends EventEmitter {
             } else if (connection === 'open') {
                 this.updateStatus('connected');
                 this.qr = null;
+                this.pairingCode = null;
                 this.logger.info('WhatsApp conectado correctamente');
             }
         });
@@ -128,6 +162,7 @@ class WhatsApp extends EventEmitter {
         return {
             status: this.status,
             qr: this.qr,
+            pairingCode: this.pairingCode,
             user: this.sock?.user
         };
     }
@@ -144,6 +179,56 @@ class WhatsApp extends EventEmitter {
         } finally {
             this.isRestarting = false;
         }
+    }
+
+    /**
+     * Initialize connection using pairing code instead of QR.
+     * Clears any existing session, sets the pending phone flag,
+     * and returns a Promise that resolves with the 8-char pairing code.
+     * @param {string} phoneNumber - Phone number without + (e.g. "573028599105")
+     * @returns {Promise<string>} The pairing code to enter in WhatsApp
+     */
+    async initWithPairingCode(phoneNumber) {
+        this.logger.info(`Initiating pairing code flow for ${phoneNumber}...`);
+
+        // Clean phone number: remove +, spaces, dashes
+        const cleanPhone = phoneNumber.replace(/[^\d]/g, '');
+
+        // Set the flag BEFORE destroying/re-init so the new connection uses it
+        this.pendingPairingPhone = cleanPhone;
+        this.pairingCode = null;
+
+        // Create a promise that will be resolved when the pairing code is generated
+        const codePromise = new Promise((resolve, reject) => {
+            this._pairingResolve = resolve;
+            this._pairingReject = reject;
+
+            // Safety timeout: if no code is generated within 30 seconds, reject
+            setTimeout(() => {
+                if (this._pairingReject) {
+                    this._pairingReject(new Error('Timeout waiting for pairing code generation'));
+                    this._pairingResolve = null;
+                    this._pairingReject = null;
+                }
+            }, 30000);
+        });
+
+        // Destroy current connection
+        await this.destroy();
+
+        // Clear session folder (pairing code requires a fresh, unauthenticated session)
+        if (fs.existsSync(this.sessionPath)) {
+            await fs.remove(this.sessionPath);
+            this.logger.info('Session folder cleared for pairing code flow');
+        }
+
+        await delay(1000);
+
+        // Re-initialize — init() will see pendingPairingPhone and act accordingly
+        await this.init();
+
+        // Wait for the pairing code to be generated inside registerEvents()
+        return codePromise;
     }
 
     async clearSession() {
@@ -172,6 +257,7 @@ class WhatsApp extends EventEmitter {
             this.sock = null;
         }
         this.qr = null;
+        this.pairingCode = null;
         this.updateStatus('disconnected');
     }
 }

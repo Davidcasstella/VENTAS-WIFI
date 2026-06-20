@@ -20,7 +20,7 @@
       "text": "",
       "audioPath": null,
       "videoPath": null,
-      "imagePath": null
+      "imagePath": "C:\\Users\\David\\Desktop\\VENTAS-WIFI\\VENTAS-WIFI\\CHAT-WIFI\\backend\\public\\uploads\\follow-up\\step_2-image.jpeg"
     },
     {
       "id": "step_3",
@@ -43,5 +43,5 @@
       "imagePath": null
     }
   ],
-  "updatedAt": "2026-04-27T04:10:15.629Z"
+  "updatedAt": "2026-06-20T01:22:59.804Z"
 }

@@ -3,10 +3,46 @@
     "id": "f98915ac-879d-4632-8bd7-bb47bd1ce3b5",
     "name": "Grok",
     "apiKey": "ddb4028337fffb3529bc006180f87ad6:f0abbb1195a6ffbe55441c2a071f949f:4c0964cda8bd28e5363e5f48e73c7bd5111425418eb6e422525337e0c2fc09cc5e5c61a8287d551966319d2cdaec7b797e87dafc3882d502",
-    "status": "active",
+    "status": "available",
     "queuePosition": 0,
-    "usageLogs": [],
-    "lastUsed": null,
+    "usageLogs": [
+      {
+        "timestamp": "2026-06-20T04:58:16.050Z",
+        "event": "deactivated",
+        "reason": "Replaced by another provider"
+      },
+      {
+        "timestamp": "2026-06-20T04:58:18.344Z",
+        "event": "activated",
+        "reason": "Manually activated by user"
+      },
+      {
+        "timestamp": "2026-06-20T04:59:06.093Z",
+        "event": "deactivated",
+        "reason": "Replaced by another provider"
+      },
+      {
+        "timestamp": "2026-06-20T05:00:25.053Z",
+        "event": "activated",
+        "reason": "Auto-activated by key rotation fallback"
+      },
+      {
+        "timestamp": "2026-06-20T05:09:41.461Z",
+        "event": "deactivated",
+        "reason": "Replaced by another provider"
+      },
+      {
+        "timestamp": "2026-06-20T06:05:50.149Z",
+        "event": "activated",
+        "reason": "Auto-activated by key rotation fallback"
+      },
+      {
+        "timestamp": "2026-06-20T06:14:19.755Z",
+        "event": "deactivated",
+        "reason": "Replaced by another provider"
+      }
+    ],
+    "lastUsed": "2026-06-20T06:05:50.149Z",
     "errorCount": 0
   },
   {
@@ -25,8 +61,19 @@
     "apiKey": "42987c547b45698923d8026dde4c6e95:bb480ffa0d5e485b289c3b7738640bbb:956157fcccc12e3f1676f06c56f14bd66c171e81e13416ec9577588aaf1e856a78bd25ef5326f153c9413b6fd21b1b17f0667299689f782e",
     "status": "available",
     "queuePosition": 2,
-    "usageLogs": [],
-    "lastUsed": null,
+    "usageLogs": [
+      {
+        "timestamp": "2026-06-20T04:58:16.050Z",
+        "event": "activated",
+        "reason": "Manually activated by user"
+      },
+      {
+        "timestamp": "2026-06-20T04:58:18.344Z",
+        "event": "deactivated",
+        "reason": "Replaced by another provider"
+      }
+    ],
+    "lastUsed": "2026-06-20T04:58:16.050Z",
     "errorCount": 0
   },
   {
@@ -67,6 +114,58 @@
     "queuePosition": 6,
     "usageLogs": [],
     "lastUsed": null,
+    "errorCount": 0
+  },
+  {
+    "id": "8928dca2-84b2-4933-9cbf-18a05b434ae6",
+    "name": "Gemini",
+    "apiKey": "1ab048ce5f3be2e402f3371ee04c4ac0:3eef36b02c99785cd0f87084be7f3a47:e96c45eab7031cba2a6ff7eb991c67363fe0a5907264c75b6eb9183e73b5b4a7851e8526c71d9f",
+    "status": "available",
+    "queuePosition": 7,
+    "usageLogs": [
+      {
+        "timestamp": "2026-06-20T05:09:35.909Z",
+        "event": "created",
+        "reason": "New provider added"
+      },
+      {
+        "timestamp": "2026-06-20T05:09:41.461Z",
+        "event": "activated",
+        "reason": "Manually activated by user"
+      },
+      {
+        "timestamp": "2026-06-20T05:15:03.833Z",
+        "event": "deactivated",
+        "reason": "Replaced by another provider"
+      }
+    ],
+    "lastUsed": "2026-06-20T05:09:41.461Z",
+    "errorCount": 0
+  },
+  {
+    "id": "c5a5f2ed-3d10-457b-aa2d-831b12e04d88",
+    "name": "Gemini",
+    "apiKey": "0d23b95ae33f38a48e9315f3b6d46261:59564f1800061c9b07fb0c68603be628:a72d5ce7b33b7a341e4b1aff89d948bda75cc917353a25a959a24dd49f81f9e45ca5305ae248c5",
+    "status": "active",
+    "queuePosition": 8,
+    "usageLogs": [
+      {
+        "timestamp": "2026-06-20T05:14:36.397Z",
+        "event": "created",
+        "reason": "New provider added"
+      },
+      {
+        "timestamp": "2026-06-20T05:15:03.833Z",
+        "event": "activated",
+        "reason": "Manually activated by user"
+      },
+      {
+        "timestamp": "2026-06-20T06:14:19.755Z",
+        "event": "activated",
+        "reason": "Manually activated by user"
+      }
+    ],
+    "lastUsed": "2026-06-20T06:14:19.755Z",
     "errorCount": 0
   }
 ]

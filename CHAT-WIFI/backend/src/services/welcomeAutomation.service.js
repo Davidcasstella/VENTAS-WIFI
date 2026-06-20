@@ -289,7 +289,27 @@ class WelcomeAutomationService {
         console.log(`🔔 Welcome 24H: sending welcome sequence to ${jid}`);
 
         try {
-        // 1. Send audio FIRST (if file exists on disk)
+        // 1. Send video FIRST (if enabled and file exists on disk)
+        if (config.videoEnabled && config.videoFilePath && fs.existsSync(config.videoFilePath)) {
+            try {
+                this.markBotSent(jid);
+                await sock.sendMessage(jid, {
+                    video: { url: config.videoFilePath },
+                    mimetype: 'video/mp4'
+                });
+                console.log(`🎬 Welcome video sent to ${jid}`);
+                if (chatHistoryService && io) {
+                    try {
+                        const savedMsg = await chatHistoryService.addMessage(jid, '[Welcome Video]', true, 'System', 'system');
+                        io.emit('chat:message', { jid, message: savedMsg });
+                    } catch (e) { console.error('Error saving welcome video to history:', e.message); }
+                }
+            } catch (videoErr) {
+                console.error(`⚠️ Welcome video failed (continuing): ${videoErr.message}`);
+            }
+        }
+
+        // 2. Send audio (if file exists on disk)
         if (config.audioFilePath) {
             if (fs.existsSync(config.audioFilePath)) {
                 try {
@@ -315,7 +335,7 @@ class WelcomeAutomationService {
             }
         }
 
-        // 2. Send text message(s)
+        // 3. Send text message(s)
         // Supports multi-message: split on "---MSG---" separator
         if (config.messageText && config.messageText.trim()) {
             const DEFAULT_DELAY_MS = 2000; // fallback delay in ms when no custom delay is configured
@@ -383,26 +403,6 @@ class WelcomeAutomationService {
                 }
             }
 
-        }
-
-        // 3. Send video (if enabled and file exists on disk)
-        if (config.videoEnabled && config.videoFilePath && fs.existsSync(config.videoFilePath)) {
-            try {
-                this.markBotSent(jid);
-                await sock.sendMessage(jid, {
-                    video: { url: config.videoFilePath },
-                    mimetype: 'video/mp4'
-                });
-                console.log(`🎬 Welcome video sent to ${jid}`);
-                if (chatHistoryService && io) {
-                    try {
-                        const savedMsg = await chatHistoryService.addMessage(jid, '[Welcome Video]', true, 'System', 'system');
-                        io.emit('chat:message', { jid, message: savedMsg });
-                    } catch (e) { console.error('Error saving welcome video to history:', e.message); }
-                }
-            } catch (videoErr) {
-                console.error(`⚠️ Welcome video failed (continuing): ${videoErr.message}`);
-            }
         }
 
         } finally {

@@ -8,6 +8,11 @@ dist/
 # ── Backend: Session (WhatsApp auth keys — never commit) ──
 backend/session/
 
+# ── Backend: Google Cloud credentials (NEVER commit) ──
+backend/google-credentials.json
+lithe-catbird-*.json
+google-credentials.json
+
 # ── Backend: Runtime data (generated at runtime, not config) ──
 # These are per-server state files that should NOT be committed
 backend/data/chat-history.json

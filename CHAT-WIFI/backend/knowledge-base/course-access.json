@@ -1,0 +1,47 @@
+[
+  {
+    "id": "hylqmjbtmhqmqm3amak",
+    "jid": "573028599105@s.whatsapp.net",
+    "phone": "573028599105",
+    "pushName": "David Castella",
+    "email": "imagedavid45@gmail.com",
+    "plan": "combo-10",
+    "amount": 10000,
+    "status": "access_granted",
+    "drivePermissions": [
+      {
+        "folderId": "1dnC4TuiDaU2b8SCdxeeBsjkAY4AbcLaV",
+        "permissionId": "13373470382868384309",
+        "folderName": "CURSOS HACKING ",
+        "role": "reader",
+        "sharedAt": "2026-06-20T08:22:34.028Z",
+        "webViewLink": "https://drive.google.com/drive/folders/1dnC4TuiDaU2b8SCdxeeBsjkAY4AbcLaV"
+      }
+    ],
+    "driveAccessGrantedAt": "2026-06-20T08:22:34.032Z",
+    "driveAccessRevokedAt": null,
+    "accessExpiresAt": null,
+    "paymentDetectedAt": "2026-06-20T08:22:21.020Z",
+    "emailReceivedAt": "2026-06-20T08:22:30.444Z",
+    "accessGrantedAt": "2026-06-20T08:22:34.029Z",
+    "notes": "",
+    "createdAt": "2026-06-20T08:22:21.020Z",
+    "updatedAt": "2026-06-20T08:22:34.032Z"
+  },
+  {
+    "id": "seedaccess1",
+    "jid": "573028599105@s.whatsapp.net",
+    "phone": "573028599105",
+    "pushName": "David",
+    "email": "fotosdavid60@gmail.com",
+    "plan": "combo-15",
+    "amount": 15000,
+    "status": "access_granted",
+    "paymentDetectedAt": "2026-06-20T06:30:00.000Z",
+    "emailReceivedAt": "2026-06-20T06:30:00.000Z",
+    "accessGrantedAt": "2026-06-20T06:30:00.000Z",
+    "notes": "Acceso inicial del administrador",
+    "createdAt": "2026-06-20T06:30:00.000Z",
+    "updatedAt": "2026-06-20T06:30:00.000Z"
+  }
+]

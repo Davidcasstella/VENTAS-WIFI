@@ -801,6 +801,221 @@
     font-weight: bold;
 }
 
+/* ================================= */
+/* Pairing Code Connection Styles    */
+/* ================================= */
+
+.connection-method-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+    padding: 4px;
+}
+
+.method-tab {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.7rem 1rem;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.method-tab:hover {
+    color: #00ff00;
+    background: rgba(0, 255, 0, 0.05);
+}
+
+.method-tab.active {
+    background: rgba(0, 255, 0, 0.12);
+    color: #00ff00;
+    box-shadow: 0 2px 12px rgba(0, 255, 0, 0.2);
+}
+
+/* Pairing Code Section */
+.pairing-code-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.pairing-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    max-width: 340px;
+}
+
+.pairing-icon-wrapper {
+    margin-bottom: 0.25rem;
+}
+
+.pairing-label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    text-align: center;
+}
+
+.phone-input-group {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    background: rgba(0, 255, 0, 0.05);
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.2s ease;
+}
+
+.phone-input-group:focus-within {
+    border-color: #00ff00;
+    background: rgba(0, 255, 0, 0.08);
+    box-shadow: 0 0 0 4px rgba(0, 255, 0, 0.1);
+}
+
+.phone-prefix {
+    padding: 0 0.75rem;
+    color: #00ff00;
+    font-weight: 700;
+    font-size: 1.05rem;
+    border-right: 1px solid var(--border-light);
+    display: flex;
+    align-items: center;
+    height: 48px;
+}
+
+.phone-input {
+    border: none !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    flex: 1;
+    font-size: 1.1rem;
+    letter-spacing: 0.05em;
+    box-shadow: none !important;
+}
+
+.phone-input:focus {
+    box-shadow: none !important;
+}
+
+.pairing-generate-btn {
+    margin-top: 0.5rem;
+}
+
+.pairing-error {
+    width: 100%;
+    padding: 0.6rem 1rem;
+    background: rgba(255, 68, 68, 0.1);
+    border: 1px solid rgba(255, 68, 68, 0.2);
+    border-radius: 10px;
+    color: #ff6b6b;
+    font-size: 0.85rem;
+    text-align: center;
+}
+
+/* Pairing Code Loading */
+.pairing-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 2rem 1rem;
+    color: #00ff00;
+}
+
+.pairing-loading p {
+    font-weight: 600;
+    font-size: 1rem;
+    margin: 0;
+}
+
+.pairing-loading-hint {
+    font-weight: 400 !important;
+    font-size: 0.85rem !important;
+    color: var(--text-muted) !important;
+}
+
+/* Pairing Code Result */
+.pairing-code-result {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+}
+
+.pairing-code-display {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 1.25rem 2rem;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(0, 255, 0, 0.25);
+    border-radius: 16px;
+    box-shadow: 0 0 30px rgba(0, 255, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.pairing-code-digit {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 54px;
+    background: rgba(0, 255, 0, 0.08);
+    border: 1px solid rgba(0, 255, 0, 0.2);
+    border-radius: 10px;
+    color: #00ff00;
+    font-size: 1.6rem;
+    font-weight: 800;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+    text-shadow: 0 0 12px rgba(0, 255, 0, 0.5);
+    letter-spacing: 0;
+}
+
+.pairing-code-separator {
+    color: rgba(0, 255, 0, 0.3);
+    font-size: 1.5rem;
+    font-weight: 300;
+    padding: 0 4px;
+}
+
+.pairing-code-instruction {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #00ff00;
+    margin: 0;
+    text-align: center;
+}
+
+.pairing-code-sub-instruction {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin: 0;
+    text-align: center;
+    line-height: 1.5;
+    max-width: 320px;
+}
+
+/* Pairing code dot for status banner */
+.status-dot.waiting_pairing_code {
+    background: #ffaa00;
+    box-shadow: 0 0 12px rgba(255, 170, 0, 0.4);
+}
+
 /* AI Providers Page Styling */
 .ai-providers-container {
     width: 100%;
