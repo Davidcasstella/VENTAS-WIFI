@@ -3,7 +3,7 @@
   "messageText": "",
   "audioFilePath": null,
   "cooldownHours": 48,
-  "updatedAt": "2026-06-20T05:17:21.721Z",
+  "updatedAt": "2026-06-27T00:43:42.271Z",
   "videoFilePath": "C:\\Users\\David\\Desktop\\VENTAS-WIFI\\VENTAS-WIFI\\CHAT-WIFI\\backend\\public\\uploads\\welcome-video.mp4",
   "videoEnabled": true,
   "imageFilePath": "C:\\Users\\David\\Desktop\\VENTAS-WIFI\\VENTAS-WIFI\\CHAT-WIFI\\backend\\public\\uploads\\welcome-image.jpeg",
@@ -16,7 +16,7 @@
     4,
     5
   ],
-  "responseDelay": 6,
+  "responseDelay": 0.5,
   "greetingByTimeEnabled": true,
   "postVideoMessage": "si tienes alguna duda me preguntas bro",
   "postVideoDelays": []

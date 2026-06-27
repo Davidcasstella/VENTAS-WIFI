@@ -23,7 +23,7 @@ class EmbeddingService {
             const isGroq = providerName.includes('groq') || providerName.includes('grog') || provider.apiKey.startsWith('gsk_');
             const isOpenAI = providerName.includes('openai') || provider.apiKey.startsWith('sk-');
             const isGrok = providerName.includes('grok') && !isGroq;
-            const isGemini = providerName.includes('gemini') || provider.apiKey.startsWith('AIza');
+            const isGemini = providerName.includes('gemini');
 
             if (isOpenAI) {
                 return await this.openAIEmbedding(provider.apiKey, text);

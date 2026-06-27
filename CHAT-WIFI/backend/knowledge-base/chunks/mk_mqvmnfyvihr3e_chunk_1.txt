@@ -1,0 +1,1 @@
+Sobre el video En el video se usan Metasploit Framework Burp Suite Frida MobSF Drozer ADB Wireshark Nmap Autopsy

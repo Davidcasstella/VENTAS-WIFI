@@ -112,6 +112,21 @@ FLUJO DE VENTA:
 👤 Nombre: Bra... Lop...
 
 6. Pedir el comprobante: "Cuando hagas el pago envíame el comprobante 📸"
+
+REGLA DE MÉTODOS DE PAGO (CRÍTICA):
+- Cuando el cliente pida datos de pago, diga "nequi", "daviplata", "como pago", "metodos de pago", "pasame nequi", "dame daviplata" o cualquier variación:
+- SIEMPRE envía los 4 métodos de pago COMPLETOS en una sola burbuja, SIN IMPORTAR cuál pida el cliente.
+- NUNCA envíes solo uno o dos métodos. SIEMPRE los 4 juntos.
+- NUNCA cortes la respuesta a la mitad. El bloque de pago es ATÓMICO e INDIVISIBLE.
+- Formato EXACTO (copiar tal cual en una parte separada con |||):
+
+💳 Nequi: 3028599105
+💳 Daviplata: 3028599105
+🔑 Llave Bre-B: @3028599105
+👤 Nombre: Bra... Lop...
+
+- Ejemplo correcto cuando el cliente dice "pasame nequi":
+Claro que sí ||| 💳 Nequi: 3028599105\n💳 Daviplata: 3028599105\n🔑 Llave Bre-B: @3028599105\n👤 Nombre: Bra... Lop... ||| Cuando hagas el pago envíame el comprobante 📸
 7. POST-PAGO: Cuando diga que ya pagó, decir "Gracias 🙏 voy a verificar tu pago" y NADA MÁS.
 - NUNCA entregar enlaces, contraseñas ni acceso al curso.
 - NUNCA decir "te doy acceso" ni "te envío el curso".
@@ -145,12 +160,12 @@ NOMBRES DE LOS COMBOS:
 - Llama al FULL ($15.000) como "combo de 15" o "el de 15".
 - El combo de 15 incluye todo lo del combo de 10 + 16 cursos avanzados = 31 cursos totales.
 
-CIERRE DE VENTA OBLIGATORIO:
-- SIEMPRE termina tu respuesta completa preguntando por métodos de pago.
+CIERRE DE VENTA OBLIGATORIO (SOLO ANTES DEL PAGO):
+- Si el cliente AÚN NO ha pedido los datos de pago ni está en proceso de pago, termina tu respuesta preguntando por métodos de pago.
 - Usa frases como: "te paso los métodos de pago?" o "tienes Nequi o Daviplata?" o "te paso los datos para el pago?"
 - SIEMPRE ofrece las dos opciones: Nequi o Daviplata.
-- Esta regla aplica a TODAS las respuestas donde se hable de cursos, contenido, precios o beneficios. SIN EXCEPCIÓN.
-- La ÚLTIMA parte (después del último |||) siempre debe ser el cierre de venta con la pregunta de método de pago.
+- Esta regla aplica a TODAS las respuestas donde se hable de cursos, contenido, precios o beneficios, SIEMPRE Y CUANDO no estemos en la etapa de pago.
+- EXCEPCIÓN CRÍTICA: Si en el HISTORIAL ya le enviaste los datos de pago o el cliente ya dijo que va a pagar/enviar comprobante, NUNCA vuelvas a preguntar por métodos de pago. Simplemente responde a su duda (ej: pide correo) y recuérdale enviar el comprobante.
 
 REGLA VIDEO PROMO:
 - Solo usa [VIDEO_PROMO] cuando el cliente acepte VER el contenido del curso (ej. responde "si" a "quieres ver lo que trae?").
@@ -164,7 +179,7 @@ REGLAS CRÍTICAS:
 2. Si el mensaje es corto ("ok" "si" "dale") revisa el HISTORIAL para entender qué responder.
 3. Si el cliente muestra desinterés, resalta beneficios sin ser insistente.
 4. SOLO responde FALLBACK_TRIGGER si el mensaje es absolutamente incomprensible y no hay contexto.
-5. La última parte SIEMPRE debe cerrar la venta. Pregunta: "te paso los métodos de pago? tienes Nequi o Daviplata?" — esto aplica a CADA respuesta sin excepción.
+5. La última parte debe cerrar la venta preguntando por métodos de pago, EXCEPTO si ya le enviaste los datos de pago o si está a punto de enviar el comprobante. Si ya enviaste los datos de pago, NUNCA vuelvas a preguntar "te paso los métodos de pago?".
 
 Contexto proporcionado:
 ${kbContext}
@@ -177,7 +192,7 @@ ${historyString ? `\nHISTORIAL RECIENTE DE LA CONVERSACION:\n${historyString}\n`
             // This prevents misrouting (e.g. a gsk_ key named "Grok" going to xAI instead of Groq)
             const isGroq = apiKey.startsWith('gsk_') || (providerName.includes('groq') || providerName.includes('grog'));
             const isOpenAI = !isGroq && (apiKey.startsWith('sk-') || providerName.includes('openai'));
-            const isGemini = !isGroq && !isOpenAI && (apiKey.startsWith('AIza') || providerName.includes('gemini'));
+            const isGemini = !isGroq && !isOpenAI && providerName.includes('gemini');
             const isGrok = !isGroq && !isOpenAI && !isGemini && providerName.includes('grok');
 
             if (isGroq) {
@@ -243,7 +258,7 @@ ${historyString ? `\nHISTORIAL RECIENTE DE LA CONVERSACION:\n${historyString}\n`
             // Determine which type the active provider was, to skip it
             const activeType = apiKey.startsWith('gsk_') ? 'groq'
                 : apiKey.startsWith('sk-') ? 'openai'
-                    : apiKey.startsWith('AIza') ? 'gemini'
+                    : providerName.includes('gemini') ? 'gemini'
                         : providerName.includes('grok') ? 'grok'
                             : providerName.includes('groq') ? 'groq'
                                 : null;
@@ -317,7 +332,7 @@ ${userMessage}`;
     async callOpenAI(apiKey, systemPrompt, userPrompt) {
         const response = await axios.post('https://api.openai.com/v1/chat/completions', {
             model: 'gpt-3.5-turbo',
-            max_tokens: 1024,
+            max_tokens: 2048,
             messages: [
                 { role: 'system', content: systemPrompt },
                 { role: 'user', content: userPrompt }
@@ -334,7 +349,7 @@ ${userMessage}`;
     async callGrok(apiKey, systemPrompt, userPrompt) {
         const response = await axios.post('https://api.x.ai/v1/chat/completions', {
             model: 'grok-beta',
-            max_tokens: 1024,
+            max_tokens: 2048,
             messages: [
                 { role: 'system', content: systemPrompt },
                 { role: 'user', content: userPrompt }
@@ -352,7 +367,7 @@ ${userMessage}`;
         // Groq (groq.com) uses OpenAI-compatible API format
         const response = await axios.post('https://api.groq.com/openai/v1/chat/completions', {
             model: 'llama-3.3-70b-versatile',
-            max_tokens: 1024,
+            max_tokens: 2048,
             messages: [
                 { role: 'system', content: systemPrompt },
                 { role: 'user', content: userPrompt }
@@ -380,7 +395,7 @@ ${userMessage}`;
                     ],
                     generationConfig: {
                         temperature: 0.7,
-                        maxOutputTokens: 1024
+                        maxOutputTokens: 2048
                     }
                 },
                 {

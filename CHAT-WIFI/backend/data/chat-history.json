@@ -3,469 +3,6 @@
     "pushName": "David Castella",
     "messages": [
       {
-        "id": "e85d4d3b4171b696",
-        "text": "hola",
-        "fromMe": false,
-        "sender": "client",
-        "timestamp": "2026-06-20T06:15:00.128Z",
-        "read": true
-      },
-      {
-        "id": "9e9c49e46757e718",
-        "text": "[Welcome Video]",
-        "fromMe": true,
-        "sender": "system",
-        "timestamp": "2026-06-20T06:15:05.880Z"
-      },
-      {
-        "id": "a19be839d1146a34",
-        "text": "dime que trae el de 15 ?",
-        "fromMe": false,
-        "sender": "client",
-        "timestamp": "2026-06-20T06:15:26.551Z",
-        "read": true
-      },
-      {
-        "id": "72afe01412445ed7",
-        "text": "El combo de 15 trae todo lo del combo de 10 mas 16 cursos avanzados",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-06-20T06:15:43.764Z"
-      },
-      {
-        "id": "b720b4f6b2961e66",
-        "text": "1. Malware\n2. Espionaje avanzado\n3. Contramedidas de seguridad\n4. Ingeniería Social\n5. Guías para la Ciberseguridad\n6. Hacking WiFi Pro 1\n7. Hacking WiFi Pro 2\n8. Hacking con teclado de computador\n9. Pentesting profesional\n10. Casos típicos de ataques\n11. Controles y mecanismos de seguridad\n12. Hacking Forensics\n13. Curso Git y GitHub\n14. Curso Profesional de Angular\n15. Autenticación avanzada con Passport\n16. Curso Avanzado de Node.js",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-06-20T06:16:04.774Z"
-      },
-      {
-        "id": "f53e6dc6df45ba4e",
-        "text": "En total son 31 cursos completos, te paso los métodos de pago? tienes Nequi o Daviplata?",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-06-20T06:16:26.550Z"
-      },
-      {
-        "id": "e58d1ff4aca70892",
-        "text": "hola",
-        "fromMe": false,
-        "sender": "client",
-        "timestamp": "2026-06-20T07:24:27.521Z",
-        "read": true
-      },
-      {
-        "id": "40d421d11acd728f",
-        "text": "[Welcome Video]",
-        "fromMe": true,
-        "sender": "system",
-        "timestamp": "2026-06-20T07:24:33.843Z"
-      },
-      {
-        "id": "353f30eca1e1d22b",
-        "text": "Quiero comprar el de 10",
-        "fromMe": false,
-        "sender": "client",
-        "timestamp": "2026-06-20T07:24:40.820Z",
-        "read": true
-      },
-      {
-        "id": "14d4efc876f5ed8a",
-        "text": "Excelente elección! 👍",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-06-20T07:24:57.536Z"
-      },
-      {
-        "id": "02636cbfdf8eb314",
-        "text": "Tienes Nequi o Daviplata para el pago?",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-06-20T07:25:15.226Z"
-      },
-      {
-        "id": "2e734b4938000790",
-        "text": "Nequi",
-        "fromMe": false,
-        "sender": "client",
-        "timestamp": "2026-06-20T07:25:23.098Z",
-        "read": true
-      },
-      {
-        "id": "2d25cdd024103f7f",
-        "text": "Perfecto!",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-06-20T07:25:37.048Z"
-      },
-      {
-        "id": "0e7d28d896649ef9",
-        "text": "💳 Nequi: 3028599105\n💳 Daviplata: 3028599105\n🔑 Llave Bre-B: @3028599105\n👤 Nombre: Bra... Lop...",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-06-20T07:26:07.282Z"
-      },
-      {
-        "id": "b0bebff1620638c6",
-        "text": "Cuando hagas el pago envíame el comprobante 📸",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-06-20T07:26:19.500Z"
-      },
-      {
-        "id": "b8398440b2234419",
-        "text": "[media]",
-        "fromMe": false,
-        "sender": "client",
-        "timestamp": "2026-06-20T07:26:27.009Z",
-        "mediaId": "6f5b5f422f384ee3ad248efe",
-        "mediaType": "image",
-        "read": true
-      },
-      {
-        "id": "2662affb2cf9cf86",
-        "text": "Gracias 🙏\nVoy a verificar tu pago.",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-06-20T07:26:32.801Z"
-      },
-      {
-        "id": "dbcc488fc51bb1ed",
-        "text": "Para darte el acceso al curso, envíame tu correo electrónico por favor 📧",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-06-20T07:26:35.823Z"
-      },
-      {
-        "id": "88ecb7cd5366cc20",
-        "text": "imagedavid45@gmail.com",
-        "fromMe": false,
-        "sender": "client",
-        "timestamp": "2026-06-20T07:27:14.926Z",
-        "read": true
-      },
-      {
-        "id": "4ff333ca1547c99a",
-        "text": "Listo, tu correo es imagedavid45@gmail.com 📧",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-06-20T07:27:19.971Z"
-      },
-      {
-        "id": "468b3a4dc8d2c44a",
-        "text": "En unos momentos te confirmo el acceso al curso 🙏",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-06-20T07:27:21.987Z"
-      },
-      {
-        "id": "c80a65a486d6975b",
-        "text": "hola",
-        "fromMe": false,
-        "sender": "client",
-        "timestamp": "2026-06-20T07:35:10.838Z",
-        "read": true
-      },
-      {
-        "id": "ce9fc708de2d7211",
-        "text": "[Welcome Video]",
-        "fromMe": true,
-        "sender": "system",
-        "timestamp": "2026-06-20T07:35:17.659Z"
-      },
-      {
-        "id": "7c87d09d3a4a1c64",
-        "text": "Quiero comprar el de 10",
-        "fromMe": false,
-        "sender": "client",
-        "timestamp": "2026-06-20T07:35:24.874Z",
-        "read": true
-      },
-      {
-        "id": "05ebd14fa4e279eb",
-        "text": "Perfecto, ya con tu correo estamos procesando el acceso al combo de 10",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-06-20T07:35:47.597Z"
-      },
-      {
-        "id": "785144b37c07f3d4",
-        "text": "En unos momentos un administrador te confirmará todo 🙏",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-06-20T07:36:01.581Z"
-      },
-      {
-        "id": "15c20e6d91a1efc8",
-        "text": "[media]",
-        "fromMe": false,
-        "sender": "client",
-        "timestamp": "2026-06-20T07:38:29.609Z",
-        "mediaId": "85b433203c336b1fb09f7ede",
-        "mediaType": "image",
-        "read": true
-      },
-      {
-        "id": "bfb90f0c9c94ff79",
-        "text": "Gracias 🙏\nVoy a verificar tu pago.",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-06-20T07:38:35.631Z"
-      },
-      {
-        "id": "c5d4991a87e7daba",
-        "text": "Para darte el acceso al curso, envíame tu correo electrónico por favor 📧",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-06-20T07:38:38.663Z"
-      },
-      {
-        "id": "fee9cf412fa80d71",
-        "text": "imagedavid45@gmail.com",
-        "fromMe": false,
-        "sender": "client",
-        "timestamp": "2026-06-20T07:38:43.499Z",
-        "read": true
-      },
-      {
-        "id": "5b6b50992072e698",
-        "text": "Listo, tu correo es imagedavid45@gmail.com 📧",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-06-20T07:38:48.533Z"
-      },
-      {
-        "id": "c74406aaa6b218e8",
-        "text": "🎉 ¡Listo! Ya te he dado acceso a las carpetas del curso en tu Google Drive. Revisa tu correo (bandeja de entrada o spam) para acceder al material. ¡Que lo disfrutes! 🚀",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-06-20T07:38:52.777Z"
-      },
-      {
-        "id": "cf0d81b2ca12efa4",
-        "text": "hola",
-        "fromMe": false,
-        "sender": "client",
-        "timestamp": "2026-06-20T07:46:35.160Z",
-        "read": true
-      },
-      {
-        "id": "3579691aa2c7f61a",
-        "text": "[Welcome Video]",
-        "fromMe": true,
-        "sender": "system",
-        "timestamp": "2026-06-20T07:46:43.095Z"
-      },
-      {
-        "id": "8e4910503cefe04c",
-        "text": "[media]",
-        "fromMe": false,
-        "sender": "client",
-        "timestamp": "2026-06-20T07:47:57.048Z",
-        "mediaId": "b1e27525990f7b147a13dd0a",
-        "mediaType": "image",
-        "read": true
-      },
-      {
-        "id": "8caab7e050a5a58d",
-        "text": "Gracias 🙏\nVoy a verificar tu pago.",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-06-20T07:48:03.131Z"
-      },
-      {
-        "id": "2eb1c43e0d7704f1",
-        "text": "Para darte el acceso al curso, envíame tu correo electrónico por favor 📧",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-06-20T07:48:06.166Z"
-      },
-      {
-        "id": "9f69abb2ea0d5f1b",
-        "text": "imagedavid45@gmail.com",
-        "fromMe": false,
-        "sender": "client",
-        "timestamp": "2026-06-20T07:48:20.142Z",
-        "read": true
-      },
-      {
-        "id": "2d45d896c00e85d0",
-        "text": "Listo, tu correo es imagedavid45@gmail.com 📧",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-06-20T07:48:25.173Z"
-      },
-      {
-        "id": "fea9f80d06be14f2",
-        "text": "🎉 ¡Listo! Ya te he dado acceso a las carpetas del curso en tu Google Drive. Revisa tu correo (bandeja de entrada o spam) para acceder al material. ¡Que lo disfrutes! 🚀",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-06-20T07:48:29.131Z"
-      },
-      {
-        "id": "1715c0d2312487bf",
-        "text": "Hola",
-        "fromMe": false,
-        "sender": "client",
-        "timestamp": "2026-06-20T07:53:48.872Z",
-        "read": true
-      },
-      {
-        "id": "5232be14921eb3e3",
-        "text": "[Welcome Video]",
-        "fromMe": true,
-        "sender": "system",
-        "timestamp": "2026-06-20T07:53:56.850Z"
-      },
-      {
-        "id": "e7bab100ae69a9e9",
-        "text": "[media]",
-        "fromMe": false,
-        "sender": "client",
-        "timestamp": "2026-06-20T07:54:04.293Z",
-        "mediaId": "d4c47f248651a71cece763f7",
-        "mediaType": "image",
-        "read": true
-      },
-      {
-        "id": "481330aa50604f4a",
-        "text": "Gracias 🙏\nVoy a verificar tu pago.",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-06-20T07:54:10.390Z"
-      },
-      {
-        "id": "d74bf9e5be978745",
-        "text": "Para darte el acceso al curso, envíame tu correo electrónico por favor 📧",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-06-20T07:54:13.441Z"
-      },
-      {
-        "id": "ef632967eaf9ab91",
-        "text": "imagedavid45@gmail.com",
-        "fromMe": false,
-        "sender": "client",
-        "timestamp": "2026-06-20T07:54:24.311Z",
-        "read": true
-      },
-      {
-        "id": "100d7b0a46d621be",
-        "text": "Listo, tu correo es imagedavid45@gmail.com 📧",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-06-20T07:54:29.362Z"
-      },
-      {
-        "id": "b2d9f01887365265",
-        "text": "🎉 ¡Listo! Ya te he dado acceso a las carpetas del curso en tu Google Drive. Revisa tu correo (bandeja de entrada o spam) para acceder al material. ¡Que lo disfrutes! 🚀",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-06-20T07:54:33.303Z"
-      },
-      {
-        "id": "5406fe293fc6247e",
-        "text": "[media]",
-        "fromMe": false,
-        "sender": "client",
-        "timestamp": "2026-06-20T08:06:07.616Z",
-        "mediaId": "d54f9622df1225ae4b15ecce",
-        "mediaType": "image",
-        "read": true
-      },
-      {
-        "id": "e32e4f7310d36844",
-        "text": "[Welcome Video]",
-        "fromMe": true,
-        "sender": "system",
-        "timestamp": "2026-06-20T08:06:13.999Z"
-      },
-      {
-        "id": "3c2d9bc574cea2a6",
-        "text": "[media]",
-        "fromMe": false,
-        "sender": "client",
-        "timestamp": "2026-06-20T08:06:31.592Z",
-        "mediaId": "68149857e5633962bf51eb86",
-        "mediaType": "image",
-        "read": true
-      },
-      {
-        "id": "9772125873e8345a",
-        "text": "Gracias 🙏\nVoy a verificar tu pago.",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-06-20T08:06:37.696Z"
-      },
-      {
-        "id": "ede1f26f82094689",
-        "text": "Para darte el acceso al curso, envíame tu correo electrónico por favor 📧",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-06-20T08:06:40.722Z"
-      },
-      {
-        "id": "df53c97e633fbbed",
-        "text": "imagedavid45@gmail.com",
-        "fromMe": false,
-        "sender": "client",
-        "timestamp": "2026-06-20T08:06:46.478Z",
-        "read": true
-      },
-      {
-        "id": "e2f4a1b2410be70b",
-        "text": "Listo, tu correo es imagedavid45@gmail.com 📧",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-06-20T08:06:51.522Z"
-      },
-      {
-        "id": "8486600b05012fac",
-        "text": "🎉 ¡Listo! Ya te he dado acceso a las carpetas del curso en tu Google Drive. Revisa tu correo (bandeja de entrada o spam) para acceder al material. ¡Que lo disfrutes! 🚀\n\n📂 Enlaces de acceso directo:\n• *CURSOS HACKING *:\nhttps://drive.google.com/drive/folders/1dnC4TuiDaU2b8SCdxeeBsjkAY4AbcLaV",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-06-20T08:06:55.533Z"
-      },
-      {
-        "id": "6fe59f15b98bbd67",
-        "text": "Hilab",
-        "fromMe": false,
-        "sender": "client",
-        "timestamp": "2026-06-20T08:08:22.820Z",
-        "read": true
-      },
-      {
-        "id": "b6268664aa6343bc",
-        "text": "[Welcome Video]",
-        "fromMe": true,
-        "sender": "system",
-        "timestamp": "2026-06-20T08:08:28.730Z"
-      },
-      {
-        "id": "ad38d5923c214d49",
-        "text": "[media]",
-        "fromMe": false,
-        "sender": "client",
-        "timestamp": "2026-06-20T08:08:37.618Z",
-        "mediaId": "42ba78976d495b3c90869e19",
-        "mediaType": "image",
-        "read": true
-      },
-      {
-        "id": "1c416db4b825ff9e",
-        "text": "Gracias 🙏\nVoy a verificar tu pago.",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-06-20T08:08:43.329Z"
-      },
-      {
-        "id": "4de1a142469eb5db",
-        "text": "Para darte el acceso al curso, envíame tu correo electrónico por favor 📧",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-06-20T08:08:46.360Z"
-      },
-      {
         "id": "fc9e11318696e059",
         "text": "imagedavid45@gmail.com",
         "fromMe": false,
@@ -711,7 +248,8 @@
         "text": "Hola",
         "fromMe": false,
         "sender": "client",
-        "timestamp": "2026-06-20T08:21:56.753Z"
+        "timestamp": "2026-06-20T08:21:56.753Z",
+        "read": true
       },
       {
         "id": "d49b7d6129400b76",
@@ -727,7 +265,8 @@
         "sender": "client",
         "timestamp": "2026-06-20T08:22:11.001Z",
         "mediaId": "33cee209d46f5814d0fa405d",
-        "mediaType": "image"
+        "mediaType": "image",
+        "read": true
       },
       {
         "id": "14a92c1558642158",
@@ -748,7 +287,8 @@
         "text": "imagedavid45@gmail.com",
         "fromMe": false,
         "sender": "client",
-        "timestamp": "2026-06-20T08:22:25.428Z"
+        "timestamp": "2026-06-20T08:22:25.428Z",
+        "read": true
       },
       {
         "id": "edb9ed6f1518705d",
@@ -763,6 +303,450 @@
         "fromMe": true,
         "sender": "bot",
         "timestamp": "2026-06-20T08:22:34.065Z"
+      },
+      {
+        "id": "8ec4040b7d6159e5",
+        "text": "Hola",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-06-27T00:31:29.807Z",
+        "read": true
+      },
+      {
+        "id": "40d6a835d633fc1e",
+        "text": "[Welcome Video]",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-06-27T00:31:36.605Z"
+      },
+      {
+        "id": "d74af666f73a16cc",
+        "text": "Cómo se llama el método del vídeo ?",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-06-27T00:32:11.587Z",
+        "read": true
+      },
+      {
+        "id": "9817e969ec7a5fae",
+        "text": "Hola",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-06-27T00:32:28.604Z"
+      },
+      {
+        "id": "850111cb1798f57b",
+        "text": "Nuestros cursos te enseñan métodos de ciberseguridad y hacking ético",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-06-27T00:32:39.952Z"
+      },
+      {
+        "id": "bc1e35d2ae9d90c7",
+        "text": "Son más de 600 horas de contenido actualizado para 2026",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-06-27T00:32:57.465Z"
+      },
+      {
+        "id": "9a427954fa242a90",
+        "text": "Te interesa",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-06-27T00:33:06.289Z"
+      },
+      {
+        "id": "54479a005879e80e",
+        "text": "pasame nequi",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-06-27T00:34:35.800Z",
+        "read": true
+      },
+      {
+        "id": "87d5f587a35be888",
+        "text": "Claro que sí, sumercé",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-06-27T00:34:48.943Z"
+      },
+      {
+        "id": "eb056f7954eb764d",
+        "text": "Cuál combo te interesa, el de 10 o el de 15",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-06-27T00:35:01.832Z"
+      },
+      {
+        "id": "c4206f1a93eb385c",
+        "text": "te paso los datos para el pago? tienes Nequi o Daviplata?",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-06-27T00:35:18.004Z"
+      },
+      {
+        "id": "dd0b951ea1cf8a9b",
+        "text": "el de 15",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-06-27T00:35:24.722Z",
+        "read": true
+      },
+      {
+        "id": "0556ecf06527a2c9",
+        "text": "nequi",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-06-27T00:35:25.921Z",
+        "read": true
+      },
+      {
+        "id": "0e7371e38fcbec34",
+        "text": "Excelente elección el combo de 15",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-06-27T00:35:44.730Z"
+      },
+      {
+        "id": "617e25d2b6a34b27",
+        "text": "💳 Nequi: 3028599105\n💳 Daviplata: 3028",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-06-27T00:35:56.393Z"
+      },
+      {
+        "id": "1332e88a0cf10f1c",
+        "text": "dame metodos de pago",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-06-27T00:36:16.760Z",
+        "read": true
+      },
+      {
+        "id": "6e5a484636f894db",
+        "text": "Claro que sí, sumercé",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-06-27T00:36:30.128Z"
+      },
+      {
+        "id": "262669694a1a99ff",
+        "text": "💳 Nequi: 3028599105\n💳 Daviplata: 3028599105\n🔑 Llave Bre-B: @3028599105\n👤 Nombre: Bra... Lop...",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-06-27T00:36:51.516Z"
+      },
+      {
+        "id": "26b798e1ccad1964",
+        "text": "Cuando hagas el pago envíame el comprobante 📸",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-06-27T00:37:07.313Z"
+      },
+      {
+        "id": "9882a5d78e010e86",
+        "text": "te envio el comprobante y el correo si ?",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-06-27T00:37:16.696Z",
+        "read": true
+      },
+      {
+        "id": "60518350f876a12f",
+        "text": "Sí, por favor",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-06-27T00:37:32.268Z"
+      },
+      {
+        "id": "b0f42a2c2ca4f289",
+        "text": "Cuando hagas el pago envíame el comprobante y tu correo electrónico",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-06-27T00:37:45.144Z"
+      },
+      {
+        "id": "75b4df5f0b0dfb6d",
+        "text": "Gracias 🙏 voy a verificar tu pago",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-06-27T00:37:57.166Z"
+      },
+      {
+        "id": "79aa28e650eebddb",
+        "text": "disculpa que trae el video ? que herramientas usa en el video",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-06-27T00:38:29.239Z",
+        "read": true
+      },
+      {
+        "id": "1b0759755b9ad43f",
+        "text": "Claro que sí",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-06-27T00:38:45.199Z"
+      },
+      {
+        "id": "3678a780a28c5b5a",
+        "text": "El video muestra herramientas como Metasploit Framework, Burp Suite, Frida, MobSF, Drozer, ADB, Wireshark, Nmap y Autopsy",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-06-27T00:39:04.010Z"
+      },
+      {
+        "id": "31371ea63d93a633",
+        "text": "Te paso los métodos de pago? tienes Nequi o Daviplata?",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-06-27T00:39:15.579Z"
+      },
+      {
+        "id": "03b0898902e20b91",
+        "text": "David plata",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-06-27T00:39:21.660Z",
+        "read": true
+      },
+      {
+        "id": "ccff3e531850a67d",
+        "text": "Perfecto",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-06-27T00:39:38.181Z"
+      },
+      {
+        "id": "d6489b05597672c3",
+        "text": "Aquí tienes los datos para el pago por Daviplata, sumercé",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-06-27T00:39:49.942Z"
+      },
+      {
+        "id": "3f79f61fe5ee4bff",
+        "text": "💳 Nequi: 3028599105\n💳 Dav",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-06-27T00:40:00.478Z"
+      },
+      {
+        "id": "0132a9612a90f4cf",
+        "text": "dame metodos de pago",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-06-27T00:43:48.123Z",
+        "read": true
+      },
+      {
+        "id": "120683d85e821c0b",
+        "text": "Claro que sí, sumercé",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-06-27T00:43:56.609Z"
+      },
+      {
+        "id": "296636cd9501a5c9",
+        "text": "💳 Nequi: 3028599105\n💳 Daviplata: 3028599105\n🔑 Llave Bre-B: @3028599105\n👤 Nombre: Bra... Lop...",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-06-27T00:43:59.135Z"
+      },
+      {
+        "id": "3f821500ce5767a6",
+        "text": "Cuando hagas el pago envíame el comprobante 📸",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-06-27T00:44:00.334Z"
+      },
+      {
+        "id": "d849d3a0b1cbffef",
+        "text": "que voy a aprender en el curso ?",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-06-27T00:44:12.818Z",
+        "read": true
+      },
+      {
+        "id": "15bb9cc2eaec170d",
+        "text": "Claro que sí, sumercé",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-06-27T00:44:24.113Z"
+      },
+      {
+        "id": "7a7df0c4b5db72d4",
+        "text": "Con el combo de 15 vas a aprender todo lo del combo de 10 más 16 cursos avanzados",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-06-27T00:44:26.333Z"
+      },
+      {
+        "id": "56278d3f44241187",
+        "text": "1. Malware\n2. Espionaje avanzado\n3. Contramedidas de seguridad\n4. Ingeniería Social\n5. Guías para la Ciberseguridad\n6. Hacking WiFi Pro 1\n7. Hacking WiFi Pro 2\n8. Hacking con teclado de computador\n9. Pentesting profesional\n10. Casos típicos de ataques\n11. Controles y mecanismos de seguridad\n12. Hacking Forensics\n13. Curso Git y GitHub\n14. Curso Profesional de Angular\n15. Autenticación avanzada con Passport\n16. Curso Avanzado de Node.js",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-06-27T00:44:27.830Z"
+      },
+      {
+        "id": "fcc85483f5c43fdc",
+        "text": "En total son 31 cursos completos, te paso los métodos de pago? tienes Nequi o Daviplata?",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-06-27T00:44:29.862Z"
+      },
+      {
+        "id": "94116da16bfe8efe",
+        "text": "el combo de 10 que trae?",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-06-27T00:45:24.099Z",
+        "read": true
+      },
+      {
+        "id": "24b6ece984f5c089",
+        "text": "El combo de 10 trae 15 cursos",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-06-27T00:45:32.099Z"
+      },
+      {
+        "id": "756ddda19d8411b8",
+        "text": "1. Introducción al Hacking Ético\n2. El arte del espionaje\n3. Hacking de Celulares\n4. Métodos WiFi\n5. Hacking Páginas Web\n6. Hacking Enterprise\n7. Desarrollo Web\n8. Inglés\n9. Programas y herramientas\n10. Pack Audiolibros\n11. Diseño Gráfico\n12. Termux\n13. Claude IA\n14. Blackhat Cracking\n15. Protección de Datos",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-06-27T00:45:34.655Z"
+      },
+      {
+        "id": "182ae226a9e2182a",
+        "text": "Te paso los métodos de pago? tienes Nequi o Daviplata?",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-06-27T00:45:36.256Z"
+      },
+      {
+        "id": "cbd6b570772c5aff",
+        "text": "daviplata",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-06-27T00:47:33.220Z",
+        "read": true
+      },
+      {
+        "id": "92ba50eec8ba9569",
+        "text": "Claro que sí, sumercé",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-06-27T00:47:44.391Z"
+      },
+      {
+        "id": "5cdb74407ca4ea7a",
+        "text": "💳 Nequi: 3028599105\n💳 Daviplata: 3028599105\n🔑 Llave Bre-B: @3028599105\n👤 Nombre: Bra... Lop...",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-06-27T00:47:46.826Z"
+      },
+      {
+        "id": "7d9e89f3d072f41f",
+        "text": "Cuando hagas el pago envíame el comprobante 📸",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-06-27T00:47:48.286Z"
+      },
+      {
+        "id": "924021b0d74ce1ac",
+        "text": "de acuerdo tambien te tengo que eviar mi correo?",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-06-27T00:48:12.473Z",
+        "read": true
+      },
+      {
+        "id": "6e0a081a0c923338",
+        "text": "Sí, por favor",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-06-27T00:48:20.469Z"
+      },
+      {
+        "id": "0ba8920920834c1f",
+        "text": "Cuando hagas el pago envíame el comprobante y tu correo electrónico",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-06-27T00:48:21.438Z"
+      },
+      {
+        "id": "b2c2ed33debae698",
+        "text": "Te paso los métodos de pago? tienes Nequi o Daviplata?",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-06-27T00:48:22.942Z"
+      },
+      {
+        "id": "96eacee888352791",
+        "text": "de acuerdo tambien te tengo que eviar mi correo?",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-06-27T00:57:33.054Z",
+        "read": true
+      },
+      {
+        "id": "523d383d4a7843ef",
+        "text": "Claro que sí, sumercé",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-06-27T00:57:46.155Z"
+      },
+      {
+        "id": "87d3242f88f9bc7b",
+        "text": "Necesito el comprobante de pago y tu correo electrónico",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-06-27T00:57:47.574Z"
+      },
+      {
+        "id": "6cea9db1e4d3a989",
+        "text": "wilianlopezguzman@gmail.com",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-06-27T00:58:05.724Z",
+        "read": true
+      },
+      {
+        "id": "c08bd10d0dd39460",
+        "text": "Listo, con eso está bien",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-06-27T00:58:14.499Z"
+      },
+      {
+        "id": "b5d0cf6881cb6b21",
+        "text": "Ahora solo queda el comprobante del pago 📸",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-06-27T00:58:16.088Z"
+      },
+      {
+        "id": "765a8e1c9497e26e",
+        "text": "ya te lo mande acuerdate",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-06-27T00:58:26.676Z",
+        "read": true
+      },
+      {
+        "id": "faf38e44af237b0b",
+        "text": "Gracias 🙏",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-06-27T00:58:34.984Z"
+      },
+      {
+        "id": "b4c6bf330c688c37",
+        "text": "Voy a verificar tu pago",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-06-27T00:58:35.945Z"
       }
     ]
   },

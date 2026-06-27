@@ -469,7 +469,7 @@ class AIProvidersService {
 
             if (typeLower === 'groq') {
                 return decryptedKey.startsWith('gsk_') || (
-                    (name.includes('groq') || name.includes('grog')) && !decryptedKey.startsWith('sk-') && !decryptedKey.startsWith('AIza')
+                    (name.includes('groq') || name.includes('grog')) && !decryptedKey.startsWith('sk-') && !name.includes('gemini')
                 );
             }
             if (typeLower === 'openai') {
@@ -478,9 +478,7 @@ class AIProvidersService {
                 );
             }
             if (typeLower === 'gemini') {
-                return !decryptedKey.startsWith('gsk_') && !decryptedKey.startsWith('sk-') && (
-                    decryptedKey.startsWith('AIza') || name.includes('gemini')
-                );
+                return !decryptedKey.startsWith('gsk_') && !decryptedKey.startsWith('sk-') && name.includes('gemini');
             }
             if (typeLower === 'grok') {
                 return !decryptedKey.startsWith('gsk_') && name.includes('grok') && !name.includes('groq');
@@ -522,7 +520,7 @@ class AIProvidersService {
                 });
                 return response.ok;
             }
-            if (provider.name.toLowerCase().includes('gemini') || apiKey.startsWith('AIza')) {
+            if (provider.name.toLowerCase().includes('gemini')) {
                 const response = await fetch(
                     `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`
                 );
