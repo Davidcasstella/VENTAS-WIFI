@@ -173,6 +173,43 @@ class HumanResponseService {
             return trimmed.split(delimiter).map(p => p.trim()).filter(p => p.length > 0);
         }
 
+        // --- NEW FALLBACK FOR GROQ / LLAMA 3 ---
+        // If the AI completely ignored the ||| instruction, we fallback to smart newline grouping.
+        if (trimmed.includes('\n')) {
+            const lines = trimmed.split('\n').map(l => l.trim());
+            const merged = [];
+            let currentBlock = [];
+            
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+                if (!line) continue;
+                
+                // Identify lines that belong to a grouped block (lists or payment methods)
+                const isListItem = /^\d+\.\s/.test(line) || /^-\s/.test(line);
+                const isPaymentData = /💳|🔑|👤|Nequi:|Daviplata:|Nombre:/.test(line);
+                
+                if (isListItem || isPaymentData) {
+                    currentBlock.push(line);
+                } else {
+                    // It's a normal sentence. Push the accumulated block first (if any).
+                    if (currentBlock.length > 0) {
+                        merged.push(currentBlock.join('\n'));
+                        currentBlock = [];
+                    }
+                    merged.push(line);
+                }
+            }
+            // Flush any remaining block
+            if (currentBlock.length > 0) {
+                merged.push(currentBlock.join('\n'));
+            }
+            
+            // Only return if it actually split something, otherwise let it fall through
+            if (merged.length > 0) {
+                return merged;
+            }
+        }
+
         // No delimiter — single message response
         // Only add a closing if the response is very short (likely a greeting/ack)
         if (trimmed.length < 40 && options.isPostWelcomeFlow) {

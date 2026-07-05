@@ -1,13 +1,13 @@
 {
   "isEnabled": true,
-  "messageText": "",
+  "messageText": "En cual estas interesado?\nEn el curso de 10 mil hacking básico\no en el curso de 15 mil full combo avanzado",
   "audioFilePath": null,
   "cooldownHours": 48,
-  "updatedAt": "2026-06-27T00:43:42.271Z",
+  "updatedAt": "2026-07-05T06:13:12.070Z",
   "videoFilePath": "C:\\Users\\David\\Desktop\\VENTAS-WIFI\\VENTAS-WIFI\\CHAT-WIFI\\backend\\public\\uploads\\welcome-video.mp4",
-  "videoEnabled": true,
+  "videoEnabled": false,
   "imageFilePath": "C:\\Users\\David\\Desktop\\VENTAS-WIFI\\VENTAS-WIFI\\CHAT-WIFI\\backend\\public\\uploads\\welcome-image.jpeg",
-  "imageEnabled": true,
+  "imageEnabled": false,
   "messageDelays": [
     0,
     12,

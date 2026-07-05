@@ -9,6 +9,37 @@
   },
   "activityLog": [
     {
+      "accessId": "60m7ut92qssmr7e3exr",
+      "action": "revoked",
+      "email": "nicol2415lop@gmail.com",
+      "details": [
+        {
+          "folderId": "1xza9RAmHK2J-kNA2eKlgwIiBV4HxU0BG",
+          "folderName": "TODO-HACKING"
+        }
+      ],
+      "timestamp": "2026-07-05T06:10:39.543Z"
+    },
+    {
+      "accessId": "60m7ut92qssmr7e3exr",
+      "action": "shared",
+      "email": "nicol2415lop@gmail.com",
+      "details": [
+        {
+          "folderId": "1xza9RAmHK2J-kNA2eKlgwIiBV4HxU0BG",
+          "folderName": "TODO-HACKING"
+        }
+      ],
+      "timestamp": "2026-07-05T06:08:19.443Z"
+    },
+    {
+      "accessId": "seedaccess1",
+      "action": "revoked",
+      "email": "fotosdavid60@gmail.com",
+      "details": [],
+      "timestamp": "2026-07-05T05:43:37.881Z"
+    },
+    {
       "accessId": "hylqmjbtmhqmqm3amak",
       "action": "shared",
       "email": "imagedavid45@gmail.com",

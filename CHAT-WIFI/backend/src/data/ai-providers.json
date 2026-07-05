@@ -1,297 +1,130 @@
 [
   {
-    "id": "2c6ffdbd-c0a4-4241-a792-b47bee3a4d84",
+    "id": "2436407d-fdc8-4006-96cd-af2742cb50e1",
     "name": "Grok",
-    "apiKey": "b54dfcfdd32d833180bdd6998d65eb31:ae3468a4362940dcec1b2a0448b5f54a:5f2bb7be36829135336c782932b7a7f0cd87220126cbba1f640ad3c54bdde23b5a0519681105b7e7fcbfdf2ecae602b5f06a3ad2e707997a",
-    "status": "exhausted",
+    "apiKey": "700e12def4114c2c204626a20fd8b520:e3237e61895d04200a5936e15340dff3:30d726a5f05ce791cefdf0199d48eded3e2f7f6c3bd5972f90e015b79ffb1bc32b512afb711f2b2404cbf1a49ea8ce6e3f782a0dc5fe6ad5",
+    "status": "active",
     "queuePosition": 0,
     "usageLogs": [
       {
-        "timestamp": "2026-06-27T00:26:21.076Z",
-        "event": "activated",
-        "reason": "Manually activated by user"
+        "timestamp": "2026-07-05T06:17:56.365Z",
+        "event": "created",
+        "reason": "New provider added"
       },
       {
-        "timestamp": "2026-06-27T00:26:22.396Z",
-        "event": "exhausted",
-        "reason": "Manually exhausted by admin"
+        "timestamp": "2026-07-05T06:18:06.872Z",
+        "event": "activated",
+        "reason": "Manually activated by user"
       }
     ],
-    "lastUsed": "2026-06-27T00:26:21.076Z",
-    "errorCount": 1
+    "lastUsed": "2026-07-05T06:18:06.872Z",
+    "errorCount": 0
   },
   {
-    "id": "39b5324d-3632-4cef-83a0-6d25f21070ab",
+    "id": "7acf9034-74ab-4087-9292-5f3257f2844d",
     "name": "Grok",
-    "apiKey": "15a7deacbef51dbf612e15aa660b09dd:945143f2d7549975c64e593059615696:143c4ef1df8a36537571c5b02190c21b644a660ca766513cce699bf505f7af03c466e9063b53b32f9de74e9946d5a92a47f1919dc6401917",
-    "status": "exhausted",
+    "apiKey": "1df047b3d38e4e90cb8e58700a3a240d:1c57576b87882cad225e78617c591ab7:a182d753299f766876922a46e254fc595851e9496ba99e52d43d43e3108999ae986b197b95a565769e1735d8e3229f9c1b2bafdb47f6cb5d",
+    "status": "available",
     "queuePosition": 1,
     "usageLogs": [
       {
-        "timestamp": "2026-06-27T00:26:22.397Z",
-        "event": "activated",
-        "reason": "Auto-activated after \"Grok\" was exhausted"
-      },
-      {
-        "timestamp": "2026-06-27T00:26:37.317Z",
-        "event": "deactivated",
-        "reason": "Replaced by another provider"
-      },
-      {
-        "timestamp": "2026-06-27T00:26:38.675Z",
-        "event": "activated",
-        "reason": "Auto-activated after \"Grok\" was exhausted"
-      },
-      {
-        "timestamp": "2026-06-27T00:26:42.368Z",
-        "event": "deactivated",
-        "reason": "Replaced by another provider"
-      },
-      {
-        "timestamp": "2026-06-27T00:26:43.237Z",
-        "event": "activated",
-        "reason": "Auto-activated after \"Gemini\" was exhausted"
-      },
-      {
-        "timestamp": "2026-06-27T00:26:44.473Z",
-        "event": "deactivated",
-        "reason": "Replaced by another provider"
-      },
-      {
-        "timestamp": "2026-06-27T00:26:45.067Z",
-        "event": "activated",
-        "reason": "Auto-activated after \"Gemini\" was exhausted"
-      },
-      {
-        "timestamp": "2026-06-27T00:26:50.961Z",
-        "event": "deactivated",
-        "reason": "Replaced by another provider"
-      },
-      {
-        "timestamp": "2026-06-27T00:26:51.816Z",
-        "event": "activated",
-        "reason": "Auto-activated after \"Grok\" was exhausted"
-      },
-      {
-        "timestamp": "2026-06-27T00:27:06.738Z",
-        "event": "deactivated",
-        "reason": "Replaced by another provider"
-      },
-      {
-        "timestamp": "2026-06-27T00:27:27.038Z",
-        "event": "activated",
-        "reason": "Manually activated by user"
-      },
-      {
-        "timestamp": "2026-06-27T00:27:28.258Z",
-        "event": "exhausted",
-        "reason": "Manually exhausted by admin"
+        "timestamp": "2026-07-05T06:21:00.429Z",
+        "event": "created",
+        "reason": "New provider added"
       }
     ],
-    "lastUsed": "2026-06-27T00:27:27.038Z",
-    "errorCount": 1
+    "lastUsed": null,
+    "errorCount": 0
   },
   {
-    "id": "cad45022-3b93-41ae-9eff-2b65266b7bbb",
-    "name": "Grok",
-    "apiKey": "1601a70ebf8ef2f018aaa4e986c4621b:8e9f9efc6d6482b4ab908d76a766034c:0aba2b105c9cd1e464c86fb0e5413a8b70afe6c68af03270db0cbd73f9dd1619706a2238c423bb8caadc0df5186c539c9785bfd15f98e428",
-    "status": "exhausted",
+    "id": "512bcf23-1576-48ca-b6bc-130f314f7978",
+    "name": "Gemini",
+    "apiKey": "6d0b9f580ecbf82a4e2b6b17b195386d:d3992b674cee8f0fe5fb95943f93c8d8:fbc54f63a6e9f33333b4e3db467e10f940bece9fe40ea3773d83626eff85e1724d6d297f55a4f2a9582e8cc8b055a50e5a3b151eb6",
+    "status": "available",
     "queuePosition": 2,
     "usageLogs": [
       {
-        "timestamp": "2026-06-27T00:26:37.317Z",
-        "event": "activated",
-        "reason": "Manually activated by user"
-      },
-      {
-        "timestamp": "2026-06-27T00:26:38.675Z",
-        "event": "exhausted",
-        "reason": "Manually exhausted by admin"
+        "timestamp": "2026-07-05T06:37:13.194Z",
+        "event": "created",
+        "reason": "New provider added"
       }
     ],
-    "lastUsed": "2026-06-27T00:26:37.317Z",
-    "errorCount": 1
+    "lastUsed": null,
+    "errorCount": 0
   },
   {
-    "id": "cf6a84a4-3857-4add-9b1f-dcbf522ffc79",
-    "name": "Grok",
-    "apiKey": "6a5881e5d3479897149647acebb9cbe7:fe1454ad700a37483b69ba9cd6e2445d:ef7f684bf48b9cf971dddba07ce5ef503c0297aa31fece6c4848ecf82cabd5268d154518ddf3a23ec35d9f23db06978d368ab3c81fbd4b71",
-    "status": "exhausted",
+    "id": "e041369e-acc8-41f8-83d1-83b0bc228f89",
+    "name": "Gemini",
+    "apiKey": "0d033a4fbb50b9a4550004eb0ecec0a4:8e9b5329c470904c52b258ddce8ad913:c9c9cc0f5524f3810136c5f826450ba196c3c3f379f7dfe1ab0a10a6b7ba28954df81818ccd0167a14662789d70f5f84fa6de5a6dd",
+    "status": "available",
     "queuePosition": 3,
     "usageLogs": [
       {
-        "timestamp": "2026-06-27T00:26:50.961Z",
-        "event": "activated",
-        "reason": "Manually activated by user"
-      },
-      {
-        "timestamp": "2026-06-27T00:26:51.816Z",
-        "event": "exhausted",
-        "reason": "Manually exhausted by admin"
+        "timestamp": "2026-07-05T06:37:53.764Z",
+        "event": "created",
+        "reason": "New provider added"
       }
     ],
-    "lastUsed": "2026-06-27T00:26:50.961Z",
-    "errorCount": 1
+    "lastUsed": null,
+    "errorCount": 0
   },
   {
-    "id": "8928dca2-84b2-4933-9cbf-18a05b434ae6",
+    "id": "9dddd1d1-21b6-4006-b7df-39349b055d69",
     "name": "Gemini",
-    "apiKey": "1ab048ce5f3be2e402f3371ee04c4ac0:3eef36b02c99785cd0f87084be7f3a47:e96c45eab7031cba2a6ff7eb991c67363fe0a5907264c75b6eb9183e73b5b4a7851e8526c71d9f",
+    "apiKey": "5b6f023993a79cb1321db23d3187065d:003ba2516369ea88941f3c0eba1efcc0:f9e526f2536023d7e26b11d143109cd28753d0e16d4ec4b9ae810dc46d6418e91a3e7d333719b638aa1742ffd2a0ca16ed825e06de",
+    "status": "available",
+    "queuePosition": 4,
+    "usageLogs": [
+      {
+        "timestamp": "2026-07-05T06:38:35.624Z",
+        "event": "created",
+        "reason": "New provider added"
+      }
+    ],
+    "lastUsed": null,
+    "errorCount": 0
+  },
+  {
+    "id": "60f389c9-fdf9-4f50-963a-20a7bba62d3c",
+    "name": "Grok",
+    "apiKey": "50f29f14c6b2319d5bd780f213cee092:e7c5aa9308214344373bdbd7f815102c:fd50ad40c97f5e2b0bf9eb78a35704c4e3322549ebc721abc07583c13c47e4ad444571fb6d7d3811ca34827593c065fbd627b35a1a600a96",
     "status": "available",
     "queuePosition": 5,
     "usageLogs": [
       {
-        "timestamp": "2026-06-20T05:09:35.909Z",
+        "timestamp": "2026-07-05T06:39:05.198Z",
         "event": "created",
         "reason": "New provider added"
-      },
-      {
-        "timestamp": "2026-06-20T05:09:41.461Z",
-        "event": "activated",
-        "reason": "Manually activated by user"
-      },
-      {
-        "timestamp": "2026-06-20T05:15:03.833Z",
-        "event": "deactivated",
-        "reason": "Replaced by another provider"
-      },
-      {
-        "timestamp": "2026-06-27T00:26:42.368Z",
-        "event": "activated",
-        "reason": "Manually activated by user"
-      },
-      {
-        "timestamp": "2026-06-27T00:26:43.236Z",
-        "event": "exhausted",
-        "reason": "Manually exhausted by admin"
-      },
-      {
-        "timestamp": "2026-06-27T00:27:46.398Z",
-        "event": "reactivated",
-        "reason": "Manually reactivated by user"
-      },
-      {
-        "timestamp": "2026-06-27T00:27:46.398Z",
-        "event": "activated",
-        "reason": "Auto-activated (was the only reactivated provider)"
-      },
-      {
-        "timestamp": "2026-06-27T00:28:23.152Z",
-        "event": "deactivated",
-        "reason": "Replaced by another provider"
       }
     ],
-    "lastUsed": "2026-06-27T00:27:46.398Z",
+    "lastUsed": null,
     "errorCount": 0
   },
   {
-    "id": "c5a5f2ed-3d10-457b-aa2d-831b12e04d88",
-    "name": "Gemini",
-    "apiKey": "0d23b95ae33f38a48e9315f3b6d46261:59564f1800061c9b07fb0c68603be628:a72d5ce7b33b7a341e4b1aff89d948bda75cc917353a25a959a24dd49f81f9e45ca5305ae248c5",
+    "id": "2540a7d7-9047-49f3-a472-c00037e30981",
+    "name": "Grok",
+    "apiKey": "5590c80dfe417d9140aa77567c5cccde:b84902f4015eaa9f56c979670cefc191:18cde9a96d09015c9e898d11384fc5f39d19e8d0478c919cb6e787cceb341f8662f4fc1356d422ceca7e05ba2c9fc6905e42ecb28175f0b5",
     "status": "available",
     "queuePosition": 6,
     "usageLogs": [
       {
-        "timestamp": "2026-06-20T05:14:36.397Z",
+        "timestamp": "2026-07-05T06:39:27.018Z",
         "event": "created",
         "reason": "New provider added"
-      },
-      {
-        "timestamp": "2026-06-20T05:15:03.833Z",
-        "event": "activated",
-        "reason": "Manually activated by user"
-      },
-      {
-        "timestamp": "2026-06-20T06:14:19.755Z",
-        "event": "activated",
-        "reason": "Manually activated by user"
-      },
-      {
-        "timestamp": "2026-06-27T00:26:21.076Z",
-        "event": "deactivated",
-        "reason": "Replaced by another provider"
-      },
-      {
-        "timestamp": "2026-06-27T00:26:44.473Z",
-        "event": "activated",
-        "reason": "Manually activated by user"
-      },
-      {
-        "timestamp": "2026-06-27T00:26:45.066Z",
-        "event": "exhausted",
-        "reason": "Manually exhausted by admin"
-      },
-      {
-        "timestamp": "2026-06-27T00:27:47.678Z",
-        "event": "reactivated",
-        "reason": "Manually reactivated by user"
       }
     ],
-    "lastUsed": "2026-06-27T00:26:44.473Z",
+    "lastUsed": null,
     "errorCount": 0
   },
   {
-    "id": "9fdc5964-6f9f-4df4-a816-178ad67fc4f0",
-    "name": "Gemini",
-    "apiKey": "6e37697b0eb9ae4c69ab5460ebe5d062:8db7178635c1383dd235771b94e6b391:0a700e40fb2c7dd5609e01f765669dcc40b7b4ebed81bf15775c1bacf1a6e20ce71b667f7fb760bd1aa26491d0ab1528a1071cdae3",
-    "status": "active",
+    "id": "d62599d7-307e-4674-be51-45ad88c0f8f2",
+    "name": "Grok",
+    "apiKey": "903037401429a41155820d64758e7002:511dffa6cf660e00f125906c6f3f33cf:2a17fdcebd5c8f33ac7c31ced8ee7a3d53fdd0392c6927bec8f822d36cae0c9175c5388c1123de32c9e3bd76409a1bddf818aec1d6a78f3b",
+    "status": "available",
     "queuePosition": 7,
     "usageLogs": [
       {
-        "timestamp": "2026-06-27T00:28:09.244Z",
-        "event": "created",
-        "reason": "New provider added"
-      },
-      {
-        "timestamp": "2026-06-27T00:28:23.152Z",
-        "event": "activated",
-        "reason": "Manually activated by user"
-      }
-    ],
-    "lastUsed": "2026-06-27T00:28:23.152Z",
-    "errorCount": 0
-  },
-  {
-    "id": "388486d7-d306-4d26-830c-e149fe6302c5",
-    "name": "Gemini",
-    "apiKey": "4ff3e285104424223b4e60d1b36e965f:c8c9e0ad45d3d108bd9e2bab66839415:3729de0261009eb820e3fa5bd30de83859bd0b6e943e3b41746bd97cbc6c4538815af91ef48655b3bda44b1ec80b87db77b565bdc0",
-    "status": "available",
-    "queuePosition": 8,
-    "usageLogs": [
-      {
-        "timestamp": "2026-06-27T00:28:57.458Z",
-        "event": "created",
-        "reason": "New provider added"
-      }
-    ],
-    "lastUsed": null,
-    "errorCount": 0
-  },
-  {
-    "id": "191e9a76-183a-48ef-89b6-0e2c7ad7cf08",
-    "name": "Gemini",
-    "apiKey": "4d6e58d4f4ea5532c01443d21dd714fc:f0165bc91741c77f740f9076f07d3467:247a39636d7544ecf056695b4ca05d5b13ca461898b3f91ce0d929b502cc3bc614da156bbdbf8139aa03ad70da3b1ca006151a6521",
-    "status": "available",
-    "queuePosition": 9,
-    "usageLogs": [
-      {
-        "timestamp": "2026-06-27T00:29:32.142Z",
-        "event": "created",
-        "reason": "New provider added"
-      }
-    ],
-    "lastUsed": null,
-    "errorCount": 0
-  },
-  {
-    "id": "43aa39b7-edc0-42df-9663-227b3d462f11",
-    "name": "Gemini",
-    "apiKey": "1941d90e2c246c332db2ce071cbae442:007495090616376fbdf2258b5f55ea07:3944a485ff8be598cc949c9ddff47a06e3169f4760e9e21b1bffc84db84ac742ae9eef589d73c63f4013c232cdfc0544a74e88dc76",
-    "status": "available",
-    "queuePosition": 10,
-    "usageLogs": [
-      {
-        "timestamp": "2026-06-27T00:29:56.997Z",
+        "timestamp": "2026-07-05T06:42:41.167Z",
         "event": "created",
         "reason": "New provider added"
       }

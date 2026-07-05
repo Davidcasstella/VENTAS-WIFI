@@ -1,5 +1,25 @@
 [
   {
+    "id": "0g5shrhrua4mr7elwg9",
+    "jid": "573028599105@s.whatsapp.net",
+    "phone": "573028599105",
+    "pushName": "David Castella",
+    "email": "",
+    "plan": "combo-15",
+    "amount": 15000,
+    "status": "pending_email",
+    "drivePermissions": [],
+    "driveAccessGrantedAt": null,
+    "driveAccessRevokedAt": null,
+    "accessExpiresAt": null,
+    "paymentDetectedAt": "2026-07-05T06:22:12.873Z",
+    "emailReceivedAt": null,
+    "accessGrantedAt": null,
+    "notes": "",
+    "createdAt": "2026-07-05T06:22:12.873Z",
+    "updatedAt": "2026-07-05T06:22:12.873Z"
+  },
+  {
     "id": "hylqmjbtmhqmqm3amak",
     "jid": "573028599105@s.whatsapp.net",
     "phone": "573028599105",
@@ -27,21 +47,5 @@
     "notes": "",
     "createdAt": "2026-06-20T08:22:21.020Z",
     "updatedAt": "2026-06-20T08:22:34.032Z"
-  },
-  {
-    "id": "seedaccess1",
-    "jid": "573028599105@s.whatsapp.net",
-    "phone": "573028599105",
-    "pushName": "David",
-    "email": "fotosdavid60@gmail.com",
-    "plan": "combo-15",
-    "amount": 15000,
-    "status": "access_granted",
-    "paymentDetectedAt": "2026-06-20T06:30:00.000Z",
-    "emailReceivedAt": "2026-06-20T06:30:00.000Z",
-    "accessGrantedAt": "2026-06-20T06:30:00.000Z",
-    "notes": "Acceso inicial del administrador",
-    "createdAt": "2026-06-20T06:30:00.000Z",
-    "updatedAt": "2026-06-20T06:30:00.000Z"
   }
 ]
