@@ -7,7 +7,7 @@
         "dev": "nodemon src/index.js"
     },
     "dependencies": {
-        "@whiskeysockets/baileys": "^7.0.0-rc.9",
+        "@whiskeysockets/baileys": "^7.0.0-rc13",
         "axios": "^1.13.5",
         "bcrypt": "^6.0.0",
         "better-sqlite3": "^12.9.0",
