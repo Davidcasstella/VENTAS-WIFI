@@ -4,20 +4,29 @@
     "jid": "573028599105@s.whatsapp.net",
     "phone": "573028599105",
     "pushName": "David Castella",
-    "email": "",
+    "email": "amicopdavid15@gmail.com",
     "plan": "combo-15",
     "amount": 15000,
-    "status": "pending_email",
-    "drivePermissions": [],
-    "driveAccessGrantedAt": null,
+    "status": "access_granted",
+    "drivePermissions": [
+      {
+        "folderId": "1xza9RAmHK2J-kNA2eKlgwIiBV4HxU0BG",
+        "permissionId": "02703420635909535741",
+        "folderName": "TODO-HACKING",
+        "role": "reader",
+        "sharedAt": "2026-07-08T06:26:38.264Z",
+        "webViewLink": "https://drive.google.com/drive/folders/1xza9RAmHK2J-kNA2eKlgwIiBV4HxU0BG"
+      }
+    ],
+    "driveAccessGrantedAt": "2026-07-08T06:26:38.270Z",
     "driveAccessRevokedAt": null,
     "accessExpiresAt": null,
     "paymentDetectedAt": "2026-07-05T06:22:12.873Z",
-    "emailReceivedAt": null,
-    "accessGrantedAt": null,
+    "emailReceivedAt": "2026-07-08T06:26:33.963Z",
+    "accessGrantedAt": "2026-07-08T06:26:38.265Z",
     "notes": "",
     "createdAt": "2026-07-05T06:22:12.873Z",
-    "updatedAt": "2026-07-05T06:22:12.873Z"
+    "updatedAt": "2026-07-08T06:26:38.270Z"
   },
   {
     "id": "hylqmjbtmhqmqm3amak",

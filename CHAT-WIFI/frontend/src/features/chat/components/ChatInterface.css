@@ -270,6 +270,33 @@
     background: rgba(241, 92, 109, 0.1);
 }
 
+.conv-followup-action-btn {
+    background: none;
+    border: none;
+    color: #8696a0;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.conv-followup-action-btn:hover {
+    color: #00ff00;
+    background: rgba(0, 255, 0, 0.1);
+}
+
+.conv-followup-action-btn.active {
+    color: #00a884;
+}
+
+.conv-followup-action-btn.active:hover {
+    color: #f15c6d;
+    background: rgba(241, 92, 109, 0.1);
+}
+
 .conv-unread-badge {
     background: #00a884;
     color: #111b21;

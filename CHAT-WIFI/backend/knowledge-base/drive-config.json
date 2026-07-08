@@ -9,6 +9,18 @@
   },
   "activityLog": [
     {
+      "accessId": "0g5shrhrua4mr7elwg9",
+      "action": "shared",
+      "email": "amicopdavid15@gmail.com",
+      "details": [
+        {
+          "folderId": "1xza9RAmHK2J-kNA2eKlgwIiBV4HxU0BG",
+          "folderName": "TODO-HACKING"
+        }
+      ],
+      "timestamp": "2026-07-08T06:26:38.275Z"
+    },
+    {
       "accessId": "60m7ut92qssmr7e3exr",
       "action": "revoked",
       "email": "nicol2415lop@gmail.com",

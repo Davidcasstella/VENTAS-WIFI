@@ -3,457 +3,6 @@
     "pushName": "David Castella",
     "messages": [
       {
-        "id": "4c3a683d30933fc6",
-        "text": "[Welcome Video]",
-        "fromMe": true,
-        "sender": "system",
-        "timestamp": "2026-07-05T06:07:00.604Z"
-      },
-      {
-        "id": "9460c3a313e2d83e",
-        "text": "En cual estas interesado?\nEn el curso de 10 mil hacking básico\no en el curso de 15 mil full combo avanzado",
-        "fromMe": true,
-        "sender": "system",
-        "timestamp": "2026-07-05T06:07:01.639Z"
-      },
-      {
-        "id": "af75e5021a3a53d6",
-        "text": "[Welcome Image]",
-        "fromMe": true,
-        "sender": "system",
-        "timestamp": "2026-07-05T06:07:03.017Z"
-      },
-      {
-        "id": "ca190aeeb634c403",
-        "text": "el del 15",
-        "fromMe": false,
-        "sender": "client",
-        "timestamp": "2026-07-05T06:07:12.687Z",
-        "read": true
-      },
-      {
-        "id": "12db4e430e4f7b7d",
-        "text": "Excelente elección, sumercé, el combo de 15",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-07-05T06:07:22.676Z"
-      },
-      {
-        "id": "348568ec0bce93b8",
-        "text": "Cuando hagas el pago envíame el comprobante 📸",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-07-05T06:07:23.600Z"
-      },
-      {
-        "id": "d55f2777da6a8126",
-        "text": "[media]",
-        "fromMe": false,
-        "sender": "client",
-        "timestamp": "2026-07-05T06:07:38.247Z",
-        "mediaId": "e8a249f15d5f92475ae86791",
-        "mediaType": "image",
-        "read": true
-      },
-      {
-        "id": "96252b427b38b6b0",
-        "text": "Gracias 🙏\nVoy a verificar tu pago.",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-07-05T06:07:47.332Z"
-      },
-      {
-        "id": "ce074b37673420b6",
-        "text": "Para darte el acceso al curso, envíame tu correo electrónico por favor 📧",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-07-05T06:07:50.362Z"
-      },
-      {
-        "id": "589d56baaec2e079",
-        "text": "nicol2415lop@gmail.com",
-        "fromMe": false,
-        "sender": "client",
-        "timestamp": "2026-07-05T06:08:10.479Z",
-        "read": true
-      },
-      {
-        "id": "05ed7d70b5c06b7e",
-        "text": "Listo, tu correo es nicol2415lop@gmail.com 📧",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-07-05T06:08:15.505Z"
-      },
-      {
-        "id": "1cdd17031ef86992",
-        "text": "🎉 ¡Listo! Ya te he dado acceso a las carpetas del curso en tu Google Drive. Revisa tu correo (bandeja de entrada o spam) para acceder al material. ¡Que lo disfrutes! 🚀\n\n📂 Enlaces de acceso directo:\n• *TODO-HACKING*:\nhttps://drive.google.com/drive/folders/1xza9RAmHK2J-kNA2eKlgwIiBV4HxU0BG",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-07-05T06:08:19.466Z"
-      },
-      {
-        "id": "8fdd373a45edd684",
-        "text": "hola",
-        "fromMe": false,
-        "sender": "client",
-        "timestamp": "2026-07-05T06:11:02.993Z",
-        "read": true
-      },
-      {
-        "id": "b72712abef09818d",
-        "text": "[Welcome Video]",
-        "fromMe": true,
-        "sender": "system",
-        "timestamp": "2026-07-05T06:11:08.826Z"
-      },
-      {
-        "id": "82a52b06d3664e0d",
-        "text": "En cual estas interesado?\nEn el curso de 10 mil hacking básico\no en el curso de 15 mil full combo avanzado",
-        "fromMe": true,
-        "sender": "system",
-        "timestamp": "2026-07-05T06:11:09.852Z"
-      },
-      {
-        "id": "e0c05e5636913395",
-        "text": "[Welcome Image]",
-        "fromMe": true,
-        "sender": "system",
-        "timestamp": "2026-07-05T06:11:11.479Z"
-      },
-      {
-        "id": "228c8d4369b7c4bc",
-        "text": "en el de 15",
-        "fromMe": false,
-        "sender": "client",
-        "timestamp": "2026-07-05T06:11:21.198Z",
-        "read": true
-      },
-      {
-        "id": "11ab048f78f322c6",
-        "text": "Excelente elección, sumercé, el combo de 15",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-07-05T06:11:38.515Z"
-      },
-      {
-        "id": "cfc3ad739edd570f",
-        "text": "Ya te envié el acceso a tu correo nicol2415lop@gmail.com",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-07-05T06:11:40.186Z"
-      },
-      {
-        "id": "3e7b49e9766e12ee",
-        "text": "¿Pudiste entrar sin problema?",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-07-05T06:11:41.178Z"
-      },
-      {
-        "id": "4a0b2d7d8f1d420c",
-        "text": "Hola",
-        "fromMe": false,
-        "sender": "client",
-        "timestamp": "2026-07-05T06:12:30.423Z",
-        "read": true
-      },
-      {
-        "id": "b1e2eebc106c1ccf",
-        "text": "[Welcome Video]",
-        "fromMe": true,
-        "sender": "system",
-        "timestamp": "2026-07-05T06:12:37.193Z"
-      },
-      {
-        "id": "4f05ed9c6a0320ce",
-        "text": "En cual estas interesado?\nEn el curso de 10 mil hacking básico\no en el curso de 15 mil full combo avanzado",
-        "fromMe": true,
-        "sender": "system",
-        "timestamp": "2026-07-05T06:12:38.220Z"
-      },
-      {
-        "id": "64a298317003b189",
-        "text": "[Welcome Image]",
-        "fromMe": true,
-        "sender": "system",
-        "timestamp": "2026-07-05T06:12:40.023Z"
-      },
-      {
-        "id": "6e88e65384d25736",
-        "text": "hola",
-        "fromMe": false,
-        "sender": "client",
-        "timestamp": "2026-07-05T06:13:20.859Z",
-        "read": true
-      },
-      {
-        "id": "84e331752abb0e7c",
-        "text": "En cual estas interesado?\nEn el curso de 10 mil hacking básico\no en el curso de 15 mil full combo avanzado",
-        "fromMe": true,
-        "sender": "system",
-        "timestamp": "2026-07-05T06:13:26.892Z"
-      },
-      {
-        "id": "5f192d7f9bdb1665",
-        "text": "en el de 10 mil",
-        "fromMe": false,
-        "sender": "client",
-        "timestamp": "2026-07-05T06:13:35.088Z",
-        "read": true
-      },
-      {
-        "id": "7d969611bbb79803",
-        "text": "Perfecto, el combo de 10 es una excelente elección para empezar sumercé",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-07-05T06:13:45.373Z"
-      },
-      {
-        "id": "68b7883325922ac8",
-        "text": "💳 Nequi: 3028599105\n💳 Daviplata: 3028599105\n🔑 Llave Bre-B: @3028599105\n👤 Nombre: Bra... Lop...",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-07-05T06:13:47.689Z"
-      },
-      {
-        "id": "1e1b3469ff70a4cb",
-        "text": "Cuando hagas el pago envíame el comprobante 📸",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-07-05T06:13:48.887Z"
-      },
-      {
-        "id": "7624e6ef43f52048",
-        "text": "[media]",
-        "fromMe": false,
-        "sender": "client",
-        "timestamp": "2026-07-05T06:14:02.074Z",
-        "mediaId": "e632e140a47f4b1f90066ae3",
-        "mediaType": "image",
-        "read": true
-      },
-      {
-        "id": "33528134dd58f655",
-        "text": "hola",
-        "fromMe": false,
-        "sender": "client",
-        "timestamp": "2026-07-05T06:21:26.990Z",
-        "read": true
-      },
-      {
-        "id": "37b900954d22a9d5",
-        "text": "En cual estas interesado?\nEn el curso de 10 mil hacking básico\no en el curso de 15 mil full combo avanzado",
-        "fromMe": true,
-        "sender": "system",
-        "timestamp": "2026-07-05T06:21:33.471Z"
-      },
-      {
-        "id": "17a3eb67571dbd39",
-        "text": "de 15",
-        "fromMe": false,
-        "sender": "client",
-        "timestamp": "2026-07-05T06:21:37.117Z",
-        "read": true
-      },
-      {
-        "id": "67329e1e4f448421",
-        "text": "Excelente elección, sumercé, el combo de 15 \nCuando hagas el pago envíame el comprobante 📸 \n💳 Nequi: 3028599105\n💳 Daviplata: 3028599105\n🔑 Llave Bre-B: @3028599105\n👤 Nombre: Bra... Lop...",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-07-05T06:21:43.952Z"
-      },
-      {
-        "id": "0844993ed7a4cd81",
-        "text": "[media]",
-        "fromMe": false,
-        "sender": "client",
-        "timestamp": "2026-07-05T06:21:59.981Z",
-        "mediaId": "43ffb0baf9fd4190c8db1060",
-        "mediaType": "image",
-        "read": true
-      },
-      {
-        "id": "de04d8841276cd11",
-        "text": "Gracias 🙏\nVoy a verificar tu pago.",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-07-05T06:22:09.843Z"
-      },
-      {
-        "id": "7ebc1223d3f4123e",
-        "text": "Para darte el acceso al curso, envíame tu correo electrónico por favor 📧",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-07-05T06:22:12.868Z"
-      },
-      {
-        "id": "fb63971b1a78b4ed",
-        "text": "hola",
-        "fromMe": false,
-        "sender": "client",
-        "timestamp": "2026-07-05T06:25:46.072Z",
-        "read": true
-      },
-      {
-        "id": "72843174b8b1a568",
-        "text": "En cual estas interesado?\nEn el curso de 10 mil hacking básico\no en el curso de 15 mil full combo avanzado",
-        "fromMe": true,
-        "sender": "system",
-        "timestamp": "2026-07-05T06:25:53.189Z"
-      },
-      {
-        "id": "1400c4b557eb3140",
-        "text": "el de 15 que trae?",
-        "fromMe": false,
-        "sender": "client",
-        "timestamp": "2026-07-05T06:26:03.785Z",
-        "read": true
-      },
-      {
-        "id": "1bf4dfc42f8f4cd6",
-        "text": "El combo de 15 trae todo lo del combo de 10 mas 16 cursos avanzados",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-07-05T06:26:10.861Z"
-      },
-      {
-        "id": "ff0b79faca989242",
-        "text": "1. Malware\n2. Espionaje avanzado\n3. Contramedidas de seguridad\n4. Ingeniería Social\n5. Guías para la Ciberseguridad\n6. Hacking WiFi Pro 1\n7. Hacking WiFi Pro 2\n8. Hacking con teclado de computador\n9. Pentesting profesional\n10. Casos típicos de ataques\n11. Controles y mecanismos de seguridad\n12. Hacking Forensics\n13. Curso Git y GitHub\n14. Curso Profesional de Angular\n15. Autenticación avanzada con Passport\n16. Curso Avanzado de Node.js",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-07-05T06:26:13.066Z"
-      },
-      {
-        "id": "9606bb39b7083400",
-        "text": "Te paso los métodos de pago? tienes Nequi o Daviplata?",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-07-05T06:26:14.581Z"
-      },
-      {
-        "id": "bb015e606597db5b",
-        "text": "si dale",
-        "fromMe": false,
-        "sender": "client",
-        "timestamp": "2026-07-05T06:26:18.846Z",
-        "read": true
-      },
-      {
-        "id": "40ad50b15b58784b",
-        "text": "Perfecto, sumercé, confirma que eliges el combo de 15",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-07-05T06:26:25.597Z"
-      },
-      {
-        "id": "2b1f588868362fe3",
-        "text": "💳 Nequi: 3028599105\n💳 Daviplata: 3028599105\n🔑 Llave Bre-B: @3028599105\n👤 Nombre: Bra... Lop...",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-07-05T06:26:28.163Z"
-      },
-      {
-        "id": "fdcb6dba20fe6b71",
-        "text": "Cuando hagas el pago envíame el comprobante 📸",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-07-05T06:26:29.164Z"
-      },
-      {
-        "id": "0dd5d58effaf96c5",
-        "text": "[media]",
-        "fromMe": false,
-        "sender": "client",
-        "timestamp": "2026-07-05T06:26:42.106Z",
-        "mediaId": "a5aab403ab73dc292f1854bd",
-        "mediaType": "image",
-        "read": true
-      },
-      {
-        "id": "e388c0ebedb35274",
-        "text": "hola",
-        "fromMe": false,
-        "sender": "client",
-        "timestamp": "2026-07-05T06:43:12.170Z"
-      },
-      {
-        "id": "ed67d812531840f2",
-        "text": "En cual estas interesado?\nEn el curso de 10 mil hacking básico\no en el curso de 15 mil full combo avanzado",
-        "fromMe": true,
-        "sender": "system",
-        "timestamp": "2026-07-05T06:43:18.619Z"
-      },
-      {
-        "id": "9a1a00d6a65e6a3d",
-        "text": "dame ing sobre el de 10",
-        "fromMe": false,
-        "sender": "client",
-        "timestamp": "2026-07-05T06:43:28.086Z"
-      },
-      {
-        "id": "3347e5fd885cf152",
-        "text": "El combo de 10 trae 15 cursos",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-07-05T06:43:34.619Z"
-      },
-      {
-        "id": "d99b5d84ce753d7d",
-        "text": "1. Introducción al Hacking Ético\n2. El arte del espionaje\n3. Hacking de Celulares\n4. Métodos WiFi\n5. Hacking Páginas Web\n6. Hacking Enterprise\n7. Desarrollo Web\n8. Inglés\n9. Programas y herramientas\n10. Pack Audiolibros\n11. Diseño Gráfico\n12. Termux\n13. Claude IA\n14. Blackhat Cracking\n15. Protección de Datos",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-07-05T06:43:36.259Z"
-      },
-      {
-        "id": "b8a2ec0a3915f617",
-        "text": "Te paso los métodos de pago? tienes Nequi o Daviplata?",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-07-05T06:43:37.509Z"
-      },
-      {
-        "id": "4ecbad58920b751d",
-        "text": "y el de 15?",
-        "fromMe": false,
-        "sender": "client",
-        "timestamp": "2026-07-05T06:43:46.071Z"
-      },
-      {
-        "id": "76a55fb4caa0d418",
-        "text": "El combo de 15 trae todo lo del combo de 10 mas 16 cursos avanzados \n1. Malware\n2. Espionaje avanzado\n3. Contramedidas de seguridad\n4. Ingeniería Social\n5. Guías para la Ciberseguridad\n6. Hacking WiFi Pro 1\n7. Hacking WiFi Pro 2\n8. Hacking con teclado de computador\n9. Pentesting profesional\n10. Casos típicos de ataques\n11. Controles y mecanismos de seguridad\n12. Hacking Forensics\n13. Curso Git y GitHub\n14. Curso Profesional de Angular\n15. Autenticación avanzada con Passport\n16. Curso Avanzado de Node.js \nTe interesa el combo de 10 o el combo de 15?",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-07-05T06:43:53.514Z"
-      },
-      {
-        "id": "753f6ea9148c4b38",
-        "text": "el de 15",
-        "fromMe": false,
-        "sender": "client",
-        "timestamp": "2026-07-05T06:44:05.211Z"
-      },
-      {
-        "id": "19b1223e6766fe7a",
-        "text": "Excelente elección, sumercé, el combo de 15",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-07-05T06:44:12.657Z"
-      },
-      {
-        "id": "4d35bc3499224649",
-        "text": "Cuando hagas el pago envíame el comprobante",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-07-05T06:44:13.647Z"
-      },
-      {
-        "id": "f42b7d565d988eb6",
-        "text": "💳 Nequi: 3028599105",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-07-05T06:44:14.303Z"
-      },
-      {
         "id": "26d97d5901dcf639",
         "text": "💳 Daviplata: 3028599105",
         "fromMe": true,
@@ -486,21 +35,24 @@
         "text": "perdon",
         "fromMe": false,
         "sender": "client",
-        "timestamp": "2026-07-05T06:44:35.613Z"
+        "timestamp": "2026-07-05T06:44:35.613Z",
+        "read": true
       },
       {
         "id": "729b59b6769c38e8",
         "text": "me interesa",
         "fromMe": false,
         "sender": "client",
-        "timestamp": "2026-07-05T06:44:37.250Z"
+        "timestamp": "2026-07-05T06:44:37.250Z",
+        "read": true
       },
       {
         "id": "800e85f0413aa5f6",
         "text": "el de 10",
         "fromMe": false,
         "sender": "client",
-        "timestamp": "2026-07-05T06:44:38.706Z"
+        "timestamp": "2026-07-05T06:44:38.706Z",
+        "read": true
       },
       {
         "id": "606541d1bb53eb16",
@@ -514,7 +66,8 @@
         "text": "si",
         "fromMe": false,
         "sender": "client",
-        "timestamp": "2026-07-05T06:44:49.759Z"
+        "timestamp": "2026-07-05T06:44:49.759Z",
+        "read": true
       },
       {
         "id": "3c2bff48791eb996",
@@ -563,7 +116,8 @@
         "text": "hola",
         "fromMe": false,
         "sender": "client",
-        "timestamp": "2026-07-05T06:47:34.852Z"
+        "timestamp": "2026-07-05T06:47:34.852Z",
+        "read": true
       },
       {
         "id": "09c01ffb54c478f7",
@@ -577,7 +131,8 @@
         "text": "dime sobre el de 15 mil",
         "fromMe": false,
         "sender": "client",
-        "timestamp": "2026-07-05T06:47:57.533Z"
+        "timestamp": "2026-07-05T06:47:57.533Z",
+        "read": true
       },
       {
         "id": "11d4fbd1bdb11e76",
@@ -605,7 +160,8 @@
         "text": "el de 10 que trae?",
         "fromMe": false,
         "sender": "client",
-        "timestamp": "2026-07-05T06:48:15.990Z"
+        "timestamp": "2026-07-05T06:48:15.990Z",
+        "read": true
       },
       {
         "id": "12cf928f7217155d",
@@ -626,7 +182,8 @@
         "text": "en general que trae todos ?",
         "fromMe": false,
         "sender": "client",
-        "timestamp": "2026-07-05T06:48:35.396Z"
+        "timestamp": "2026-07-05T06:48:35.396Z",
+        "read": true
       },
       {
         "id": "993f0b33dd3582fe",
@@ -647,7 +204,8 @@
         "text": "si dale",
         "fromMe": false,
         "sender": "client",
-        "timestamp": "2026-07-05T06:48:55.108Z"
+        "timestamp": "2026-07-05T06:48:55.108Z",
+        "read": true
       },
       {
         "id": "f444336e321a4b21",
@@ -675,7 +233,8 @@
         "text": "perdon era el combo de 15",
         "fromMe": false,
         "sender": "client",
-        "timestamp": "2026-07-05T06:49:14.565Z"
+        "timestamp": "2026-07-05T06:49:14.565Z",
+        "read": true
       },
       {
         "id": "8bc82f28f4a28f88",
@@ -712,7 +271,8 @@
         "sender": "client",
         "timestamp": "2026-07-05T06:49:41.846Z",
         "mediaId": "b85be4bcf2ae8fb639e2db87",
-        "mediaType": "image"
+        "mediaType": "image",
+        "read": true
       },
       {
         "id": "597420cd120a1731",
@@ -727,6 +287,456 @@
         "fromMe": true,
         "sender": "bot",
         "timestamp": "2026-07-05T06:50:52.741Z"
+      },
+      {
+        "id": "1750fbac1eaa0453",
+        "text": "hola",
+        "fromMe": true,
+        "sender": "agent",
+        "timestamp": "2026-07-06T23:32:12.460Z"
+      },
+      {
+        "id": "eed2367be09d52d1",
+        "text": "hola",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-07-06T23:32:27.409Z",
+        "read": true
+      },
+      {
+        "id": "71d5e6728764b971",
+        "text": "En cual estas interesado?\nEn el curso de 10 mil hacking básico\no en el curso de 15 mil full combo avanzado",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-07-06T23:32:33.446Z"
+      },
+      {
+        "id": "d3b7a462f844b712",
+        "text": "hola",
+        "fromMe": true,
+        "sender": "agent",
+        "timestamp": "2026-07-07T01:52:30.876Z"
+      },
+      {
+        "id": "cbcbf9824c47550f",
+        "text": "hola",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-07-07T01:52:49.440Z",
+        "read": true
+      },
+      {
+        "id": "a33f1b3a8ddd85f7",
+        "text": "En cual estas interesado?\nEn el curso de 10 mil hacking básico\no en el curso de 15 mil full combo avanzado",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-07-07T01:52:55.503Z"
+      },
+      {
+        "id": "aa7a2e5ee7f8dfbc",
+        "text": "hola",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-07-07T02:03:41.508Z",
+        "read": true
+      },
+      {
+        "id": "86b0e0dd473a6d1a",
+        "text": "En cual estas interesado?\nEn el curso de 10 mil hacking básico\no en el curso de 15 mil full combo avanzado",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-07-07T02:03:47.965Z"
+      },
+      {
+        "id": "7b9a005f4c114862",
+        "text": "¡Hola! 👋 Vi que te interesó el curso. No dejes pasar la promo: tienes el combo de 7 mil y el combo de 10 mil (el más completo) 🔥 ¿Con cuál te animas?",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-07-07T02:06:26.955Z"
+      },
+      {
+        "id": "f19cc3a4c05daf1c",
+        "text": "hola",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-07-07T02:08:25.401Z",
+        "read": true
+      },
+      {
+        "id": "7bf1782d9d1af4d9",
+        "text": "En cual estas interesado?\nEn el curso de 10 mil hacking básico\no en el curso de 15 mil full combo avanzado",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-07-07T02:08:31.434Z"
+      },
+      {
+        "id": "1b9bad6dbd83ac53",
+        "text": "hola",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-07-07T02:41:47.146Z",
+        "read": true
+      },
+      {
+        "id": "c937ab025bbe8c09",
+        "text": "En cual estas interesado?",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-07-07T02:41:54.277Z"
+      },
+      {
+        "id": "a81a6d23da82f91d",
+        "text": "En el curso de 10 mil hacking básico",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-07-07T02:41:55.336Z"
+      },
+      {
+        "id": "96ede0384ca17f98",
+        "text": "o en el curso de 15 mil full combo avanzado",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-07-07T02:41:56.486Z"
+      },
+      {
+        "id": "fc8ba81c1dfd975f",
+        "text": "hola",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-07-07T02:48:04.378Z",
+        "read": true
+      },
+      {
+        "id": "cc320a3ea50a479a",
+        "text": "hola",
+        "fromMe": true,
+        "sender": "agent",
+        "timestamp": "2026-07-08T06:23:04.826Z"
+      },
+      {
+        "id": "f922736c48f6d5cd",
+        "text": "hola",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-07-08T06:24:03.644Z",
+        "read": true
+      },
+      {
+        "id": "b3bcb1f85b944523",
+        "text": "En cual estas interesado?\nEn el curso de 10 mil hacking básico\no en el curso de 15 mil full combo avanzado",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-07-08T06:24:09.714Z"
+      },
+      {
+        "id": "f49b608fe34493a0",
+        "text": "15",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-07-08T06:24:13.372Z",
+        "read": true
+      },
+      {
+        "id": "c2ce38315a7df93d",
+        "text": "El combo de 15 trae todo lo del combo de 10 mas 16 cursos avanzados",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-07-08T06:24:20.703Z"
+      },
+      {
+        "id": "15f66c149779bcfe",
+        "text": "1. Malware\n2. Espionaje avanzado\n3. Contramedidas de seguridad\n4. Ingeniería Social\n5. Guías para la Ciberseguridad\n6. Hacking WiFi Pro 1\n7. Hacking WiFi Pro 2\n8. Hacking con teclado de computador\n9. Pentesting profesional\n10. Casos típicos de ataques\n11. Controles y mecanismos de seguridad\n12. Hacking Forensics\n13. Curso Git y GitHub\n14. Curso Profesional de Angular\n15. Autenticación avanzada con Passport\n16. Curso Avanzado de Node.js",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-07-08T06:24:22.371Z"
+      },
+      {
+        "id": "8535accf843f9ad1",
+        "text": "Perfecto, confirma que quieres el combo de 15",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-07-08T06:24:23.589Z"
+      },
+      {
+        "id": "9145aa5b4ee73141",
+        "text": "tienes Nequi o Daviplata?",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-07-08T06:24:24.429Z"
+      },
+      {
+        "id": "5dce1b221eb66632",
+        "text": "💳 Nequi: 3028599105\n💳 Daviplata: 3028599105\n🔑 Llave Bre-B: @3028599105\n👤 Nombre: Bra... Lop...",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-07-08T06:24:26.463Z"
+      },
+      {
+        "id": "7cc9810e8d412fdc",
+        "text": "Cuando hagas el pago envíame el comprobante 📸",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-07-08T06:24:27.841Z"
+      },
+      {
+        "id": "4631ec3f825eccc2",
+        "text": "[media]",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-07-08T06:24:35.294Z",
+        "mediaId": "ea9209bf39d2627e61d3754c",
+        "mediaType": "image",
+        "read": true
+      },
+      {
+        "id": "998bfc87bd4547f0",
+        "text": "Gracias 🙏\nVoy a verificar tu pago.",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-07-08T06:24:42.265Z"
+      },
+      {
+        "id": "9cdc1b473977f0f8",
+        "text": "Para darte el acceso al curso, envíame tu correo electrónico por favor 📧",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-07-08T06:24:45.291Z"
+      },
+      {
+        "id": "78a0e238e63060b4",
+        "text": "amicopdavid15@gmail.com",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-07-08T06:26:28.948Z",
+        "read": true
+      },
+      {
+        "id": "cfe8aa3ca57361a5",
+        "text": "Listo, tu correo es amicopdavid15@gmail.com 📧",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-07-08T06:26:33.982Z"
+      },
+      {
+        "id": "d491892c79eaacee",
+        "text": "🎉 ¡Listo! Ya te he dado acceso a las carpetas del curso en tu Google Drive. Revisa tu correo (bandeja de entrada o spam) para acceder al material. ¡Que lo disfrutes! 🚀\n\n📂 Enlaces de acceso directo:\n• *TODO-HACKING*:\nhttps://drive.google.com/drive/folders/1xza9RAmHK2J-kNA2eKlgwIiBV4HxU0BG",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-07-08T06:26:38.314Z"
+      },
+      {
+        "id": "fb7a6b0121ffc741",
+        "text": "hoka",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-07-08T06:34:03.504Z",
+        "read": true
+      },
+      {
+        "id": "1cc744259d539024",
+        "text": "En cual estas interesado?\nEn el curso de 10 mil hacking básico\no en el curso de 15 mil full combo avanzado",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-07-08T06:34:09.940Z"
+      },
+      {
+        "id": "4b2ae11f4f4e08a6",
+        "text": "15",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-07-08T06:34:26.960Z",
+        "read": true
+      },
+      {
+        "id": "6734d0f6fe27f5b0",
+        "text": "Perfecto, confirma que quieres el combo de 15",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-07-08T06:34:33.912Z"
+      },
+      {
+        "id": "4f8d84e6fb0f5bbc",
+        "text": "tienes Nequi o Daviplata?",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-07-08T06:34:34.511Z"
+      },
+      {
+        "id": "6cf6061c4065b187",
+        "text": "💳 Nequi: 3028599105\n💳 Daviplata: 3028599105\n🔑 Llave Bre-B: @3028599105\n👤 Nombre: Bra... Lop...",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-07-08T06:34:36.817Z"
+      },
+      {
+        "id": "c9b8dadd1c78e142",
+        "text": "Cuando hagas el pago envíame el comprobante 📸",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-07-08T06:34:38.342Z"
+      },
+      {
+        "id": "25898a67b63217aa",
+        "text": "gracias",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-07-08T06:38:05.077Z",
+        "read": true
+      },
+      {
+        "id": "77e23696899eabd9",
+        "text": "De nada",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-07-08T06:38:11.172Z"
+      },
+      {
+        "id": "35fad3eb6f658ba7",
+        "text": "¿Necesitas algo más?",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-07-08T06:38:11.786Z"
+      },
+      {
+        "id": "8ddd023cdd444792",
+        "text": "hola",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-07-08T06:42:58.375Z",
+        "read": true
+      },
+      {
+        "id": "fd1aaad6becd9672",
+        "text": "En cual estas interesado?\nEn el curso de 10 mil hacking básico\no en el curso de 15 mil full combo avanzado",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-07-08T06:43:04.822Z"
+      },
+      {
+        "id": "c4c2fcf29ab20c1f",
+        "text": "hola",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-07-08T06:51:10.147Z",
+        "read": true
+      },
+      {
+        "id": "b0e47dca14a6a85a",
+        "text": "En cual estas interesado?\nEn el curso de 10 mil hacking básico\no en el curso de 15 mil full combo avanzado",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-07-08T06:51:17.459Z"
+      },
+      {
+        "id": "037839d46158df57",
+        "text": "hola",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-07-08T06:59:32.554Z",
+        "read": true
+      },
+      {
+        "id": "4101b2053136b8bb",
+        "text": "En cual estas interesado?\nEn el curso de 10 mil hacking básico\no en el curso de 15 mil full combo avanzado",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-07-08T06:59:39.071Z"
+      },
+      {
+        "id": "3fc08e16bf876030",
+        "text": "holaa",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-07-08T07:00:56.448Z",
+        "read": true
+      },
+      {
+        "id": "c2dd2bebb3acc487",
+        "text": "En cual estas interesado?\nEn el curso de 10 mil hacking básico\no en el curso de 15 mil full combo avanzado",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-07-08T07:01:03.088Z"
+      },
+      {
+        "id": "017a93554eb13cd9",
+        "text": "holaa",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-07-08T07:05:22.430Z",
+        "read": true
+      },
+      {
+        "id": "0c17a4fa0609c283",
+        "text": "En cual estas interesado?\nEn el curso de 10 mil hacking básico\no en el curso de 15 mil full combo avanzado",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-07-08T07:05:29.802Z"
+      },
+      {
+        "id": "61b8230018a692cb",
+        "text": "¡Hola! 👋 Vi que te interesó el curso. No dejes pasar la promo: tienes el combo de 7 mil y el combo de 10 mil (el más completo) 🔥 ¿Con cuál te animas?",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-07-08T07:06:55.530Z"
+      },
+      {
+        "id": "9a95728744baaa77",
+        "text": "[Follow-up Image: Seguimiento 2 horas]",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-07-08T07:06:59.972Z"
+      },
+      {
+        "id": "4e8669330e3af1c8",
+        "text": "dale que trae el de 7 ?",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-07-08T07:08:32.104Z",
+        "read": true
+      },
+      {
+        "id": "083cf1ace78929eb",
+        "text": "hola",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-07-08T07:26:20.071Z",
+        "read": true
+      },
+      {
+        "id": "dba2d2eb832a99dc",
+        "text": "En cual estas interesado?\nEn el curso de 10 mil hacking básico\no en el curso de 15 mil full combo avanzado",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-07-08T07:26:26.517Z"
+      },
+      {
+        "id": "ed3d60908a62e0ba",
+        "text": "soy david",
+        "fromMe": false,
+        "sender": "client",
+        "timestamp": "2026-07-08T07:26:38.070Z",
+        "read": true
+      },
+      {
+        "id": "8de8cc3641ff6adc",
+        "text": "es el mejor programador de boyaca",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-07-08T07:26:45.401Z"
+      },
+      {
+        "id": "d2e4ca0c00c118cc",
+        "text": "quieres aprender hacking ético y ciberseguridad?",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-07-08T07:26:47.008Z"
+      },
+      {
+        "id": "f7ed0d975ba520fc",
+        "text": "te interesa el combo de 7 o el combo de 10?",
+        "fromMe": true,
+        "sender": "bot",
+        "timestamp": "2026-07-08T07:26:47.937Z"
       }
     ]
   },

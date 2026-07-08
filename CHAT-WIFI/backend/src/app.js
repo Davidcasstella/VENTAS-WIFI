@@ -320,6 +320,12 @@ whatsapp.on('message', async (m) => {
                 try {
                     await welcomeAutomationService.disableUserAI(remoteJid);
                 } catch (_) { }
+                // The business just spoke (agent replied manually) → re-arm the
+                // follow-up silence timer so an unanswered manual chat still gets
+                // chased. Won't revive a closed (sold/stopped) follow-up.
+                try {
+                    await followUpService.startFollowUp(remoteJid);
+                } catch (_) { }
             }
             return;
         }
@@ -465,6 +471,8 @@ async function processGroupedMessages(remoteJid, debouncer) {
     // === MASTER AI SWITCH CHECK ===
     if (!global.aiEnabled) {
         console.log('🔴 IA apagada — mensaje ignorado');
+        // Even with AI off, the client wrote — start/maintain follow-up so the team can chase them
+        try { await followUpService.startFollowUp(remoteJid); } catch (_) { }
         return;
     }
 
@@ -479,9 +487,11 @@ async function processGroupedMessages(remoteJid, debouncer) {
     // If the welcome flow was just sent, skip AI response entirely.
     if (welcomeWasSent) {
         console.log(`🔔 Welcome flow sent to ${remoteJid} — skipping AI response to avoid duplicate greeting`);
-        // Auto-start follow-up sequence for contacts that received the welcome
+        // Auto-start follow-up sequence for contacts that received the welcome.
+        // Use isManual:true because a welcome flow means the user state was reset
+        // (new sales cycle) — a previous payment_received closure must not block it.
         try {
-            await followUpService.startFollowUp(remoteJid);
+            await followUpService.startFollowUp(remoteJid, { isManual: true });
         } catch (fuErr) {
             console.error(`⚠️ Follow-up auto-start error: ${fuErr.message}`);
         }
@@ -492,6 +502,8 @@ async function processGroupedMessages(remoteJid, debouncer) {
     const userAIEnabled = await welcomeAutomationService.isAIEnabledForUser(remoteJid);
     if (!userAIEnabled) {
         console.log(`🔇 AI disabled for user ${remoteJid} — skipping AI response`);
+        // Client wrote but AI won't reply — keep follow-up active so the lead isn't lost
+        try { await followUpService.startFollowUp(remoteJid); } catch (_) { }
         return;
     }
 
@@ -576,6 +588,8 @@ async function processGroupedMessages(remoteJid, debouncer) {
                     await aiFallbackService.registerPending(remoteJid, '[imageMessage]');
                     try { await aiFallbackService.sendAdminNotification(whatsapp.sock, remoteJid, '[Envió imagen]', msg.pushName); } catch (_) { }
                     try { analyticsService.trackOutgoing(); } catch (_) { }
+                    // Image wasn't a payment — lead is still active, arm follow-up
+                    try { await followUpService.startFollowUp(remoteJid); } catch (_) { }
                 }
             } catch (imgErr) {
                 console.error(`❌ Payment detection failed for ${remoteJid}: ${imgErr.message}`);
@@ -588,6 +602,8 @@ async function processGroupedMessages(remoteJid, debouncer) {
                 await aiFallbackService.registerPending(remoteJid, '[imageMessage]');
                 try { await aiFallbackService.sendAdminNotification(whatsapp.sock, remoteJid, '[Envió imagen]', msg.pushName); } catch (_) { }
                 try { analyticsService.trackOutgoing(); } catch (_) { }
+                // Payment detection failed — lead is still active, arm follow-up
+                try { await followUpService.startFollowUp(remoteJid); } catch (_) { }
             }
             return;
         }
@@ -618,6 +634,8 @@ async function processGroupedMessages(remoteJid, debouncer) {
             console.log(`📢 Admin notified about media from ${remoteJid}`);
         } catch (_) { }
         try { analyticsService.trackOutgoing(); } catch (_) { }
+        // Media-only (video/sticker/doc) — no sale, arm follow-up
+        try { await followUpService.startFollowUp(remoteJid); } catch (_) { }
         return;
     }
 
@@ -797,8 +815,18 @@ async function processGroupedMessages(remoteJid, debouncer) {
         recentConvHistory = conv.messages.slice(-30);
     } catch (_) { }
 
+    // Check if this client is in follow-up (active or paused) to offer discount pricing
+    let isInFollowUp = false;
+    try {
+        const fuState = await followUpService.getState(remoteJid);
+        if (fuState && fuState.status && fuState.status !== 'closed') {
+            isInFollowUp = true;
+            console.log(`🏷️ Client ${remoteJid} is in follow-up — discount pricing active`);
+        }
+    } catch (_) { }
+
     // Generate AI response
-    const response = await aiResponseService.generateResponse(combinedText, recentConvHistory, { promoVideoAlreadySent: promoAlreadySent });
+    const response = await aiResponseService.generateResponse(combinedText, recentConvHistory, { promoVideoAlreadySent: promoAlreadySent, isInFollowUp });
     console.log(`✅ AI response received: "${response}"`);
 
     // === ALL PROVIDERS EXHAUSTED CHECK ===
@@ -811,6 +839,8 @@ async function processGroupedMessages(remoteJid, debouncer) {
             console.log(`📢 Admin notified about provider exhaustion for ${remoteJid}`);
         } catch (_) { }
         try { analyticsService.trackOutgoing(); } catch (_) { }
+        // All providers exhausted — client still unattended, arm follow-up
+        try { await followUpService.startFollowUp(remoteJid); } catch (_) { }
         return;
     }
 
@@ -828,6 +858,8 @@ async function processGroupedMessages(remoteJid, debouncer) {
             console.log(`📢 Admin notified about ${remoteJid}`);
         } catch (_) { }
         try { analyticsService.trackOutgoing(); } catch (_) { }
+        // AI couldn't handle the question — lead is still active, arm follow-up
+        try { await followUpService.startFollowUp(remoteJid); } catch (_) { }
         return;
     }
 
@@ -870,6 +902,17 @@ async function processGroupedMessages(remoteJid, debouncer) {
             { isPostWelcomeFlow: welcomeWasSent, delayMultiplier, enableTypingIndicator }
         );
         try { analyticsService.trackOutgoing(); } catch (_) { }
+
+        // === FOLLOW-UP: arm/re-arm after the bot replies ===
+        // The business just spoke and the client hasn't answered this turn, so
+        // (re)start the "no reply" silence timer from now. This is what makes
+        // EVERY unanswered lead enter follow-up — not only the ones that got the
+        // welcome. Won't revive a follow-up that was closed by a sale.
+        try {
+            await followUpService.startFollowUp(remoteJid);
+        } catch (fuErr) {
+            console.error(`⚠️ Follow-up re-arm error: ${fuErr.message}`);
+        }
 
         // Send the promotional video if tagged
         if (sendPromoVideo) {

@@ -12,6 +12,7 @@ const chatHistoryService = require('../services/chatHistory.service');
 const mediaStorageService = require('../services/mediaStorage.service');
 const whatsapp = require('../core/WhatsApp');
 const welcomeAutomationService = require('../services/welcomeAutomation.service');
+const followUpService = require('../services/followUp.service');
 const sentTracker = require('../utils/sentTracker');
 
 /**
@@ -212,6 +213,10 @@ router.post('/send', async (req, res) => {
         const message = await chatHistoryService.addMessage(jid, text, true, undefined, 'agent');
         sentTracker.markSent(jid);
 
+        // The business just spoke from the dashboard → re-arm the follow-up
+        // silence timer (unless the follow-up was closed by a sale).
+        try { await followUpService.startFollowUp(jid); } catch (_) { }
+
         // Emit Socket.io event for real-time update
         const io = req.app.get('io');
         if (io) {
@@ -298,6 +303,9 @@ router.post('/send-media', upload.single('file'), async (req, res) => {
             mediaType
         });
         sentTracker.markSent(jid);
+
+        // Business spoke from the dashboard (media) → re-arm follow-up timer.
+        try { await followUpService.startFollowUp(jid); } catch (_) { }
 
         // Emit real-time update
         const io = req.app.get('io');

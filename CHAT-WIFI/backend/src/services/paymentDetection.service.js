@@ -1,6 +1,7 @@
 const { downloadMediaMessage } = require('@whiskeysockets/baileys');
 const axios = require('axios');
 const aiProvidersService = require('./aiProviders.service');
+const rekognitionService = require('./rekognition.service');
 
 // Shared prompt for both Groq and Gemini vision analysis
 const VISION_PROMPT = `Analiza esta imagen y determina si es un comprobante de pago, recibo bancario, screenshot de transferencia, comprobante de Nequi, Daviplata, o cualquier prueba de pago.
@@ -27,8 +28,9 @@ MONTO: 0`;
  * to detect payment receipts / bank transfers.
  *
  * Provider priority:
- *   1. Gemini Vision (gemini-2.0-flash) — uses available Gemini API keys
- *   2. Groq Vision (Llama 4 Scout) — uses available Groq API keys (gsk_*)
+ *   1. AWS Rekognition (detectLabels + detectText) — fast OCR-based analysis
+ *   2. Gemini Vision (gemini-2.0-flash) — uses available Gemini API keys
+ *   3. Groq Vision (Llama 4 Scout) — uses available Groq API keys (gsk_*)
  *
  * Rotates through all available keys before giving up.
  */
@@ -57,7 +59,7 @@ class PaymentDetectionService {
 
     /**
      * Analyze an image to determine if it's a payment receipt and extract the amount.
-     * Tries Gemini Vision first, then falls back to Groq Vision.
+     * Tries AWS Rekognition first, then Gemini Vision, then Groq Vision.
      *
      * @param {Buffer} imageBuffer - The raw image data
      * @returns {Promise<{isPayment: boolean, amount: number}>} - Analysis result
@@ -66,7 +68,25 @@ class PaymentDetectionService {
         const base64Image = imageBuffer.toString('base64');
         let lastError = null;
 
-        // --- Attempt 1: Gemini Vision ---
+        // --- Attempt 1: AWS Rekognition (fastest, cheapest, no LLM tokens) ---
+        if (rekognitionService.isAvailable()) {
+            console.log('🔍 Trying AWS Rekognition (priority #1)...');
+            try {
+                const result = await rekognitionService.analyzePaymentReceipt(imageBuffer);
+                // Only trust Rekognition results with medium or high confidence
+                if (result.confidence !== 'low') {
+                    console.log(`✅ [Rekognition] Analysis complete: isPayment=${result.isPayment}, amount=${result.amount}, confidence=${result.confidence}`);
+                    return { isPayment: result.isPayment, amount: result.amount };
+                }
+                // Low confidence — fall through to LLM vision for better analysis
+                console.log('⚠️ [Rekognition] Low confidence result — falling back to LLM Vision...');
+            } catch (error) {
+                lastError = error;
+                console.warn(`⚠️ [Rekognition] Failed: ${error.message}. Falling back to LLM Vision...`);
+            }
+        }
+
+        // --- Attempt 2: Gemini Vision ---
         const geminiKeys = await aiProvidersService.getProvidersByType('gemini');
         if (geminiKeys && geminiKeys.length > 0) {
             console.log(`🔍 Trying Gemini Vision (${geminiKeys.length} keys available)...`);
@@ -90,7 +110,7 @@ class PaymentDetectionService {
             console.log(`⚠️ No Gemini keys available — skipping Gemini Vision`);
         }
 
-        // --- Attempt 2: Groq Vision (fallback) ---
+        // --- Attempt 3: Groq Vision (fallback) ---
         const groqKeys = await aiProvidersService.getProvidersByType('groq');
         if (groqKeys && groqKeys.length > 0) {
             console.log(`🔍 Trying Groq Vision fallback (${groqKeys.length} keys available)...`);
@@ -115,7 +135,7 @@ class PaymentDetectionService {
         }
 
         // All providers exhausted
-        throw lastError || new Error('No API keys available for image analysis (tried Gemini and Groq)');
+        throw lastError || new Error('No API keys available for image analysis (tried Rekognition, Gemini and Groq)');
     }
 
     // ── Gemini Vision ─────────────────────────────────────────────────

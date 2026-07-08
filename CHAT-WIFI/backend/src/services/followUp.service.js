@@ -16,7 +16,7 @@ const DEFAULT_CONFIG = {
             label: 'Seguimiento 2 horas',
             delayMinutes: 120,
             enabled: true,
-            text: '',
+            text: '¡Hola! 👋 Vi que te interesó el curso. No dejes pasar la promo: tienes el combo de 7 mil y el combo de 10 mil (el más completo) 🔥 ¿Con cuál te animas?',
             audioPath: null,
             videoPath: null,
             imagePath: null
@@ -26,7 +26,7 @@ const DEFAULT_CONFIG = {
             label: 'Seguimiento 4 horas',
             delayMinutes: 240,
             enabled: true,
-            text: '',
+            text: 'Sigo aquí para ayudarte 🙌 Recuerda que por hoy mantienes la promo: combo de 7 mil o el de 10 mil con todo incluido. Es una inversión que se paga sola. ¿Te reservo tu cupo?',
             audioPath: null,
             videoPath: null,
             imagePath: null
@@ -36,7 +36,7 @@ const DEFAULT_CONFIG = {
             label: 'Seguimiento 2 días',
             delayMinutes: 2880,
             enabled: true,
-            text: '',
+            text: 'No quiero que pierdas esta oportunidad 😊 La promo de 7 mil y 10 mil sigue disponible por poco tiempo. Muchos ya empezaron su curso. ¿Aseguramos el tuyo hoy?',
             audioPath: null,
             videoPath: null,
             imagePath: null
@@ -46,7 +46,7 @@ const DEFAULT_CONFIG = {
             label: 'Seguimiento 4 días',
             delayMinutes: 5760,
             enabled: true,
-            text: '',
+            text: 'Última llamada 🚀 La promo de 7 mil / 10 mil está por cerrarse. Si te animas ahora aseguras el precio especial y el acceso completo. Escríbeme y lo dejamos listo 💪',
             audioPath: null,
             videoPath: null,
             imagePath: null
@@ -185,6 +185,19 @@ class FollowUpService {
     }
 
     // ── Follow-up state management ────────────────────────────────────────
+    //
+    // State model (per JID):
+    //   status: 'active' | 'paused' | 'closed'
+    //     - active : the business spoke last, the silence timer is running
+    //     - paused : the client replied; will re-arm on the next outbound
+    //     - closed : terminal (sale won or operator stopped it manually)
+    //   anchorAt        : reference time for the CURRENT step's delay
+    //                     (reset to "now" every time the business sends a message)
+    //   currentStepIndex: which enabled step fires next
+    //   history[]       : audit trail of steps actually sent
+    //
+    // Legacy fields (completed/cancelled) are still written for backward
+    // compatibility with older data, but the logic is driven by `status`.
 
     async _readStates() {
         return fs.readJson(STATES_PATH);
@@ -192,6 +205,21 @@ class FollowUpService {
 
     async _writeStates(states) {
         await fs.writeJson(STATES_PATH, states, { spaces: 2 });
+    }
+
+    /**
+     * Serialize every read-modify-write on the states file so the scheduler and
+     * the message handlers can't clobber each other (a lost cancellation would
+     * mean sending a follow-up to someone who already replied).
+     */
+    async _mutate(fn) {
+        this._writeChain = (this._writeChain || Promise.resolve()).then(async () => {
+            const states = await this._readStates();
+            const result = await fn(states);
+            await this._writeStates(states);
+            return result;
+        });
+        return this._writeChain;
     }
 
     async getState(jid) {
@@ -203,78 +231,157 @@ class FollowUpService {
         return this._readStates();
     }
 
+    /**
+     * States the dashboard shows as "in follow-up": active + paused.
+     * Closed ones are excluded here (audit them via getAllStates / the API).
+     */
     async getActiveStates() {
         const states = await this._readStates();
         return Object.entries(states)
-            .filter(([, s]) => !s.completed && !s.cancelled)
+            .filter(([, s]) => (s.status ? s.status !== 'closed' : (!s.completed && !s.cancelled)))
             .map(([jid, s]) => ({
                 jid,
                 displayName: jid.replace('@s.whatsapp.net', ''),
+                status: s.status || 'active',
                 ...s
             }))
-            .sort((a, b) => new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime());
+            .sort((a, b) => new Date(b.startedAt || 0).getTime() - new Date(a.startedAt || 0).getTime());
     }
 
     /**
-     * Start a follow-up sequence for a lead.
+     * Arm (or re-arm) the follow-up silence timer for a lead.
+     *
+     * Called every time the BUSINESS sends a message (welcome, AI reply, agent
+     * manual reply, dashboard send). Resets the clock to now and restarts the
+     * sequence from the first step — the lead just heard from us, so the whole
+     * "no reply" countdown begins again. Refuses only when the follow-up was
+     * permanently closed (sale won or stopped manually).
+     *
      * @param {string} jid - WhatsApp JID
      */
-    async startFollowUp(jid) {
+    async startFollowUp(jid, opts = {}) {
         const config = await this.getConfig();
-        if (!config.globalEnabled) {
-            console.log(`📋 Follow-up not started for ${jid}: globally disabled`);
-            return false;
-        }
+        const isManual = opts.isManual || false;
+        const forceImmediate = opts.forceImmediate || false;
 
-        const states = await this._readStates();
+        if (!config.globalEnabled && !isManual) return false;
+        if (!jid || jid.includes('@g.us')) return false;
 
-        // Don't restart if already active
-        if (states[jid] && !states[jid].completed && !states[jid].cancelled) {
-            console.log(`📋 Follow-up already active for ${jid}`);
-            return false;
-        }
+        return this._mutate((states) => {
+            const prev = states[jid];
 
-        states[jid] = {
-            startedAt: new Date().toISOString(),
-            currentStepIndex: 0,
-            lastStepSentAt: null,
-            completed: false,
-            cancelled: false,
-            cancelReason: null
-        };
-        await this._writeStates(states);
-        console.log(`📋 Follow-up started for ${jid}`);
-        return true;
+            // Never revive a follow-up that was closed by a sale or a manual stop, unless manually forced.
+            if (prev && prev.status === 'closed' && !isManual) {
+                return false;
+            }
+
+            const now = new Date().toISOString();
+            let anchorAt = now;
+            if (forceImmediate) {
+                // Backdate anchorAt so the first step triggers immediately
+                const enabledSteps = config.steps.filter(s => s.enabled);
+                if (enabledSteps.length > 0) {
+                    const delayMs = enabledSteps[0].delayMinutes * 60000;
+                    anchorAt = new Date(Date.now() - delayMs).toISOString();
+                }
+            }
+
+            states[jid] = {
+                startedAt: prev?.startedAt || now, // first time we ever engaged this lead
+                anchorAt: anchorAt,                // clock for the next step
+                currentStepIndex: 0,               // restart the sequence from step 1
+                lastStepSentAt: null,
+                status: 'active',
+                pauseReason: null,
+                closedReason: null,
+                history: prev?.history || [],
+                // legacy compatibility
+                completed: false,
+                cancelled: false,
+                cancelReason: null,
+                updatedAt: now
+            };
+            const verb = prev ? 're-armed' : 'started';
+            console.log(`📋 Follow-up ${verb} for ${jid}`);
+
+            if (forceImmediate) {
+                // Trigger the queue processing immediately so the user doesn't have to wait up to 60s
+                setTimeout(() => this._processQueue(), 500);
+            }
+
+            return true;
+        });
     }
 
     /**
-     * Cancel a follow-up sequence.
-     * @param {string} jid - WhatsApp JID
-     * @param {string} reason - Reason for cancellation
+     * Pause a follow-up (temporary). It will re-arm on the next outbound message.
+     * Used when the client replies.
+     */
+    async pauseFollowUp(jid, reason = 'client_replied') {
+        return this._mutate((states) => {
+            const s = states[jid];
+            if (!s || s.status === 'closed' || s.status === 'paused') return false;
+            s.status = 'paused';
+            s.pauseReason = reason;
+            s.pausedAt = new Date().toISOString();
+            s.updatedAt = s.pausedAt;
+            console.log(`⏸️ Follow-up paused for ${jid}: ${reason}`);
+            return true;
+        });
+    }
+
+    /**
+     * Close a follow-up permanently. Used when the sale is won ('sale') or the
+     * operator stops it from the dashboard ('manual'). A closed follow-up is
+     * never re-armed by subsequent outbound messages.
+     */
+    async closeFollowUp(jid, reason = 'manual') {
+        return this._mutate((states) => {
+            const s = states[jid];
+            if (!s) {
+                // Record the closure anyway so a later outbound can't start it.
+                states[jid] = {
+                    startedAt: new Date().toISOString(),
+                    status: 'closed',
+                    closedReason: reason,
+                    closedAt: new Date().toISOString(),
+                    currentStepIndex: 0,
+                    history: [],
+                    completed: false,
+                    cancelled: true,
+                    cancelReason: reason
+                };
+                console.log(`🚫 Follow-up closed for ${jid}: ${reason}`);
+                return true;
+            }
+            s.status = 'closed';
+            s.closedReason = reason;
+            s.closedAt = new Date().toISOString();
+            s.updatedAt = s.closedAt;
+            // legacy
+            s.cancelled = true;
+            s.cancelReason = reason;
+            console.log(`🚫 Follow-up closed for ${jid}: ${reason}`);
+            return true;
+        });
+    }
+
+    /**
+     * Back-compat alias. Older callers (dashboard "Cancel", payment flow) used
+     * cancelFollowUp. Manual/sale cancellations are permanent closures.
      */
     async cancelFollowUp(jid, reason = 'manual') {
-        const states = await this._readStates();
-        if (!states[jid]) return false;
-
-        states[jid].cancelled = true;
-        states[jid].cancelReason = reason;
-        states[jid].cancelledAt = new Date().toISOString();
-        await this._writeStates(states);
-        console.log(`🚫 Follow-up cancelled for ${jid}: ${reason}`);
-        return true;
+        return this.closeFollowUp(jid, reason);
     }
 
     /**
-     * Cancel follow-up if client replies (called from app.js message handler).
+     * Pause the follow-up when the client replies (called from app.js).
+     * Temporary: the next business message re-arms it via startFollowUp.
      */
     async cancelIfClientReplied(jid) {
         const config = await this.getConfig();
         if (!config.stopOnReply) return false;
-
-        const state = await this.getState(jid);
-        if (!state || state.completed || state.cancelled) return false;
-
-        return this.cancelFollowUp(jid, 'client_replied');
+        return this.pauseFollowUp(jid, 'client_replied');
     }
 
     // ── Scheduler ─────────────────────────────────────────────────────────
@@ -325,7 +432,6 @@ class FollowUpService {
     async _processQueue() {
         try {
             const config = await this.getConfig();
-            if (!config.globalEnabled) return;
             if (!this._sock) return;
 
             const enabledSteps = config.steps.filter(s => s.enabled);
@@ -333,56 +439,109 @@ class FollowUpService {
 
             const states = await this._readStates();
             const now = Date.now();
-            let statesChanged = false;
 
+            // Snapshot: decide which JIDs are due WITHOUT mutating shared state
+            // here. All state changes happen inside _mutate() so we never race
+            // with startFollowUp / pauseFollowUp / closeFollowUp.
+            const dueJids = [];
             for (const [jid, state] of Object.entries(states)) {
-                if (state.completed || state.cancelled) continue;
+                const status = state.status || (state.cancelled || state.completed ? 'closed' : 'active');
+                if (status !== 'active') continue;
 
-                // Determine which step to send next
-                const stepIdx = state.currentStepIndex;
-                if (stepIdx >= enabledSteps.length) {
-                    // All steps completed
-                    state.completed = true;
-                    state.completedAt = new Date().toISOString();
-                    statesChanged = true;
-                    console.log(`✅ Follow-up completed for ${jid}`);
-                    continue;
-                }
+                const stepIdx = state.currentStepIndex || 0;
+                if (stepIdx >= enabledSteps.length) continue; // sequence exhausted
 
                 const step = enabledSteps[stepIdx];
-
-                // Calculate when this step should fire
                 const referenceTime = state.lastStepSentAt
                     ? new Date(state.lastStepSentAt).getTime()
-                    : new Date(state.startedAt).getTime();
-
+                    : new Date(state.anchorAt || state.startedAt).getTime();
                 const targetTime = referenceTime + (step.delayMinutes * 60000);
 
-                if (now >= targetTime) {
-                    // Time to send this step
-                    try {
-                        await this._sendStep(jid, step);
-                        state.lastStepSentAt = new Date().toISOString();
-                        state.currentStepIndex = stepIdx + 1;
-                        statesChanged = true;
-
-                        // Check if this was the last step
-                        if (state.currentStepIndex >= enabledSteps.length) {
-                            state.completed = true;
-                            state.completedAt = new Date().toISOString();
-                            console.log(`✅ Follow-up completed for ${jid}`);
-                        }
-                    } catch (err) {
-                        console.error(`❌ Follow-up step failed for ${jid}: ${err.message}`);
-                    }
-                }
+                if (now >= targetTime) dueJids.push(jid);
             }
 
-            if (statesChanged) {
-                await this._writeStates(states);
+            if (dueJids.length === 0) return;
+
+            for (const jid of dueJids) {
+                // Re-read fresh state under the lock, re-validate, send, then commit.
+                // The safety re-check (client replied / status changed) closes the
+                // window between "decided due" and "actually sending".
+                const step = await this._mutate(async (s) => {
+                    const state = s[jid];
+                    if (!state || (state.status || 'active') !== 'active') return null;
+                    const stepIdx = state.currentStepIndex || 0;
+                    if (stepIdx >= enabledSteps.length) return null;
+
+                    // Guard: if the client sent something AFTER our last outbound,
+                    // they replied — pause instead of sending. Belt-and-suspenders
+                    // on top of cancelIfClientReplied.
+                    if (await this._clientRepliedSince(jid, state)) {
+                        state.status = 'paused';
+                        state.pauseReason = 'client_replied';
+                        state.pausedAt = new Date().toISOString();
+                        console.log(`⏸️ Follow-up paused for ${jid}: client replied (pre-send check)`);
+                        return null;
+                    }
+                    return enabledSteps[stepIdx];
+                });
+
+                if (!step) continue;
+
+                let sendOk = true;
+                try {
+                    await this._sendStep(jid, step);
+                } catch (err) {
+                    sendOk = false;
+                    console.error(`❌ Follow-up step failed for ${jid}: ${err.message}`);
+                }
+
+                await this._mutate((s) => {
+                    const state = s[jid];
+                    if (!state) return;
+                    const nowIso = new Date().toISOString();
+                    if (sendOk) {
+                        state.history = state.history || [];
+                        state.history.push({ stepId: step.id, label: step.label, sentAt: nowIso, ok: true });
+                        state.lastStepSentAt = nowIso;
+                        state.currentStepIndex = (state.currentStepIndex || 0) + 1;
+                        state.updatedAt = nowIso;
+                        if (state.currentStepIndex >= enabledSteps.length) {
+                            // Sequence exhausted — mark done but keep it re-armable
+                            // by a future outbound (status stays non-closed).
+                            state.completed = true;
+                            state.completedAt = nowIso;
+                            console.log(`✅ Follow-up sequence exhausted for ${jid}`);
+                        }
+                    } else {
+                        // Failed send: record it but DON'T advance the index, so the
+                        // next tick retries the same step.
+                        state.history = state.history || [];
+                        state.history.push({ stepId: step.id, label: step.label, sentAt: nowIso, ok: false });
+                        state.updatedAt = nowIso;
+                    }
+                });
             }
         } catch (err) {
             console.error(`❌ Follow-up scheduler error: ${err.message}`);
+        }
+    }
+
+    /**
+     * Returns true if the lead has an incoming message more recent than the last
+     * outbound follow-up anchor — i.e. they replied and we shouldn't keep sending.
+     * Uses chat history when available; falls back to false (don't block) if not.
+     */
+    async _clientRepliedSince(jid, state) {
+        try {
+            if (!this._chatHistoryService || typeof this._chatHistoryService.getMessages !== 'function') {
+                return false;
+            }
+            const conv = await this._chatHistoryService.getMessages(jid);
+            if (!conv || !Array.isArray(conv.messages)) return false;
+            const anchor = new Date(state.lastStepSentAt || state.anchorAt || state.startedAt || 0).getTime();
+            return conv.messages.some(m => !m.fromMe && new Date(m.timestamp).getTime() > anchor);
+        } catch (_) {
+            return false;
         }
     }
 

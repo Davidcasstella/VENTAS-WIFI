@@ -316,24 +316,42 @@ const FollowUpPage = ({ setDashboardTab }) => {
                     </div>
                 ) : (
                     <div className="fu-active-list">
-                        {activeStates.map(state => (
+                        {activeStates.map(state => {
+                            const isPaused = state.status === 'paused';
+                            return (
                             <div key={state.jid} className="fu-active-item">
                                 <div className="fu-active-info">
-                                    <span className="fu-active-name">{state.displayName}</span>
+                                    <span className="fu-active-name">
+                                        {state.displayName}
+                                        <span
+                                            className="fu-status-tag"
+                                            style={{
+                                                marginLeft: 8,
+                                                fontSize: 11,
+                                                padding: '2px 8px',
+                                                borderRadius: 10,
+                                                background: isPaused ? '#3a2f10' : '#0f2f1a',
+                                                color: isPaused ? '#f0c040' : '#40d080'
+                                            }}
+                                        >
+                                            {isPaused ? 'Pausado (respondió)' : 'Activo'}
+                                        </span>
+                                    </span>
                                     <span className="fu-active-meta">
-                                        Paso {state.currentStepIndex + 1} · Iniciado {formatDate(state.startedAt)}
+                                        Paso {(state.currentStepIndex || 0) + 1} · Última actividad {formatDate(state.updatedAt || state.anchorAt || state.startedAt)}
                                     </span>
                                 </div>
                                 <button
                                     className="fu-cancel-btn"
                                     onClick={() => cancelFollowUp(state.jid)}
-                                    title="Cancelar seguimiento"
+                                    title="Detener seguimiento definitivamente"
                                 >
                                     <X size={14} />
-                                    Cancelar
+                                    Detener
                                 </button>
                             </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
             </div>

@@ -35,6 +35,10 @@ const ChatWindow = ({ jid, pushName, messages, loading, onSend, onBack }) => {
     // Lightbox state
     const [lightboxSrc, setLightboxSrc] = useState(null);
 
+    // Follow-up timer state
+    const [followUpData, setFollowUpData] = useState(null);
+    const [timeLeftStr, setTimeLeftStr] = useState('');
+
     // Load user state when JID changes
     useEffect(() => {
         if (!jid) return;
@@ -66,6 +70,70 @@ const ChatWindow = ({ jid, pushName, messages, loading, onSend, onBack }) => {
         };
         fetchPic();
     }, [jid]);
+
+    // Load follow-up state for timer
+    useEffect(() => {
+        if (!jid) return;
+        const loadFollowUpData = async () => {
+            try {
+                const [configRes, statesRes] = await Promise.all([
+                    api.get('/api/follow-up/config'),
+                    api.get('/api/follow-up/states')
+                ]);
+                const config = configRes.data.config;
+                const state = statesRes.data.states?.find(s => s.jid === jid);
+
+                if (config && state && state.status === 'active' && config.globalEnabled) {
+                    const enabledSteps = config.steps.filter(s => s.enabled);
+                    const stepIdx = state.currentStepIndex || 0;
+                    if (stepIdx < enabledSteps.length) {
+                        const step = enabledSteps[stepIdx];
+                        const referenceTime = state.lastStepSentAt
+                            ? new Date(state.lastStepSentAt).getTime()
+                            : new Date(state.anchorAt || state.startedAt).getTime();
+                        const targetTime = referenceTime + (step.delayMinutes * 60000);
+                        setFollowUpData({ targetTime });
+                    } else {
+                        setFollowUpData(null);
+                    }
+                } else {
+                    setFollowUpData(null);
+                }
+            } catch (err) {
+                console.error('Error loading follow-up data:', err);
+            }
+        };
+        loadFollowUpData();
+    }, [jid]);
+
+    // Timer updater
+    useEffect(() => {
+        if (!followUpData) {
+            setTimeLeftStr('');
+            return;
+        }
+        const updateTimer = () => {
+            const now = Date.now();
+            const diff = followUpData.targetTime - now;
+            if (diff <= 0) {
+                setTimeLeftStr('Enviando ahora...');
+            } else {
+                const minutes = Math.floor(diff / 60000);
+                const hours = Math.floor(minutes / 60);
+                const days = Math.floor(hours / 24);
+                if (days > 0) {
+                    setTimeLeftStr(`Próximo msg en ${days}d ${hours % 24}h`);
+                } else if (hours > 0) {
+                    setTimeLeftStr(`Próximo msg en ${hours}h ${minutes % 60}m`);
+                } else {
+                    setTimeLeftStr(`Próximo msg en ${minutes}m`);
+                }
+            }
+        };
+        updateTimer();
+        const interval = setInterval(updateTimer, 60000); // update every minute
+        return () => clearInterval(interval);
+    }, [followUpData]);
 
     // Scroll helper — scrolls the messages container to the very bottom
     const scrollToBottom = useCallback(() => {
@@ -446,7 +514,14 @@ const ChatWindow = ({ jid, pushName, messages, loading, onSend, onBack }) => {
                 </div>
                 <div className="chat-header-info">
                     <span className="chat-header-name">{pushName}</span>
-                    <span className="chat-header-number">{displaySubtitle}</span>
+                    <span className="chat-header-number">
+                        {displaySubtitle}
+                        {timeLeftStr && (
+                            <span style={{ color: '#40d080', fontSize: '0.85em', marginLeft: '6px', fontWeight: '500' }}>
+                                • ⏱️ {timeLeftStr}
+                            </span>
+                        )}
+                    </span>
                 </div>
 
                 {/* User control buttons */}

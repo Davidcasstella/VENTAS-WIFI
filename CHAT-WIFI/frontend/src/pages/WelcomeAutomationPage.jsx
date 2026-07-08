@@ -38,6 +38,7 @@ const WelcomeAutomationPage = () => {
     const [messageDelays, setMessageDelays] = useState([]);
     const [responseDelay, setResponseDelay] = useState(1.0);
     const [greetingByTimeEnabled, setGreetingByTimeEnabled] = useState(false);
+    const [greetingByTimeMessageIndex, setGreetingByTimeMessageIndex] = useState(3);
     const [postVideoMessage, setPostVideoMessage] = useState('');
     const [postVideoDelays, setPostVideoDelays] = useState([]);
 
@@ -89,6 +90,7 @@ const WelcomeAutomationPage = () => {
             setMessageDelays(Array.isArray(cfg.messageDelays) ? cfg.messageDelays : []);
             setResponseDelay(cfg.responseDelay ?? 1.0);
             setGreetingByTimeEnabled(cfg.greetingByTimeEnabled || false);
+            setGreetingByTimeMessageIndex(cfg.greetingByTimeMessageIndex || 3);
             setPostVideoMessage(cfg.postVideoMessage || 'si tienes alguna duda me preguntas bro');
             setPostVideoDelays(Array.isArray(cfg.postVideoDelays) ? cfg.postVideoDelays : []);
             setStats(statsRes.data.data);
@@ -125,6 +127,7 @@ const WelcomeAutomationPage = () => {
                 messageDelays,
                 responseDelay,
                 greetingByTimeEnabled,
+                greetingByTimeMessageIndex,
                 postVideoMessage,
                 postVideoDelays
             });
@@ -157,6 +160,7 @@ const WelcomeAutomationPage = () => {
             setMessageDelays([]);
             setResponseDelay(1.0);
             setGreetingByTimeEnabled(false);
+            setGreetingByTimeMessageIndex(3);
             setPostVideoMessage('si tienes alguna duda me preguntas bro');
             setPostVideoDelays([]);
             showToast('success', 'Configuración reseteada a valores por defecto');
@@ -607,7 +611,7 @@ const WelcomeAutomationPage = () => {
                         <div className="premium-card wa-card">
                             <div className="wa-card-header">
                                 <Clock size={20} style={{ color: greetingByTimeEnabled ? '#00ff41' : '#666' }} />
-                                <span className="wa-card-title">Saludo por hora (Mensaje 3)</span>
+                                <span className="wa-card-title">Saludo por hora (Mensaje {greetingByTimeMessageIndex})</span>
                                 <label className="wa-toggle-switch" style={{ marginLeft: 'auto' }}>
                                     <input
                                         type="checkbox"
@@ -618,34 +622,71 @@ const WelcomeAutomationPage = () => {
                                 </label>
                             </div>
                             <p className="wa-card-desc">
-                                Cuando está activo, el <strong>tercer mensaje</strong> de bienvenida se reemplaza automáticamente con un saludo según la hora actual en Colombia.
+                                Cuando está activo, el <strong>mensaje #{greetingByTimeMessageIndex}</strong> de bienvenida se reemplaza automáticamente con un saludo según la hora actual en Colombia.
                             </p>
                             {greetingByTimeEnabled && (
-                                <div className="wa-greeting-preview">
-                                    <div className="wa-greeting-times">
-                                        <div className="wa-greeting-time-item">
-                                            <span className="wa-greeting-icon">🌅</span>
-                                            <span>5:00 – 11:59</span>
-                                            <span className="wa-greeting-text">Buenos días</span>
+                                <>
+                                    {/* Message index selector */}
+                                    <div style={{
+                                        display: 'flex', alignItems: 'center', gap: '0.75rem',
+                                        padding: '0.75rem 1rem', marginBottom: '0.75rem',
+                                        background: 'rgba(0,255,0,0.04)',
+                                        border: '1px solid rgba(0,255,0,0.12)',
+                                        borderRadius: '10px',
+                                    }}>
+                                        <span style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)', whiteSpace: 'nowrap' }}>
+                                            Aplicar en mensaje #
+                                        </span>
+                                        <select
+                                            value={greetingByTimeMessageIndex}
+                                            onChange={e => setGreetingByTimeMessageIndex(Number(e.target.value))}
+                                            style={{
+                                                background: 'rgba(0,0,0,0.4)',
+                                                border: '1px solid rgba(0,255,0,0.3)',
+                                                borderRadius: '8px',
+                                                color: '#00ff00',
+                                                padding: '0.4rem 0.7rem',
+                                                fontSize: '0.9rem',
+                                                fontWeight: 700,
+                                                cursor: 'pointer',
+                                                outline: 'none',
+                                            }}
+                                        >
+                                            {Array.from({ length: Math.max(messageText.split('---MSG---').filter(p => p.trim()).length, 1) }, (_, i) => (
+                                                <option key={i + 1} value={i + 1}>Mensaje {i + 1}</option>
+                                            ))}
+                                        </select>
+                                        <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.35)' }}>
+                                            de {Math.max(messageText.split('---MSG---').filter(p => p.trim()).length, 1)} mensajes
+                                        </span>
+                                    </div>
+
+                                    <div className="wa-greeting-preview">
+                                        <div className="wa-greeting-times">
+                                            <div className="wa-greeting-time-item">
+                                                <span className="wa-greeting-icon">🌅</span>
+                                                <span>5:00 – 11:59</span>
+                                                <span className="wa-greeting-text">Buenos días</span>
+                                            </div>
+                                            <div className="wa-greeting-time-item">
+                                                <span className="wa-greeting-icon">☀️</span>
+                                                <span>12:00 – 17:59</span>
+                                                <span className="wa-greeting-text">Buenas tardes</span>
+                                            </div>
+                                            <div className="wa-greeting-time-item">
+                                                <span className="wa-greeting-icon">🌙</span>
+                                                <span>18:00 – 4:59</span>
+                                                <span className="wa-greeting-text">Buenas noches</span>
+                                            </div>
                                         </div>
-                                        <div className="wa-greeting-time-item">
-                                            <span className="wa-greeting-icon">☀️</span>
-                                            <span>12:00 – 17:59</span>
-                                            <span className="wa-greeting-text">Buenas tardes</span>
-                                        </div>
-                                        <div className="wa-greeting-time-item">
-                                            <span className="wa-greeting-icon">🌙</span>
-                                            <span>18:00 – 4:59</span>
-                                            <span className="wa-greeting-text">Buenas noches</span>
+                                        <div className="wa-greeting-current">
+                                            Ahora en Colombia → <strong>{(() => {
+                                                const h = parseInt(new Intl.DateTimeFormat('es-CO', { timeZone: 'America/Bogota', hour: 'numeric', hour12: false }).format(new Date()));
+                                                return h >= 5 && h < 12 ? '🌅 Buenos días' : h >= 12 && h < 18 ? '☀️ Buenas tardes' : '🌙 Buenas noches';
+                                            })()}</strong>
                                         </div>
                                     </div>
-                                    <div className="wa-greeting-current">
-                                        Ahora en Colombia → <strong>{(() => {
-                                            const h = parseInt(new Intl.DateTimeFormat('es-CO', { timeZone: 'America/Bogota', hour: 'numeric', hour12: false }).format(new Date()));
-                                            return h >= 5 && h < 12 ? '🌅 Buenos días' : h >= 12 && h < 18 ? '☀️ Buenas tardes' : '🌙 Buenas noches';
-                                        })()}</strong>
-                                    </div>
-                                </div>
+                                </>
                             )}
                         </div>
 

@@ -1,1 +1,23 @@
-{}
+{
+  "573028599105@s.whatsapp.net": {
+    "startedAt": "2026-07-08T07:05:29.813Z",
+    "anchorAt": "2026-07-08T07:26:47.942Z",
+    "currentStepIndex": 0,
+    "lastStepSentAt": null,
+    "status": "active",
+    "pauseReason": null,
+    "closedReason": null,
+    "history": [
+      {
+        "stepId": "step_1",
+        "label": "Seguimiento 2 horas",
+        "sentAt": "2026-07-08T07:07:03.484Z",
+        "ok": true
+      }
+    ],
+    "completed": false,
+    "cancelled": false,
+    "cancelReason": null,
+    "updatedAt": "2026-07-08T07:26:47.942Z"
+  }
+}

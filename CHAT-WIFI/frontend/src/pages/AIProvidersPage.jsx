@@ -41,12 +41,6 @@ const AIProvidersPage = () => {
 
             {error && <div className="error-banner">{error}</div>}
 
-            <KeyRotationStatus />
-
-            <AIProviderDragDrop />
-
-            <UsageLogs />
-
             {showForm && (
                 <div className="provider-form-container premium-card animate-fade-in">
                     <form onSubmit={handleSubmit} className="provider-form">
@@ -84,6 +78,12 @@ const AIProvidersPage = () => {
                     </div>
                 </div>
             )}
+
+            <KeyRotationStatus />
+
+            <AIProviderDragDrop />
+
+            <UsageLogs />
 
             <div className="providers-grid">
                 {loading && providers.length === 0 ? (

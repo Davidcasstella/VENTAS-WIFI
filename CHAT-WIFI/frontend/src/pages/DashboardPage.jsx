@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import ChatInterface from '../features/chat/components/ChatInterface';
 import PendingAlertsPanel from '../components/ui/PendingAlertsPanel';
 import FollowUpPage from './FollowUpPage';
-import { MessageSquare, AlertTriangle, Clock } from 'lucide-react';
+import AIRulesPage from './AIRulesPage';
+import { MessageSquare, AlertTriangle, Clock, ScrollText } from 'lucide-react';
 import '../styles/cyber-neon.css';
 
 const DashboardPage = () => {
@@ -32,12 +33,28 @@ const DashboardPage = () => {
                     <AlertTriangle size={18} />
                     <span>Alertas Pendientes</span>
                 </button>
+                <button
+                    className={`dashboard-tab-btn ${dashboardTab === 'ai-rules' ? 'active' : ''}`}
+                    onClick={() => setDashboardTab('ai-rules')}
+                >
+                    <ScrollText size={18} />
+                    <span>Reglas IA</span>
+                </button>
             </div>
 
             <div className="dashboard-tab-content">
-                {dashboardTab === 'users' && <ChatInterface setDashboardTab={setDashboardTab} />}
-                {dashboardTab === 'followup' && <FollowUpPage setDashboardTab={setDashboardTab} />}
-                {dashboardTab === 'alerts' && <PendingAlertsPanel className="card-warn" setDashboardTab={setDashboardTab} />}
+                <div style={{ display: dashboardTab === 'users' ? 'flex' : 'none', flex: 1, minHeight: 0, flexDirection: 'column' }}>
+                    <ChatInterface setDashboardTab={setDashboardTab} />
+                </div>
+                <div style={{ display: dashboardTab === 'followup' ? 'flex' : 'none', flex: 1, minHeight: 0, flexDirection: 'column' }}>
+                    <FollowUpPage setDashboardTab={setDashboardTab} />
+                </div>
+                <div style={{ display: dashboardTab === 'alerts' ? 'flex' : 'none', flex: 1, minHeight: 0, flexDirection: 'column' }}>
+                    <PendingAlertsPanel className="card-warn" setDashboardTab={setDashboardTab} />
+                </div>
+                <div style={{ display: dashboardTab === 'ai-rules' ? 'flex' : 'none', flex: 1, minHeight: 0, flexDirection: 'column', overflowY: 'auto' }}>
+                    <AIRulesPage />
+                </div>
             </div>
         </div>
     );

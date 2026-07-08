@@ -17,7 +17,8 @@ const DEFAULT_CONFIG = {
     imageEnabled: false,   // toggle image sending independently
     messageDelays: [],     // per-message delays in seconds (delay BEFORE message i+1)
     responseDelay: 1.0,    // multiplier for AI response speed (0.5 = fast, 1.0 = normal, 3.0 = slow)
-    greetingByTimeEnabled: false, // replace 3rd message with time-based greeting (Colombia TZ)
+    greetingByTimeEnabled: false, // replace Nth message with time-based greeting (Colombia TZ)
+    greetingByTimeMessageIndex: 3, // 1-based: which message to replace (default: 3rd message)
     postVideoMessage: 'si tienes alguna duda me preguntas bro', // message sent after promo video
     postVideoDelays: [],   // per-message delays in seconds for post-video messages
     cooldownHours: 24,
@@ -342,10 +343,13 @@ class WelcomeAutomationService {
             const delays = Array.isArray(config.messageDelays) ? config.messageDelays : [];
             const messageParts = config.messageText.split('---MSG---').map(p => p.trim()).filter(p => p.length > 0);
 
-            // If greeting-by-time is enabled, replace the 3rd message (index 2) with a time-based greeting
-            if (config.greetingByTimeEnabled && messageParts.length >= 3) {
-                messageParts[2] = this._getColombiaGreeting();
-                console.log(`🕐 Greeting by time enabled — message 3 replaced with: "${messageParts[2]}"`);
+            // If greeting-by-time is enabled, replace the Nth message with a time-based greeting
+            if (config.greetingByTimeEnabled) {
+                const msgIndex = Math.max(0, (config.greetingByTimeMessageIndex || 3) - 1); // convert 1-based to 0-based
+                if (messageParts.length > msgIndex) {
+                    messageParts[msgIndex] = this._getColombiaGreeting();
+                    console.log(`🕐 Greeting by time enabled — message ${msgIndex + 1} replaced with: "${messageParts[msgIndex]}"`);
+                }
             }
 
             for (let i = 0; i < messageParts.length; i++) {

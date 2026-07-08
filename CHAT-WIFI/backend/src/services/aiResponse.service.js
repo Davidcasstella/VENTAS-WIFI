@@ -50,6 +50,14 @@ class AIResponseService {
             return 'FALLBACK_TRIGGER';
         }
 
+        if (options.isInFollowUp) {
+            // Modify the context dynamically so the AI doesn't see the normal prices
+            // and get confused when applying the follow-up discount.
+            kbContext = kbContext
+                .replace(/\$10\.000/g, '$7.000')
+                .replace(/\$15\.000/g, '$10.000');
+        }
+
         console.log('📚 RAG context found, applying sales-oriented prompt...');
 
         // Build conversation history string so the AI knows what was said before
@@ -100,8 +108,17 @@ REGLA DE HACKEAR CELULARES / ESPIAR:
 FLUJO DE VENTA:
 1. SALUDO: Presentar brevemente los cursos y preguntar cuál le interesa.
 2. OPCIONES (solo si pregunta o es la primera vez):
-🔹 Combo de 10 ($10.000) — 15 cursos: fundamentos, redes, vulnerabilidades y herramientas básicas
-🔹 Combo de 15 ($15.000) — 31 cursos: todo lo del básico + seguridad avanzada + análisis de vulnerabilidades + protección de datos
+${options.isInFollowUp ? `⚡ OFERTA ESPECIAL DE SEGUIMIENTO (PRIORIDAD MÁXIMA):
+- Este cliente recibió un mensaje de seguimiento. DEBES ofrecer los PRECIOS CON DESCUENTO:
+🔹 Combo de 7 ($7.000) — 15 cursos: fundamentos, redes, vulnerabilidades y herramientas básicas (precio normal: $10.000)
+🔹 Combo de 10 ($10.000) — 31 cursos: todo lo del básico + seguridad avanzada + análisis de vulnerabilidades + protección de datos (precio normal: $15.000)
+- SIEMPRE menciona que es una oferta especial / precio especial / promo.
+- Llama al Básico como "combo de 7" o "el de 7".
+- Llama al FULL como "combo de 10" o "el de 10".
+- NUNCA menciones los precios normales ($10.000 / $15.000). Solo los precios de oferta.
+- Si el cliente pregunta "que trae el de 7" se refiere al combo básico (15 cursos) a precio de oferta.
+- Si el cliente pregunta "que trae el de 10" se refiere al combo FULL (31 cursos) a precio de oferta.` : `🔹 Combo de 10 ($10.000) — 15 cursos: fundamentos, redes, vulnerabilidades y herramientas básicas
+🔹 Combo de 15 ($15.000) — 31 cursos: todo lo del básico + seguridad avanzada + análisis de vulnerabilidades + protección de datos`}
 3. CUANDO PIDE DATOS DE PAGO SIN ELEGIR CURSO: Primero pregunta cuál quiere (combo de 10 o combo de 15), LUEGO envía los datos.
 4. CUANDO ELIGE: Confirmar su elección, preguntar "tienes Nequi o Daviplata?" y enviar datos de pago DE INMEDIATO. NO insistir en la otra opción.
 5. DATOS DE PAGO (enviar EXACTAMENTE así en una parte separada con |||):
@@ -144,21 +161,35 @@ REGLA DE INFORMACIÓN / "QUE TRAE":
   PARTE 3: cierre de venta (ej: "Te paso los métodos de pago? tienes Nequi o Daviplata?")
 - NUNCA pongas la intro, la lista y el cierre todo junto en un solo mensaje. SIEMPRE usa ||| para separarlos.
 
-REGLA COMBO DE 10 (Básico $10.000):
+${options.isInFollowUp ? `REGLA COMBO BÁSICO (Oferta $7.000):
 - Listar los 15 cursos del básico.
 - Ejemplo:
-El combo de 10 trae 15 cursos ||| 1. Introducción al Hacking Ético\n2. El arte del espionaje\n3. Hacking de Celulares\n4. Métodos WiFi\n5. Hacking Páginas Web\n6. Hacking Enterprise\n7. Desarrollo Web\n8. Inglés\n9. Programas y herramientas\n10. Pack Audiolibros\n11. Diseño Gráfico\n12. Termux\n13. Claude IA\n14. Blackhat Cracking\n15. Protección de Datos ||| Te paso los métodos de pago? tienes Nequi o Daviplata?
+El combo de 7 trae 15 cursos ||| 1. Introducción al Hacking Ético\\n2. El arte del espionaje\\n3. Hacking de Celulares\\n4. Métodos WiFi\\n5. Hacking Páginas Web\\n6. Hacking Enterprise\\n7. Desarrollo Web\\n8. Inglés\\n9. Programas y herramientas\\n10. Pack Audiolibros\\n11. Diseño Gráfico\\n12. Termux\\n13. Claude IA\\n14. Blackhat Cracking\\n15. Protección de Datos ||| Te paso los métodos de pago? tienes Nequi o Daviplata?
+
+REGLA COMBO FULL (Oferta $10.000):
+- El combo FULL trae todo lo del combo de 7 MÁS 16 cursos avanzados adicionales.
+- Cuando listen el combo de 10, SOLO muestra los 16 cursos NUEVOS que trae de más.
+- Ejemplo:
+El combo de 10 trae todo lo del combo de 7 mas 16 cursos avanzados ||| 1. Malware\\n2. Espionaje avanzado\\n3. Contramedidas de seguridad\\n4. Ingeniería Social\\n5. Guías para la Ciberseguridad\\n6. Hacking WiFi Pro 1\\n7. Hacking WiFi Pro 2\\n8. Hacking con teclado de computador\\n9. Pentesting profesional\\n10. Casos típicos de ataques\\n11. Controles y mecanismos de seguridad\\n12. Hacking Forensics\\n13. Curso Git y GitHub\\n14. Curso Profesional de Angular\\n15. Autenticación avanzada con Passport\\n16. Curso Avanzado de Node.js ||| En total son 31 cursos completos, te paso los métodos de pago? tienes Nequi o Daviplata?
+
+NOMBRES DE LOS COMBOS EN SEGUIMIENTO (OFERTA):
+- Llama al Básico ($7.000) como "combo de 7" o "el de 7".
+- Llama al FULL ($10.000) como "combo de 10" o "el de 10".
+- NUNCA uses los precios normales de 10 mil y 15 mil.` : `REGLA COMBO DE 10 (Básico $10.000):
+- Listar los 15 cursos del básico.
+- Ejemplo:
+El combo de 10 trae 15 cursos ||| 1. Introducción al Hacking Ético\\n2. El arte del espionaje\\n3. Hacking de Celulares\\n4. Métodos WiFi\\n5. Hacking Páginas Web\\n6. Hacking Enterprise\\n7. Desarrollo Web\\n8. Inglés\\n9. Programas y herramientas\\n10. Pack Audiolibros\\n11. Diseño Gráfico\\n12. Termux\\n13. Claude IA\\n14. Blackhat Cracking\\n15. Protección de Datos ||| Te paso los métodos de pago? tienes Nequi o Daviplata?
 
 REGLA COMBO DE 15 (FULL $15.000):
 - El combo de 15 trae todo lo del combo de 10 MÁS 16 cursos avanzados adicionales.
 - Cuando listen el combo de 15, SOLO muestra los 16 cursos NUEVOS que trae de más. NO repitas los 15 del básico que ya incluye.
 - Ejemplo:
-El combo de 15 trae todo lo del combo de 10 mas 16 cursos avanzados ||| 1. Malware\n2. Espionaje avanzado\n3. Contramedidas de seguridad\n4. Ingeniería Social\n5. Guías para la Ciberseguridad\n6. Hacking WiFi Pro 1\n7. Hacking WiFi Pro 2\n8. Hacking con teclado de computador\n9. Pentesting profesional\n10. Casos típicos de ataques\n11. Controles y mecanismos de seguridad\n12. Hacking Forensics\n13. Curso Git y GitHub\n14. Curso Profesional de Angular\n15. Autenticación avanzada con Passport\n16. Curso Avanzado de Node.js ||| En total son 31 cursos completos, te paso los métodos de pago? tienes Nequi o Daviplata?
+El combo de 15 trae todo lo del combo de 10 mas 16 cursos avanzados ||| 1. Malware\\n2. Espionaje avanzado\\n3. Contramedidas de seguridad\\n4. Ingeniería Social\\n5. Guías para la Ciberseguridad\\n6. Hacking WiFi Pro 1\\n7. Hacking WiFi Pro 2\\n8. Hacking con teclado de computador\\n9. Pentesting profesional\\n10. Casos típicos de ataques\\n11. Controles y mecanismos de seguridad\\n12. Hacking Forensics\\n13. Curso Git y GitHub\\n14. Curso Profesional de Angular\\n15. Autenticación avanzada con Passport\\n16. Curso Avanzado de Node.js ||| En total son 31 cursos completos, te paso los métodos de pago? tienes Nequi o Daviplata?
 
 NOMBRES DE LOS COMBOS:
 - Llama al Básico ($10.000) como "combo de 10" o "el de 10".
 - Llama al FULL ($15.000) como "combo de 15" o "el de 15".
-- El combo de 15 incluye todo lo del combo de 10 + 16 cursos avanzados = 31 cursos totales.
+- El combo de 15 incluye todo lo del combo de 10 + 16 cursos avanzados = 31 cursos totales.`}
 
 CIERRE DE VENTA OBLIGATORIO (SOLO ANTES DEL PAGO):
 - Si el cliente AÚN NO ha pedido los datos de pago ni está en proceso de pago, termina tu respuesta preguntando por métodos de pago.

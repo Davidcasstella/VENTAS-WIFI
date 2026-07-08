@@ -117,37 +117,58 @@ const ConversationList = ({ conversations, activeJid, onSelect, onDelete, search
     // Only marks a JID as "fetched" when we get a real URL back.
     // If the backend returns null (e.g. WhatsApp not connected yet),
     // the JID stays eligible for retry after a cooldown period.
+    // Uses AbortController to cancel stale requests on rapid navigation.
     useEffect(() => {
+        const abortController = new AbortController();
+
         const fetchPics = async () => {
             const now = Date.now();
-            for (const conv of conversations) {
-                // Skip if we already have a successful picture
-                if (fetchedJidsRef.current.has(conv.jid)) continue;
-                // Skip if we recently tried and got null (wait for cooldown)
+            // Collect JIDs that need fetching
+            const toFetch = conversations.filter(conv => {
+                if (fetchedJidsRef.current.has(conv.jid)) return false;
                 const lastFail = failedJidsRef.current.get(conv.jid);
-                if (lastFail && (now - lastFail) < RETRY_COOLDOWN) continue;
+                if (lastFail && (now - lastFail) < RETRY_COOLDOWN) return false;
+                return true;
+            });
 
-                // Mark as "attempting" to prevent parallel duplicates
-                failedJidsRef.current.set(conv.jid, now);
-                try {
-                    const res = await fetch(`${BACKEND_URL}/api/chat/profile-pic/${encodeURIComponent(conv.jid)}`);
-                    const data = await res.json();
-                    if (data.url) {
-                        // Success: cache permanently (no more retries needed)
-                        fetchedJidsRef.current.add(conv.jid);
-                        failedJidsRef.current.delete(conv.jid);
-                        setProfilePics(prev => ({ ...prev, [conv.jid]: data.url }));
-                    } else {
-                        // Null: record timestamp so we retry after cooldown
+            // Process in small batches to avoid flooding the backend
+            const BATCH_SIZE = 3;
+            for (let i = 0; i < toFetch.length; i += BATCH_SIZE) {
+                if (abortController.signal.aborted) return;
+                const batch = toFetch.slice(i, i + BATCH_SIZE);
+                await Promise.allSettled(batch.map(async (conv) => {
+                    if (abortController.signal.aborted) return;
+                    failedJidsRef.current.set(conv.jid, Date.now());
+                    try {
+                        const res = await fetch(
+                            `${BACKEND_URL}/api/chat/profile-pic/${encodeURIComponent(conv.jid)}`,
+                            { signal: abortController.signal }
+                        );
+                        const data = await res.json();
+                        if (abortController.signal.aborted) return;
+                        if (data.url) {
+                            fetchedJidsRef.current.add(conv.jid);
+                            failedJidsRef.current.delete(conv.jid);
+                            setProfilePics(prev => ({ ...prev, [conv.jid]: data.url }));
+                        } else {
+                            setProfilePics(prev => ({ ...prev, [conv.jid]: null }));
+                        }
+                    } catch (err) {
+                        if (err?.name === 'AbortError') return;
                         setProfilePics(prev => ({ ...prev, [conv.jid]: null }));
                     }
-                } catch {
-                    setProfilePics(prev => ({ ...prev, [conv.jid]: null }));
-                }
+                }));
             }
         };
-        fetchPics();
+
+        // Debounce: only start fetching after conversations have been stable for 300ms
+        const timer = setTimeout(fetchPics, 300);
+        return () => {
+            clearTimeout(timer);
+            abortController.abort();
+        };
     }, [conversations]);
+
 
     // ── Periodic retry for JIDs that returned null ─────────────────────
     // Every 60s, clear the failed cooldowns so the next render retries them
@@ -348,6 +369,19 @@ const ConversationList = ({ conversations, activeJid, onSelect, onDelete, search
             });
         } catch { /* ignore */ }
         setContextMenu(null);
+    };
+
+    const startFollowUp = async (jid) => {
+        try {
+            await api.post(`/api/follow-up/start/${encodeURIComponent(jid)}`);
+            setFollowUpJids(prev => {
+                const next = new Set(prev);
+                next.add(jid);
+                return next;
+            });
+        } catch (err) {
+            console.error('Error starting follow-up:', err);
+        }
     };
 
     // ── Filtering ────────────────────────────────────────────────────
@@ -616,6 +650,17 @@ const ConversationList = ({ conversations, activeJid, onSelect, onDelete, search
                                     {conv.unreadCount > 0 && (
                                         <span className="conv-unread-badge">{conv.unreadCount}</span>
                                     )}
+                                    <button
+                                        className={`conv-followup-action-btn ${followUpJids.has(conv.jid) ? 'active' : ''}`}
+                                        title={followUpJids.has(conv.jid) ? 'Detener seguimiento' : 'Iniciar seguimiento'}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            if (followUpJids.has(conv.jid)) cancelFollowUp(conv.jid);
+                                            else startFollowUp(conv.jid);
+                                        }}
+                                    >
+                                        {followUpJids.has(conv.jid) ? <XCircle size={13} /> : <Clock size={13} />}
+                                    </button>
                                     <button
                                         className="conv-delete-btn"
                                         title={confirmDelete === conv.jid ? 'Click para confirmar' : 'Eliminar chat'}

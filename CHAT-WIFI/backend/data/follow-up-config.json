@@ -1,23 +1,23 @@
 {
-  "globalEnabled": false,
+  "globalEnabled": true,
   "stopOnReply": true,
   "steps": [
     {
       "id": "step_1",
       "label": "Seguimiento 2 horas",
-      "delayMinutes": 120,
-      "enabled": true,
-      "text": "",
+      "delayMinutes": 1,
+      "enabled": false,
+      "text": "¡Hola! 👋 Vi que te interesó el curso. No dejes pasar la promo: tienes el combo de 7 mil y el combo de 10 mil (el más completo) 🔥 ¿Con cuál te animas?",
       "audioPath": null,
       "videoPath": null,
-      "imagePath": null
+      "imagePath": "C:\\Users\\David\\Desktop\\VENTAS-WIFI\\VENTAS-WIFI\\CHAT-WIFI\\backend\\public\\uploads\\follow-up\\step_1-image.jpeg"
     },
     {
       "id": "step_2",
       "label": "Seguimiento 4 horas",
       "delayMinutes": 240,
       "enabled": true,
-      "text": "",
+      "text": "Hey 👋 no te pierdas la oportunidad \nde adquirir el Método FULL de \nHacking Ético y Ciberseguridad 💻\n🔐\n(Incluye Seguridad Avanzada + \nHerramientas Profesionales)\nAprende de forma práctica y paso a \npaso\n📲 100% digital | acceso inmediato \ny de por vida\n\n💰 Precio especial: $10.000 COP\n💵 Pago en Colombia:\n💳 Nequi: 3028599105\n💳 Daviplata: 3028599105\n🔑 Llave Bre-B: @3028599105\n👤 Nombre: Bra... Lop...",
       "audioPath": null,
       "videoPath": null,
       "imagePath": "C:\\Users\\David\\Desktop\\VENTAS-WIFI\\VENTAS-WIFI\\CHAT-WIFI\\backend\\public\\uploads\\follow-up\\step_2-image.jpeg"
@@ -26,8 +26,8 @@
       "id": "step_3",
       "label": "Seguimiento 2 días",
       "delayMinutes": 2880,
-      "enabled": true,
-      "text": "",
+      "enabled": false,
+      "text": "No quiero que pierdas esta oportunidad 😊 La promo de 7 mil y 10 mil sigue disponible por poco tiempo. Muchos ya empezaron su curso. ¿Aseguramos el tuyo hoy?",
       "audioPath": null,
       "videoPath": null,
       "imagePath": null
@@ -36,12 +36,12 @@
       "id": "step_4",
       "label": "Seguimiento 4 días",
       "delayMinutes": 5760,
-      "enabled": true,
+      "enabled": false,
       "text": "",
       "audioPath": null,
       "videoPath": null,
       "imagePath": null
     }
   ],
-  "updatedAt": "2026-06-20T01:22:59.804Z"
+  "updatedAt": "2026-07-08T07:08:14.341Z"
 }

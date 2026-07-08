@@ -150,10 +150,26 @@ router.delete('/steps/:stepId/:mediaType', async (req, res) => {
 // STATE ENDPOINTS
 // ══════════════════════════════════════════════════════════════════════
 
-// GET /api/follow-up/states — Get all active follow-up states
+// GET /api/follow-up/states — Get active + paused follow-up states
 router.get('/states', async (req, res) => {
     try {
         const states = await followUpService.getActiveStates();
+        res.json({ success: true, states });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// GET /api/follow-up/states/all — Full audit view (active, paused, closed)
+router.get('/states/all', async (req, res) => {
+    try {
+        const raw = await followUpService.getAllStates();
+        const states = Object.entries(raw).map(([jid, s]) => ({
+            jid,
+            displayName: jid.replace('@s.whatsapp.net', ''),
+            status: s.status || (s.cancelled || s.completed ? 'closed' : 'active'),
+            ...s
+        })).sort((a, b) => new Date(b.updatedAt || b.startedAt || 0) - new Date(a.updatedAt || a.startedAt || 0));
         res.json({ success: true, states });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -164,7 +180,7 @@ router.get('/states', async (req, res) => {
 router.post('/start/:jid', async (req, res) => {
     try {
         const jid = decodeURIComponent(req.params.jid);
-        const started = await followUpService.startFollowUp(jid);
+        const started = await followUpService.startFollowUp(jid, { isManual: true, forceImmediate: true });
         res.json({ success: true, started });
     } catch (err) {
         res.status(400).json({ error: err.message });
