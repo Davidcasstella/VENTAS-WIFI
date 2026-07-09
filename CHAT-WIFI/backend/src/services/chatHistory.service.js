@@ -154,7 +154,17 @@ class ChatHistoryService {
 
         if (dynamo.isEnabled()) {
             try {
-                return await this._readConvDynamo(jid);
+                const conv = await this._readConvDynamo(jid);
+                // Si no hay mensajes en Dynamo pero sí existen en el archivo local, migrar y retornarlos
+                if (!conv.messages || conv.messages.length === 0) {
+                    const localData = await this._readLocal();
+                    if (localData[jid] && localData[jid].messages && localData[jid].messages.length > 0) {
+                        console.log(`🔄 [ChatHistory] Migrando ${localData[jid].messages.length} mensajes de ${jid} desde local a DynamoDB...`);
+                        await this._writeConvDynamo(jid, localData[jid]);
+                        return localData[jid];
+                    }
+                }
+                return conv;
             } catch (err) {
                 console.error(`❌ [ChatHistory] DynamoDB read failed, falling back to local: ${err.message}`);
             }
@@ -170,14 +180,39 @@ class ChatHistoryService {
     async getConversations() {
         if (dynamo.isEnabled()) {
             try {
-                const items = await dynamo.queryItems('CHAT_INDEX', undefined);
-                // If no index, fall back to scanning all CHAT# items
-                if (items.length === 0) {
-                    // Scan for all CHAT# prefixed items
-                    const allChats = await this._scanAllChatsDynamo();
-                    return allChats;
+                // Scan all CHAT# prefixed items directly — no secondary index needed
+                const dynamoChats = await this._scanAllChatsDynamo();
+                
+                // Verificación de sincronización con el archivo local
+                const localData = await this._readLocal();
+                const localChats = this._buildConversationList(localData);
+
+                // Si hay conversaciones en local que no están aún en DynamoDB, migrarlas/combinarlas
+                if (localChats.length > 0 && dynamoChats.length < localChats.length) {
+                    console.log(`🔄 [ChatHistory] Detectados ${localChats.length} chats locales vs ${dynamoChats.length} en DynamoDB. Sincronizando hacia AWS...`);
+                    // Sincronizar hacia DynamoDB las que faltan
+                    const dynamoJids = new Set(dynamoChats.map(c => c.jid));
+                    for (const [jid, convData] of Object.entries(localData)) {
+                        if (!jid.includes('@g.us') && !dynamoJids.has(jid)) {
+                            try {
+                                await this._writeConvDynamo(jid, convData);
+                            } catch (e) {
+                                console.error(`⚠️ Error al migrar ${jid} a DynamoDB:`, e.message);
+                            }
+                        }
+                    }
+                    // Combinar las conversaciones para mostrar al usuario sin demoras
+                    const mergedMap = new Map();
+                    localChats.forEach(c => mergedMap.set(c.jid, c));
+                    dynamoChats.forEach(c => mergedMap.set(c.jid, c));
+                    return Array.from(mergedMap.values()).sort((a, b) => {
+                        const aTime = a.lastMessageTime ? new Date(a.lastMessageTime).getTime() : 0;
+                        const bTime = b.lastMessageTime ? new Date(b.lastMessageTime).getTime() : 0;
+                        return bTime - aTime;
+                    });
                 }
-                return items.map(i => i.data);
+
+                return dynamoChats;
             } catch (err) {
                 console.error(`❌ [ChatHistory] DynamoDB getConversations failed, falling back to local: ${err.message}`);
             }
@@ -192,21 +227,26 @@ class ChatHistoryService {
      * Uses a full table scan with PK filter — acceptable for small datasets.
      */
     async _scanAllChatsDynamo() {
+        // Reuse the already-initialized dynamo module client
+        await dynamo.ensureTable();
         const { DynamoDBDocumentClient, ScanCommand } = require('@aws-sdk/lib-dynamodb');
         const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
 
-        const client = new DynamoDBClient({
+        const rawClient = new DynamoDBClient({
             region: process.env.AWS_REGION || 'us-east-1',
             credentials: {
                 accessKeyId: process.env.AWS_ACCESS_KEY_ID,
                 secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
             },
         });
-        const docClient = DynamoDBDocumentClient.from(client, {
+        const docClient = DynamoDBDocumentClient.from(rawClient, {
             marshallOptions: { removeUndefinedValues: true, convertEmptyValues: true },
         });
 
         const tableName = dynamo.TABLE_NAME;
+
+        // FilterExpression: select items whose PK starts with 'CHAT#' and SK is 'DATA'
+        // begins_with() is valid in FilterExpression for Scan operations
         const params = {
             TableName: tableName,
             FilterExpression: 'begins_with(PK, :prefix) AND SK = :sk',
