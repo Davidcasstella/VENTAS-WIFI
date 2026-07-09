@@ -177,6 +177,87 @@ class GoogleDriveService {
         return response.data;
     }
 
+    /**
+     * Search for a folder by name.
+     */
+    async findFolderByName(name, parentId = null) {
+        if (!await this._ensureInitialized()) {
+            throw new Error('Google Drive not initialized');
+        }
+        
+        let q = `mimeType='application/vnd.google-apps.folder' and name='${name.replace(/'/g, "\\'")}' and trashed=false`;
+        if (parentId) {
+            q += ` and '${parentId}' in parents`;
+        }
+        
+        const response = await this._drive.files.list({
+            q: q,
+            fields: 'files(id, name)',
+            pageSize: 1
+        });
+        
+        return response.data.files && response.data.files.length > 0 ? response.data.files[0] : null;
+    }
+
+    // ── File Operations (Backups) ──────────────────────────────
+
+    /**
+     * Upload a file to Google Drive.
+     * @param {string} filePath - Local path of the file to upload
+     * @param {string} fileName - Desired name in Drive
+     * @param {string} mimeType - File mimeType (e.g. 'application/zip')
+     * @param {string} parentId - Parent folder ID (optional)
+     */
+    async uploadFile(filePath, fileName, mimeType, parentId = null) {
+        if (!await this._ensureInitialized()) {
+            throw new Error('Google Drive not initialized');
+        }
+
+        const fileMetadata = { name: fileName };
+        if (parentId) fileMetadata.parents = [parentId];
+
+        const media = {
+            mimeType: mimeType,
+            body: fs.createReadStream(filePath)
+        };
+
+        const response = await this._drive.files.create({
+            requestBody: fileMetadata,
+            media: media,
+            fields: 'id, name, webViewLink'
+        });
+
+        console.log(`☁️ [GoogleDrive] File uploaded: "${fileName}" (${response.data.id})`);
+        return response.data;
+    }
+
+    /**
+     * Delete a file from Google Drive.
+     */
+    async deleteFile(fileId) {
+        if (!await this._ensureInitialized()) {
+            throw new Error('Google Drive not initialized');
+        }
+        await this._drive.files.delete({ fileId });
+        console.log(`🗑️ [GoogleDrive] File deleted: ${fileId}`);
+    }
+
+    /**
+     * List files in a folder, sorted by creation date.
+     */
+    async listFilesInFolder(folderId) {
+        if (!await this._ensureInitialized()) {
+            throw new Error('Google Drive not initialized');
+        }
+        const response = await this._drive.files.list({
+            q: `'${folderId}' in parents and trashed=false and mimeType!='application/vnd.google-apps.folder'`,
+            fields: 'files(id, name, createdTime)',
+            orderBy: 'createdTime desc',
+            pageSize: 100
+        });
+        return response.data.files || [];
+    }
+
     // ── Permission Operations ──────────────────────────────────
 
     /**

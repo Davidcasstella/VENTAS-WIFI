@@ -1,5 +1,6 @@
 const fs = require('fs-extra');
 const path = require('path');
+const dynamo = require('./dynamoStore');
 
 // ── Persistence paths ──────────────────────────────────────────────────────
 const DATA_DIR = path.join(__dirname, '../../data');
@@ -75,18 +76,41 @@ class WelcomeAutomationService {
     // ── Config helpers ────────────────────────────────────────────────────
 
     async getConfig() {
-        return fs.readJson(CONFIG_PATH);
+        if (dynamo.isEnabled()) {
+            try {
+                const data = await dynamo.getItem('CONFIG', 'welcome-automation');
+                if (data) return data;
+                const local = await fs.readJson(CONFIG_PATH).catch(() => DEFAULT_CONFIG);
+                await dynamo.putItem('CONFIG', 'welcome-automation', local);
+                return local;
+            } catch (err) {
+                console.error(`❌ [Welcome] DynamoDB read failed: ${err.message}`);
+            }
+        }
+        return fs.readJson(CONFIG_PATH).catch(() => DEFAULT_CONFIG);
     }
 
     async saveConfig(updates) {
         const current = await this.getConfig();
         const next = { ...current, ...updates, updatedAt: new Date().toISOString() };
+        if (dynamo.isEnabled()) {
+            try {
+                await dynamo.putItem('CONFIG', 'welcome-automation', next);
+            } catch (err) {
+                console.error(`❌ [Welcome] DynamoDB write failed: ${err.message}`);
+            }
+        }
         await fs.writeJson(CONFIG_PATH, next, { spaces: 2 });
         return next;
     }
 
     async resetConfig() {
         const reset = { ...DEFAULT_CONFIG, updatedAt: new Date().toISOString() };
+        if (dynamo.isEnabled()) {
+            try {
+                await dynamo.putItem('CONFIG', 'welcome-automation', reset);
+            } catch (err) { console.error(err); }
+        }
         await fs.writeJson(CONFIG_PATH, reset, { spaces: 2 });
         // Also delete the audio file if it exists
         const audioDest = this.getAudioDestPath();
@@ -110,43 +134,66 @@ class WelcomeAutomationService {
     // ── User state helpers ────────────────────────────────────────────────
 
     async _readStates() {
-        return fs.readJson(STATES_PATH);
+        if (dynamo.isEnabled()) {
+            try {
+                const items = await dynamo.queryItems('WELCOME_STATE');
+                const map = {};
+                items.forEach(item => { map[item.sk] = item.data; });
+                return map;
+            } catch (err) {
+                console.error(`❌ [Welcome] DynamoDB query failed: ${err.message}`);
+            }
+        }
+        return fs.readJson(STATES_PATH).catch(() => ({}));
     }
 
-    async _writeStates(states) {
+    async _saveUserState(jid, state) {
+        if (dynamo.isEnabled()) {
+            try {
+                await dynamo.putItem('WELCOME_STATE', jid, state);
+            } catch (err) {
+                console.error(`❌ [Welcome] DynamoDB write failed: ${err.message}`);
+            }
+        }
+        const states = await fs.readJson(STATES_PATH).catch(() => ({}));
+        states[jid] = state;
         await fs.writeJson(STATES_PATH, states, { spaces: 2 });
     }
 
     async getUserState(jid) {
-        const states = await this._readStates();
+        if (dynamo.isEnabled()) {
+            try {
+                const data = await dynamo.getItem('WELCOME_STATE', jid);
+                if (data) return data;
+                // Migrate from local
+                const states = await fs.readJson(STATES_PATH).catch(() => ({}));
+                if (states[jid]) {
+                    await dynamo.putItem('WELCOME_STATE', jid, states[jid]);
+                    return states[jid];
+                }
+                return null;
+            } catch (err) {
+                console.error(`❌ [Welcome] DynamoDB read failed: ${err.message}`);
+            }
+        }
+        const states = await fs.readJson(STATES_PATH).catch(() => ({}));
         return states[jid] || null;
     }
 
     async updateUserState(jid) {
-        const states = await this._readStates();
-        const existing = states[jid] || {};
-        states[jid] = {
-            ...existing,
-            lastWelcomeSentAt: new Date().toISOString()
-        };
-        await this._writeStates(states);
+        const existing = await this.getUserState(jid) || {};
+        const next = { ...existing, lastWelcomeSentAt: new Date().toISOString() };
+        await this._saveUserState(jid, next);
     }
 
     async resetUserState(jid) {
-        const states = await this._readStates();
-        if (states[jid]) {
-            // Keep the user entry but clear welcome timestamp
-            delete states[jid].lastWelcomeSentAt;
-            // Also re-enable AI when a full reset is requested
-            states[jid].aiEnabled = true;
-            // Clear promo video flag so it can be sent again
-            delete states[jid].promoVideoSent;
-
-            // Optional: try to clear pending fallback from aiFallback if needed
-            // Since this runs in welcomeAutomation, and we just enabled AI, 
-            // the AI will answer next time anyway.
+        const existing = await this.getUserState(jid);
+        if (existing) {
+            delete existing.lastWelcomeSentAt;
+            existing.aiEnabled = true;
+            delete existing.promoVideoSent;
+            await this._saveUserState(jid, existing);
         }
-        await this._writeStates(states);
         // Also clear the in-memory guard in app.js so it doesn't block re-sending
         if (global.sentPromoJids) {
             global.sentPromoJids.delete(jid);
@@ -155,9 +202,14 @@ class WelcomeAutomationService {
     }
 
     async deleteUserState(jid) {
-        const states = await this._readStates();
+        if (dynamo.isEnabled()) {
+            try {
+                await dynamo.deleteItem('WELCOME_STATE', jid);
+            } catch (err) { console.error(err); }
+        }
+        const states = await fs.readJson(STATES_PATH).catch(() => ({}));
         delete states[jid];
-        await this._writeStates(states);
+        await fs.writeJson(STATES_PATH, states, { spaces: 2 });
     }
 
     async getAllUserStates() {
@@ -167,9 +219,8 @@ class WelcomeAutomationService {
     // ── Per-user message tracking ─────────────────────────────────────────
 
     async updateUserMessage(jid, text) {
-        const states = await this._readStates();
-        const existing = states[jid] || {};
-        states[jid] = {
+        const existing = await this.getUserState(jid) || {};
+        const next = {
             ...existing,
             lastMessageText: text || '',
             lastMessageAt: new Date().toISOString(),
@@ -177,18 +228,17 @@ class WelcomeAutomationService {
             aiEnabled: existing.aiEnabled !== undefined ? existing.aiEnabled : true,
             cooldownEnabled: existing.cooldownEnabled !== undefined ? existing.cooldownEnabled : true
         };
-        await this._writeStates(states);
+        await this._saveUserState(jid, next);
     }
 
     // ── Per-user AI toggle ────────────────────────────────────────────────
 
     async setUserAI(jid, enabled) {
-        const states = await this._readStates();
-        const existing = states[jid] || {};
-        states[jid] = { ...existing, aiEnabled: Boolean(enabled) };
-        await this._writeStates(states);
+        const existing = await this.getUserState(jid) || {};
+        const next = { ...existing, aiEnabled: Boolean(enabled) };
+        await this._saveUserState(jid, next);
         console.log(`🤖 AI ${enabled ? 'enabled' : 'disabled'} for ${jid}`);
-        return states[jid];
+        return next;
     }
 
     async disableUserAI(jid) {
@@ -197,20 +247,18 @@ class WelcomeAutomationService {
 
     // ── Promo video dedup (persisted across restarts) ─────────────────────
     async markPromoSent(jid) {
-        const states = await this._readStates();
-        const existing = states[jid] || {};
-        states[jid] = { ...existing, promoVideoSent: true };
-        await this._writeStates(states);
+        const existing = await this.getUserState(jid) || {};
+        const next = { ...existing, promoVideoSent: true };
+        await this._saveUserState(jid, next);
         console.log(`🎥 Promo video marked as sent for ${jid}`);
     }
 
     async setUserCooldown(jid, enabled) {
-        const states = await this._readStates();
-        const existing = states[jid] || {};
-        states[jid] = { ...existing, cooldownEnabled: Boolean(enabled) };
-        await this._writeStates(states);
+        const existing = await this.getUserState(jid) || {};
+        const next = { ...existing, cooldownEnabled: Boolean(enabled) };
+        await this._saveUserState(jid, next);
         console.log(`⏱️ Cooldown ${enabled ? 'enabled' : 'disabled'} for ${jid}`);
-        return states[jid];
+        return next;
     }
 
     // ── Bot message tracking (to detect manual intervention) ──────────────

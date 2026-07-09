@@ -1,9 +1,13 @@
 const fs = require('fs-extra');
 const path = require('path');
 const { randomUUID: uuidv4 } = require('crypto');
+const dynamo = require('./dynamoStore');
 
 // Persistent storage path — same directory used by manual knowledge
 const RULES_FILE = path.join(__dirname, '../../knowledge-base/ai-rules.json');
+
+const DYNAMO_PK = 'CONFIG';
+const DYNAMO_SK = 'ai-rules';
 
 class AIRulesService {
     /**
@@ -19,9 +23,23 @@ class AIRulesService {
 
     /**
      * Returns all saved AI rules.
-     * @returns {Promise<Array>}
      */
     async getRules() {
+        if (dynamo.isEnabled()) {
+            try {
+                const data = await dynamo.getItem(DYNAMO_PK, DYNAMO_SK);
+                if (data && Array.isArray(data.rules)) return data.rules;
+                // Seed from local
+                await this._ensureFile();
+                const local = await fs.readJson(RULES_FILE).catch(() => []);
+                const rules = Array.isArray(local) ? local : [];
+                await dynamo.putItem(DYNAMO_PK, DYNAMO_SK, { rules });
+                return rules;
+            } catch (err) {
+                console.error(`❌ [AIRules] DynamoDB read failed: ${err.message}`);
+            }
+        }
+
         try {
             await this._ensureFile();
             const rules = await fs.readJson(RULES_FILE);
@@ -32,26 +50,35 @@ class AIRulesService {
         }
     }
 
+    async _writeRules(rules) {
+        if (dynamo.isEnabled()) {
+            try {
+                await dynamo.putItem(DYNAMO_PK, DYNAMO_SK, { rules });
+                return;
+            } catch (err) {
+                console.error(`❌ [AIRules] DynamoDB write failed: ${err.message}`);
+            }
+        }
+        await fs.writeJson(RULES_FILE, rules, { spaces: 2 });
+    }
+
     /**
      * Saves the full list of rules, replacing the current ones.
-     * @param {Array} rules
-     * @returns {Promise<Array>} - The saved rules
      */
     async saveRules(rules) {
         try {
             await this._ensureFile();
-            // Ensure every rule has an id and timestamps
             const now = new Date().toISOString();
             const sanitized = rules.map(r => ({
                 id: r.id || uuidv4(),
                 title: (r.title || '').trim(),
                 content: (r.content || '').trim(),
-                enabled: r.enabled !== false, // default true
+                enabled: r.enabled !== false,
                 createdAt: r.createdAt || now,
                 updatedAt: now
-            })).filter(r => r.title && r.content); // remove empty rules
+            })).filter(r => r.title && r.content);
 
-            await fs.writeJson(RULES_FILE, sanitized, { spaces: 2 });
+            await this._writeRules(sanitized);
             console.log(`✅ [AIRules] ${sanitized.length} rule(s) saved`);
             return sanitized;
         } catch (err) {
@@ -62,7 +89,6 @@ class AIRulesService {
 
     /**
      * Adds a single new rule.
-     * @param {{ title: string, content: string }} rule
      */
     async addRule(rule) {
         const rules = await this.getRules();
@@ -76,25 +102,22 @@ class AIRulesService {
             updatedAt: now
         };
         rules.push(newRule);
-        await fs.writeJson(RULES_FILE, rules, { spaces: 2 });
+        await this._writeRules(rules);
         return newRule;
     }
 
     /**
      * Deletes a rule by ID.
-     * @param {string} id
      */
     async deleteRule(id) {
         const rules = await this.getRules();
         const filtered = rules.filter(r => r.id !== id);
-        await fs.writeJson(RULES_FILE, filtered, { spaces: 2 });
+        await this._writeRules(filtered);
         return filtered;
     }
 
     /**
      * Returns a formatted string of all ENABLED rules to inject into the system prompt.
-     * Returns empty string if no rules are active.
-     * @returns {Promise<string>}
      */
     async getFormattedRulesText() {
         try {

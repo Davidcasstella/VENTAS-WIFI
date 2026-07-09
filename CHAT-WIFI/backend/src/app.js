@@ -815,13 +815,22 @@ async function processGroupedMessages(remoteJid, debouncer) {
         recentConvHistory = conv.messages.slice(-30);
     } catch (_) { }
 
-    // Check if this client is in follow-up (active or paused) to offer discount pricing
+    // Check if this client is in follow-up (active or paused) to offer discount pricing.
+    // IMPORTANT: Only activate discount pricing if at least one follow-up message
+    // was actually SENT to the client. This prevents premature discounts when the
+    // client responds before the follow-up timer fires (e.g. before 4 hours).
     let isInFollowUp = false;
     try {
         const fuState = await followUpService.getState(remoteJid);
         if (fuState && fuState.status && fuState.status !== 'closed') {
-            isInFollowUp = true;
-            console.log(`🏷️ Client ${remoteJid} is in follow-up — discount pricing active`);
+            const hasReceivedFollowUp = Array.isArray(fuState.history)
+                && fuState.history.some(h => h.ok === true);
+            if (hasReceivedFollowUp) {
+                isInFollowUp = true;
+                console.log(`🏷️ Client ${remoteJid} is in follow-up — discount pricing active`);
+            } else {
+                console.log(`📋 Client ${remoteJid} has follow-up state but no steps sent yet — normal pricing`);
+            }
         }
     } catch (_) { }
 
@@ -882,17 +891,8 @@ async function processGroupedMessages(remoteJid, debouncer) {
         const welcomeConfig = await welcomeAutomationService.getConfig();
         const delayMultiplier = welcomeConfig.responseDelay || 1.0;
 
-        let enableTypingIndicator = true;
-        try {
-            const conv = await chatHistoryService.getMessages(remoteJid);
-            const clientMsgCount = conv.messages.filter(m => !m.fromMe).length;
-            if (clientMsgCount <= 2) {
-                enableTypingIndicator = false;
-                console.log(`🔔 [TypingIndicator] Disabled for ${remoteJid} (message ${clientMsgCount}/2 — owner will be notified)`);
-            } else {
-                console.log(`⌨️  [TypingIndicator] Enabled for ${remoteJid} (message ${clientMsgCount})`);
-            }
-        } catch (_) { }
+        let enableTypingIndicator = false;
+        console.log(`🔔 [TypingIndicator] Disabled for ${remoteJid} (owner will be notified for all messages)`);
 
         await humanResponse.sendHumanLike(
             whatsapp.sock,

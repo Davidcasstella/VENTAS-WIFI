@@ -3,20 +3,6 @@
     "pushName": "David Castella",
     "messages": [
       {
-        "id": "26d97d5901dcf639",
-        "text": "💳 Daviplata: 3028599105",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-07-05T06:44:15.233Z"
-      },
-      {
-        "id": "983ada685a17e8a3",
-        "text": "🔑 Llave Bre-B: @3028599105",
-        "fromMe": true,
-        "sender": "bot",
-        "timestamp": "2026-07-05T06:44:15.928Z"
-      },
-      {
         "id": "804e79ab2fa2559f",
         "text": "👤 Nombre: Bra... Lop...",
         "fromMe": true,
@@ -737,6 +723,20 @@
         "fromMe": true,
         "sender": "bot",
         "timestamp": "2026-07-08T07:26:47.937Z"
+      },
+      {
+        "id": "561bf3bfb8cb1dfc",
+        "text": "Hey 👋 no te pierdas la oportunidad \nde adquirir el Método FULL de \nHacking Ético y Ciberseguridad 💻\n🔐\n(Incluye Seguridad Avanzada + \nHerramientas Profesionales)\nAprende de forma práctica y paso a \npaso\n📲 100% digital | acceso inmediato \ny de por vida\n\n💰 Precio especial: $10.000 COP\n💵 Pago en Colombia:\n💳 Nequi: 3028599105\n💳 Daviplata: 3028599105\n🔑 Llave Bre-B: @3028599105\n👤 Nombre: Bra... Lop...",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-07-08T21:39:54.908Z"
+      },
+      {
+        "id": "634acc854eaaa922",
+        "text": "[Follow-up Image: Seguimiento 4 horas]",
+        "fromMe": true,
+        "sender": "system",
+        "timestamp": "2026-07-08T21:39:59.410Z"
       }
     ]
   },

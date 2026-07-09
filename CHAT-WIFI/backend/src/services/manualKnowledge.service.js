@@ -2,10 +2,14 @@ const fs = require('fs-extra');
 const path = require('path');
 const fileStorage = require('./fileStorage');
 const embeddingService = require('./embeddingService');
+const dynamo = require('./dynamoStore');
 
 const MK_PATH = path.join(__dirname, '../../knowledge-base/manual-knowledge.json');
 const CHUNKS_DIR = path.join(__dirname, '../../knowledge-base/chunks');
 const EMBEDDINGS_DIR = path.join(__dirname, '../../knowledge-base/embeddings');
+
+const DYNAMO_PK = 'CONFIG';
+const DYNAMO_SK = 'manual-knowledge';
 
 /**
  * ManualKnowledgeService — CRUD for free-form knowledge entries.
@@ -23,10 +27,24 @@ class ManualKnowledgeService {
     // ── Persistence helpers ────────────────────────────────────────
 
     /**
-     * Read the JSON array from disk, creating the file if missing.
-     * @returns {Promise<Array>} Manual knowledge entries
+     * Read the JSON array from disk or DynamoDB.
      */
     async getAll() {
+        if (dynamo.isEnabled()) {
+            try {
+                const data = await dynamo.getItem(DYNAMO_PK, DYNAMO_SK);
+                if (data && Array.isArray(data.entries)) return data.entries;
+                // Seed from local
+                await fs.ensureFile(MK_PATH);
+                const local = await fs.readJson(MK_PATH).catch(() => []);
+                const entries = Array.isArray(local) ? local : [];
+                await dynamo.putItem(DYNAMO_PK, DYNAMO_SK, { entries });
+                return entries;
+            } catch (err) {
+                console.error(`❌ [ManualKnowledge] DynamoDB read failed: ${err.message}`);
+            }
+        }
+
         await fs.ensureFile(MK_PATH);
         try {
             const data = await fs.readJson(MK_PATH);
@@ -36,19 +54,21 @@ class ManualKnowledgeService {
         }
     }
 
-    /** Persist the full array back to disk. */
+    /** Persist the full array back. */
     async _save(entries) {
+        if (dynamo.isEnabled()) {
+            try {
+                await dynamo.putItem(DYNAMO_PK, DYNAMO_SK, { entries });
+                return;
+            } catch (err) {
+                console.error(`❌ [ManualKnowledge] DynamoDB write failed: ${err.message}`);
+            }
+        }
         await fs.writeJson(MK_PATH, entries, { spaces: 2 });
     }
 
     // ── Text chunking (replicates KnowledgeBaseService.chunkText) ──
 
-    /**
-     * Split text into overlapping word-based chunks.
-     * @param {string} text - Raw text
-     * @param {number} maxTokens - Approximate words per chunk
-     * @returns {string[]} Array of text chunks
-     */
     _chunkText(text, maxTokens = 500) {
         const cleaned = text
             .replace(/\r\n/g, '\n')
@@ -79,10 +99,6 @@ class ManualKnowledgeService {
 
     // ── Chunk + Embedding lifecycle ────────────────────────────────
 
-    /**
-     * Create chunk files and their embeddings for an entry.
-     * Supports large texts by splitting into multiple chunks.
-     */
     async _saveChunksAndEmbeddings(entryId, title, content) {
         const documentId = `mk_${entryId}`;
         const fullText = `${title}\n\n${content}`;
@@ -91,11 +107,9 @@ class ManualKnowledgeService {
         for (let i = 0; i < chunks.length; i++) {
             const chunkId = `mk_${entryId}_chunk_${i + 1}`;
 
-            // Save chunk text file
             const chunkPath = path.join(CHUNKS_DIR, `${chunkId}.txt`);
             await fs.writeFile(chunkPath, chunks[i], 'utf8');
 
-            // Generate and save embedding
             const embedding = await embeddingService.generateEmbedding(chunks[i]);
             await fileStorage.saveEmbedding(chunkId, documentId, embedding);
         }
@@ -104,19 +118,14 @@ class ManualKnowledgeService {
         return chunks.length;
     }
 
-    /**
-     * Remove all chunk and embedding files for an entry.
-     */
     async _removeChunksAndEmbeddings(entryId) {
         const prefix = `mk_${entryId}_chunk_`;
 
-        // Remove chunk files
         const chunkFiles = (await fs.readdir(CHUNKS_DIR)).filter(f => f.startsWith(prefix));
         for (const file of chunkFiles) {
             await fs.remove(path.join(CHUNKS_DIR, file));
         }
 
-        // Remove embedding files
         const embFiles = (await fs.readdir(EMBEDDINGS_DIR)).filter(f => f.startsWith(prefix));
         for (const file of embFiles) {
             await fs.remove(path.join(EMBEDDINGS_DIR, file));
@@ -125,12 +134,6 @@ class ManualKnowledgeService {
 
     // ── CRUD Operations ────────────────────────────────────────────
 
-    /**
-     * Create a new manual knowledge entry.
-     * @param {string} title - Entry title
-     * @param {string} content - Entry content (can be very long)
-     * @returns {Object} The created entry
-     */
     async create(title, content) {
         const entries = await this.getAll();
         const newEntry = {
@@ -143,7 +146,6 @@ class ManualKnowledgeService {
         entries.push(newEntry);
         await this._save(entries);
 
-        // Vectorize
         const chunkCount = await this._saveChunksAndEmbeddings(newEntry.id, newEntry.title, newEntry.content);
         newEntry.chunkCount = chunkCount;
 
@@ -151,13 +153,6 @@ class ManualKnowledgeService {
         return newEntry;
     }
 
-    /**
-     * Update an existing entry — re-generates all chunks and embeddings.
-     * @param {string} id - Entry ID
-     * @param {string} title
-     * @param {string} content
-     * @returns {Object|null}
-     */
     async update(id, title, content) {
         const entries = await this.getAll();
         const idx = entries.findIndex(e => e.id === id);
@@ -168,7 +163,6 @@ class ManualKnowledgeService {
         entries[idx].updatedAt = new Date().toISOString();
         await this._save(entries);
 
-        // Re-vectorize: remove old, create new
         await this._removeChunksAndEmbeddings(id);
         const chunkCount = await this._saveChunksAndEmbeddings(id, entries[idx].title, entries[idx].content);
         entries[idx].chunkCount = chunkCount;
@@ -177,11 +171,6 @@ class ManualKnowledgeService {
         return entries[idx];
     }
 
-    /**
-     * Delete an entry and its chunks/embeddings.
-     * @param {string} id
-     * @returns {boolean}
-     */
     async delete(id) {
         const entries = await this.getAll();
         const filtered = entries.filter(e => e.id !== id);
@@ -194,9 +183,6 @@ class ManualKnowledgeService {
         return true;
     }
 
-    /**
-     * Re-vectorize ALL manual knowledge entries.
-     */
     async reprocessAll() {
         const entries = await this.getAll();
         console.log(`🔄 Re-vectorizing ${entries.length} manual knowledge entries...`);

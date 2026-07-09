@@ -1,6 +1,7 @@
 const { server } = require('./app');
 const whatsapp = require('./core/WhatsApp');
 const config = require('./config');
+const cronJobs = require('./services/cronJobs.service');
 
 async function start() {
     try {
@@ -9,7 +10,10 @@ async function start() {
         // 1. Iniciar Motor de WhatsApp
         await whatsapp.init();
 
-        // 2. Iniciar Servidor HTTP
+        // 2. Iniciar Tareas Programadas (Backups, etc)
+        cronJobs.start();
+
+        // 3. Iniciar Servidor HTTP
         server.listen(config.port, () => {
             console.log(`\n✅ Servidor en ejecución: http://localhost:${config.port}`);
             console.log(`📡 Entorno: ${config.env}\n`);

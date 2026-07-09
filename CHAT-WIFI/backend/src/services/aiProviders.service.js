@@ -2,6 +2,7 @@ const fs = require('fs-extra');
 const path = require('path');
 const crypto = require('crypto');
 const config = require('../config');
+const dynamo = require('./dynamoStore');
 
 const DATA_PATH = path.join(__dirname, '../data/ai-providers.json');
 const ENCRYPTION_KEY_RAW = process.env.ENCRYPTION_KEY;
@@ -130,6 +131,40 @@ class AIProvidersService {
         return `${key.substring(0, 4)}****${key.substring(key.length - 4)}`;
     }
 
+    // ── Data helpers ──────────────────────────────────────────────────────
+
+    async _getRawProviders() {
+        if (dynamo.isEnabled()) {
+            try {
+                const items = await dynamo.queryItems('AI_PROVIDER');
+                if (items && items.length > 0) {
+                    return items.map(item => item.data);
+                }
+                const local = await fs.readJson(DATA_PATH).catch(() => []);
+                if (local.length > 0) {
+                    const toInsert = local.map(p => ({ pk: 'AI_PROVIDER', sk: p.id, data: p }));
+                    await dynamo.batchPut(toInsert);
+                }
+                return local;
+            } catch (err) {
+                console.error(`❌ [Providers] DynamoDB read failed: ${err.message}`);
+            }
+        }
+        return fs.readJson(DATA_PATH).catch(() => []);
+    }
+
+    async _saveAllProviders(providers) {
+        if (dynamo.isEnabled()) {
+            try {
+                const items = providers.map(p => ({ pk: 'AI_PROVIDER', sk: p.id, data: p }));
+                await dynamo.batchPut(items);
+            } catch (err) {
+                console.error(`❌ [Providers] DynamoDB write failed: ${err.message}`);
+            }
+        }
+        await fs.writeJson(DATA_PATH, providers, { spaces: 2 });
+    }
+
     // ── Read helpers ──────────────────────────────────────────────────────
 
     /**
@@ -137,7 +172,7 @@ class AIProvidersService {
      * Backward-compatible: also exposes isActive for frontend compatibility.
      */
     async getProviders(includeRealKeys = false) {
-        const providers = await fs.readJson(DATA_PATH);
+        const providers = await this._getRawProviders();
         return providers
             .sort((a, b) => (a.queuePosition || 0) - (b.queuePosition || 0))
             .map(p => ({
@@ -152,7 +187,7 @@ class AIProvidersService {
      * Get the currently active provider with decrypted key.
      */
     async getActiveProvider() {
-        const providers = await fs.readJson(DATA_PATH);
+        const providers = await this._getRawProviders();
         const active = providers.find(p => p.status === 'active');
         if (!active) return null;
 
@@ -168,7 +203,7 @@ class AIProvidersService {
      * @returns {object|null} — The next available provider or null
      */
     async getNextAvailable() {
-        const providers = await fs.readJson(DATA_PATH);
+        const providers = await this._getRawProviders();
         const sorted = providers
             .filter(p => p.status === 'available')
             .sort((a, b) => (a.queuePosition || 0) - (b.queuePosition || 0));
@@ -178,7 +213,7 @@ class AIProvidersService {
     // ── Write operations ─────────────────────────────────────────────────
 
     async saveProvider({ id, name, apiKey, isActive }) {
-        const providers = await fs.readJson(DATA_PATH);
+        const providers = await this._getRawProviders();
         const encryptedKey = this.encrypt(apiKey);
 
         if (id) {
@@ -213,13 +248,13 @@ class AIProvidersService {
             }
         }
 
-        await fs.writeJson(DATA_PATH, providers, { spaces: 2 });
+        await this._saveAllProviders(providers);
         this._emitStatusChange('provider-saved', { name });
         return this.getProviders();
     }
 
     async deleteProvider(id) {
-        let providers = await fs.readJson(DATA_PATH);
+        let providers = await this._getRawProviders();
         const providerToDelete = providers.find(p => p.id === id);
         const wasActive = providerToDelete?.status === 'active';
         providers = providers.filter(p => p.id !== id);
@@ -243,7 +278,10 @@ class AIProvidersService {
             .sort((a, b) => (a.queuePosition || 0) - (b.queuePosition || 0))
             .forEach((p, idx) => { p.queuePosition = idx; });
 
-        await fs.writeJson(DATA_PATH, providers, { spaces: 2 });
+        if (dynamo.isEnabled()) {
+            try { await dynamo.deleteItem('AI_PROVIDER', id); } catch (e) {}
+        }
+        await this._saveAllProviders(providers);
         this._emitStatusChange('provider-deleted', { id, name: providerToDelete?.name });
         return this.getProviders();
     }
@@ -253,7 +291,7 @@ class AIProvidersService {
      * The previously active one returns to 'available'.
      */
     async setActive(id) {
-        const providers = await fs.readJson(DATA_PATH);
+        const providers = await this._getRawProviders();
 
         providers.forEach(p => {
             if (p.id === id) {
@@ -267,7 +305,7 @@ class AIProvidersService {
             }
         });
 
-        await fs.writeJson(DATA_PATH, providers, { spaces: 2 });
+        await this._saveAllProviders(providers);
         const activated = providers.find(p => p.id === id);
         this._emitStatusChange('provider-activated', { id, name: activated?.name });
         console.log(`✅ [Providers] Manually activated: ${activated?.name}`);
@@ -281,7 +319,7 @@ class AIProvidersService {
      * @returns {object} — { providers, nextActive }
      */
     async markExhausted(id, reason = 'unknown') {
-        const providers = await fs.readJson(DATA_PATH);
+        const providers = await this._getRawProviders();
         const provider = providers.find(p => p.id === id);
 
         if (!provider) {
@@ -312,7 +350,7 @@ class AIProvidersService {
             console.error(`🚨 [Providers] No more providers available! All exhausted.`);
         }
 
-        await fs.writeJson(DATA_PATH, providers, { spaces: 2 });
+        await this._saveAllProviders(providers);
         this._emitStatusChange('provider-exhausted', {
             exhaustedId: id,
             exhaustedName: provider.name,
@@ -331,7 +369,7 @@ class AIProvidersService {
      * @returns {Array} — Updated providers list
      */
     async reactivateProvider(id) {
-        const providers = await fs.readJson(DATA_PATH);
+        const providers = await this._getRawProviders();
         const provider = providers.find(p => p.id === id);
 
         if (!provider || provider.status !== 'exhausted') {
@@ -359,7 +397,7 @@ class AIProvidersService {
             console.log(`🟢 [Providers] Auto-activated "${provider.name}" (no other active provider)`);
         }
 
-        await fs.writeJson(DATA_PATH, providers, { spaces: 2 });
+        await this._saveAllProviders(providers);
         this._emitStatusChange('provider-reactivated', { id, name: provider.name });
         return this.getProviders();
     }
@@ -369,14 +407,14 @@ class AIProvidersService {
      * @param {string[]} orderedIds — Provider IDs in desired order
      */
     async reorderQueue(orderedIds) {
-        const providers = await fs.readJson(DATA_PATH);
+        const providers = await this._getRawProviders();
 
         orderedIds.forEach((id, idx) => {
             const p = providers.find(pr => pr.id === id);
             if (p) p.queuePosition = idx;
         });
 
-        await fs.writeJson(DATA_PATH, providers, { spaces: 2 });
+        await this._saveAllProviders(providers);
         this._emitStatusChange('queue-reordered', { order: orderedIds });
         return this.getProviders();
     }
@@ -402,7 +440,7 @@ class AIProvidersService {
      * @returns {Array} — Array of { providerName, providerStatus, ...log }
      */
     async getUsageLogs(filterId) {
-        const providers = await fs.readJson(DATA_PATH);
+        const providers = await this._getRawProviders();
         const logs = [];
 
         providers.forEach(p => {
@@ -427,7 +465,7 @@ class AIProvidersService {
      * Used by the cross-provider fallback to auto-switch to the working provider.
      */
     async activateByDecryptedKey(decryptedKey) {
-        const providers = await fs.readJson(DATA_PATH);
+        const providers = await this._getRawProviders();
         const target = providers.find(p => {
             try {
                 return this.decrypt(p.apiKey) === decryptedKey;
@@ -446,7 +484,7 @@ class AIProvidersService {
             }
         });
 
-        await fs.writeJson(DATA_PATH, providers, { spaces: 2 });
+        await this._saveAllProviders(providers);
         console.log(`🔄 [Providers] Auto-activated provider "${target.name}" (${this.maskKey(decryptedKey)})`);
         this._emitStatusChange('provider-activated', { id: target.id, name: target.name });
         return { id: target.id, name: target.name, apiKey: this.maskKey(decryptedKey) };
@@ -457,7 +495,7 @@ class AIProvidersService {
      * Used by the key rotation service to cycle through available keys.
      */
     async getProvidersByType(type) {
-        const providers = await fs.readJson(DATA_PATH);
+        const providers = await this._getRawProviders();
         const typeLower = type.toLowerCase();
 
         const matching = providers.filter(p => {
@@ -494,7 +532,7 @@ class AIProvidersService {
      * Used by the key rotation service when a key fails.
      */
     async exhaustByDecryptedKey(decryptedKey, reason = 'API call failure') {
-        const providers = await fs.readJson(DATA_PATH);
+        const providers = await this._getRawProviders();
         const target = providers.find(p => {
             try {
                 return this.decrypt(p.apiKey) === decryptedKey;
@@ -507,7 +545,7 @@ class AIProvidersService {
     // ── Test connection ──────────────────────────────────────────────────
 
     async testConnection(id) {
-        const providers = await fs.readJson(DATA_PATH);
+        const providers = await this._getRawProviders();
         const provider = providers.find(p => p.id === id);
         if (!provider) throw new Error('Proveedor no encontrado');
 

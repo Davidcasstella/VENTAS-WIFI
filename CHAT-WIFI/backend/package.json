@@ -8,8 +8,11 @@
         "test": "node --test \"tests/**/*.test.js\""
     },
     "dependencies": {
+        "@aws-sdk/client-dynamodb": "^3.1082.0",
         "@aws-sdk/client-rekognition": "^3.1081.0",
+        "@aws-sdk/lib-dynamodb": "^3.1082.0",
         "@whiskeysockets/baileys": "^7.0.0-rc13",
+        "archiver": "^8.0.0",
         "axios": "^1.13.5",
         "bcrypt": "^6.0.0",
         "better-sqlite3": "^12.9.0",
@@ -22,6 +25,7 @@
         "googleapis": "^173.0.0",
         "jsonwebtoken": "^9.0.3",
         "multer": "^2.0.2",
+        "node-cron": "^4.6.0",
         "pdf-parse": "^2.4.5",
         "pino": "^9.6.0",
         "pino-pretty": "^13.0.0",

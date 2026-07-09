@@ -2,8 +2,8 @@
   "573028599105@s.whatsapp.net": {
     "startedAt": "2026-07-08T07:05:29.813Z",
     "anchorAt": "2026-07-08T07:26:47.942Z",
-    "currentStepIndex": 0,
-    "lastStepSentAt": null,
+    "currentStepIndex": 1,
+    "lastStepSentAt": "2026-07-08T21:40:02.922Z",
     "status": "active",
     "pauseReason": null,
     "closedReason": null,
@@ -13,11 +13,18 @@
         "label": "Seguimiento 2 horas",
         "sentAt": "2026-07-08T07:07:03.484Z",
         "ok": true
+      },
+      {
+        "stepId": "step_2",
+        "label": "Seguimiento 4 horas",
+        "sentAt": "2026-07-08T21:40:02.922Z",
+        "ok": true
       }
     ],
-    "completed": false,
+    "completed": true,
     "cancelled": false,
     "cancelReason": null,
-    "updatedAt": "2026-07-08T07:26:47.942Z"
+    "updatedAt": "2026-07-08T21:40:02.922Z",
+    "completedAt": "2026-07-08T21:40:02.922Z"
   }
 }

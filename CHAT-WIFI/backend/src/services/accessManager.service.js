@@ -1,5 +1,6 @@
 const googleDriveService = require('./googleDrive.service');
 const courseAccessService = require('./courseAccess.service');
+const dynamo = require('./dynamoStore');
 
 /**
  * AccessManagerService
@@ -40,10 +41,24 @@ class AccessManagerService {
      * Stored in knowledge-base/drive-config.json
      */
     async _getPlanFolders() {
+        const fs = require('fs-extra');
+        const path = require('path');
+        const configPath = path.join(__dirname, '../../knowledge-base/drive-config.json');
+
+        if (dynamo.isEnabled()) {
+            try {
+                const data = await dynamo.getItem('CONFIG', 'drive-config');
+                if (data) return data;
+                // Migrate from local
+                const local = await fs.readJson(configPath).catch(() => ({ planFolders: {}, activityLog: [] }));
+                await dynamo.putItem('CONFIG', 'drive-config', local);
+                return local;
+            } catch (err) {
+                console.error(`❌ [AccessManager] DynamoDB read failed: ${err.message}`);
+            }
+        }
+
         try {
-            const fs = require('fs-extra');
-            const path = require('path');
-            const configPath = path.join(__dirname, '../../knowledge-base/drive-config.json');
             await fs.ensureFile(configPath);
             const raw = await fs.readFile(configPath, 'utf-8');
             const trimmed = raw.trim();
@@ -58,6 +73,15 @@ class AccessManagerService {
         const fs = require('fs-extra');
         const path = require('path');
         const configPath = path.join(__dirname, '../../knowledge-base/drive-config.json');
+
+        if (dynamo.isEnabled()) {
+            try {
+                await dynamo.putItem('CONFIG', 'drive-config', config);
+            } catch (err) {
+                console.error(`❌ [AccessManager] DynamoDB write failed: ${err.message}`);
+            }
+        }
+
         await fs.writeJson(configPath, config, { spaces: 2 });
     }
 

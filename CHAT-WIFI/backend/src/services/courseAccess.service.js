@@ -1,14 +1,17 @@
 const fs = require('fs-extra');
 const path = require('path');
+const dynamo = require('./dynamoStore');
 
 const DATA_PATH = path.join(__dirname, '../../knowledge-base/course-access.json');
+
+const DYNAMO_PK = 'CONFIG';
+const DYNAMO_SK = 'course-access';
 
 /**
  * CourseAccessService
  *
  * Manages course access records after payment detection.
- * Stores data in a JSON file following the same pattern as
- * ai-rules.json and other knowledge-base files.
+ * Supports DynamoDB (primary) and local JSON file (fallback).
  *
  * Lifecycle:
  *   1. Payment detected → createPendingAccess() → status: "pending_email"
@@ -28,6 +31,22 @@ class CourseAccessService {
     // ── Data I/O ──────────────────────────────────────────────
 
     async _load() {
+        if (dynamo.isEnabled()) {
+            try {
+                const data = await dynamo.getItem(DYNAMO_PK, DYNAMO_SK);
+                if (data && Array.isArray(data.records)) return data.records;
+                // Seed from local
+                const local = await this._loadLocal();
+                await dynamo.putItem(DYNAMO_PK, DYNAMO_SK, { records: local });
+                return local;
+            } catch (err) {
+                console.error(`❌ [CourseAccess] DynamoDB read failed: ${err.message}`);
+            }
+        }
+        return this._loadLocal();
+    }
+
+    async _loadLocal() {
         try {
             await fs.ensureFile(DATA_PATH);
             const raw = await fs.readFile(DATA_PATH, 'utf-8');
@@ -40,6 +59,14 @@ class CourseAccessService {
     }
 
     async _save(records) {
+        if (dynamo.isEnabled()) {
+            try {
+                await dynamo.putItem(DYNAMO_PK, DYNAMO_SK, { records });
+                return;
+            } catch (err) {
+                console.error(`❌ [CourseAccess] DynamoDB write failed: ${err.message}`);
+            }
+        }
         await fs.writeJson(DATA_PATH, records, { spaces: 2 });
     }
 
@@ -53,18 +80,12 @@ class CourseAccessService {
 
     // ── Core Methods ──────────────────────────────────────────
 
-    /**
-     * Create a pending access record when payment is detected.
-     * Returns the created record.
-     */
     async createPendingAccess(jid, pushName, plan = '') {
         const records = await this._load();
 
-        // Check if there's already a pending record for this JID
         const existing = records.find(r => r.jid === jid && (r.status === 'pending_email' || r.status === 'pending_access'));
         if (existing) {
             console.log(`📋 [CourseAccess] Existing pending record for ${jid}, skipping duplicate`);
-            // Update plan if it was empty but now we detected one
             if (plan && !existing.plan) {
                 existing.plan = plan;
                 existing.amount = plan === 'combo-10' ? 10000 : plan === 'combo-15' ? 15000 : 0;
@@ -94,12 +115,11 @@ class CourseAccessService {
             updatedAt: new Date().toISOString(),
         };
 
-        records.unshift(record); // newest first
+        records.unshift(record);
         await this._save(records);
 
         console.log(`📋 [CourseAccess] Created pending access for ${jid} (${pushName}) with plan "${plan}"`);
 
-        // Notify dashboard in real-time
         if (this._io) {
             this._io.emit('course-access:new', record);
         }
@@ -107,9 +127,6 @@ class CourseAccessService {
         return record;
     }
 
-    /**
-     * Create a manual access record from the admin dashboard.
-     */
     async createManualAccess(data) {
         const records = await this._load();
 
@@ -149,11 +166,6 @@ class CourseAccessService {
         return record;
     }
 
-
-    /**
-     * Save the client's email after they send it via WhatsApp.
-     * Changes status from pending_email → pending_access.
-     */
     async saveEmail(jid, email) {
         const records = await this._load();
         const record = records.find(r => r.jid === jid && r.status === 'pending_email');
@@ -178,9 +190,6 @@ class CourseAccessService {
         return record;
     }
 
-    /**
-     * Admin grants access to the course.
-     */
     async grantAccess(id) {
         const records = await this._load();
         const record = records.find(r => r.id === id);
@@ -200,9 +209,6 @@ class CourseAccessService {
         return record;
     }
 
-    /**
-     * Admin denies access.
-     */
     async denyAccess(id) {
         const records = await this._load();
         const record = records.find(r => r.id === id);
@@ -221,9 +227,6 @@ class CourseAccessService {
         return record;
     }
 
-    /**
-     * Update the plan for a record.
-     */
     async updatePlan(id, plan) {
         const records = await this._load();
         const record = records.find(r => r.id === id);
@@ -242,9 +245,6 @@ class CourseAccessService {
         return record;
     }
 
-    /**
-     * Update notes for a record.
-     */
     async updateNotes(id, notes) {
         const records = await this._load();
         const record = records.find(r => r.id === id);
@@ -257,9 +257,6 @@ class CourseAccessService {
         return record;
     }
 
-    /**
-     * Delete a record.
-     */
     async deleteAccess(id) {
         let records = await this._load();
         const before = records.length;
@@ -267,7 +264,6 @@ class CourseAccessService {
 
         if (!record) return false;
 
-        // Auto-revoke Google Drive permissions before deleting the record
         try {
             const accessManagerService = require('./accessManager.service');
             console.log(`🗑️ [CourseAccess] Auto-revoking Google Drive permissions for record ${id} before deletion`);
@@ -276,11 +272,9 @@ class CourseAccessService {
             console.error(`⚠️ [CourseAccess] Auto-revocation failed during deletion of ${id}: ${err.message}`);
         }
 
-        // Now filter and save the records
         records = records.filter(r => r.id !== id);
         await this._save(records);
 
-        // Reset welcome automation state and re-enable AI for this user
         if (record && record.jid) {
             try {
                 const welcomeAutomationService = require('./welcomeAutomation.service');
@@ -298,25 +292,15 @@ class CourseAccessService {
         return true;
     }
 
-    /**
-     * Get all records.
-     */
     async getAll() {
         return await this._load();
     }
 
-    /**
-     * Update Drive permissions for a record after sharing.
-     * @param {string} id - Record ID
-     * @param {Array} drivePermissions - Array of permission objects
-     * @param {number} expiryDays - Days until access expires (0 = no expiry)
-     */
     async updateDrivePermissions(id, drivePermissions, expiryDays = 0) {
         const records = await this._load();
         const record = records.find(r => r.id === id);
         if (!record) return null;
 
-        // Merge new permissions with existing ones
         if (!record.drivePermissions) record.drivePermissions = [];
         record.drivePermissions = [...record.drivePermissions, ...drivePermissions];
         record.driveAccessGrantedAt = new Date().toISOString();
@@ -338,11 +322,6 @@ class CourseAccessService {
         return record;
     }
 
-    /**
-     * Update Drive permissions after revocation.
-     * @param {string} id - Record ID
-     * @param {Array} drivePermissions - Updated permission objects (with revokedAt)
-     */
     async updateDriveRevocation(id, drivePermissions) {
         const records = await this._load();
         const record = records.find(r => r.id === id);
@@ -361,25 +340,16 @@ class CourseAccessService {
         return record;
     }
 
-    /**
-     * Find a record by JID.
-     */
     async getByJid(jid) {
         const records = await this._load();
         return records.find(r => r.jid === jid && (r.status === 'pending_email' || r.status === 'pending_access'));
     }
 
-    /**
-     * Check if a JID has a pending_email record (waiting for email input).
-     */
     async isPendingEmail(jid) {
         const records = await this._load();
         return records.some(r => r.jid === jid && r.status === 'pending_email');
     }
 
-    /**
-     * Get statistics.
-     */
     async getStats() {
         const records = await this._load();
         return {
