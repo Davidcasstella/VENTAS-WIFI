@@ -1353,6 +1353,361 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   Grant Access Panel (Course Access & Google Drive Manual Tool)
+   ═══════════════════════════════════════════════════════════════ */
+
+.grant-access-panel {
+    background: rgba(10, 26, 10, 0.65);
+    border-bottom: 1px solid rgba(0, 255, 0, 0.12);
+    padding: 8px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    z-index: 10;
+    backdrop-filter: blur(8px);
+}
+
+.grant-access-loading {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: #8696a0;
+    padding: 10px 16px;
+}
+
+.grant-access-collapsed-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    padding: 2px 0;
+    transition: opacity 0.2s ease;
+}
+
+.grant-access-collapsed-bar:hover {
+    opacity: 0.85;
+}
+
+.grant-access-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(0, 168, 132, 0.15);
+    border: 1px solid rgba(0, 168, 132, 0.35);
+    border-radius: 12px;
+    padding: 2px 8px;
+    color: #40d080;
+    font-size: 0.72rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.grant-access-toggle-btn:hover {
+    background: rgba(0, 168, 132, 0.3);
+}
+
+.btn-collapse {
+    background: transparent;
+    border: none;
+    color: #8696a0;
+    padding: 2px 4px;
+}
+
+.btn-collapse:hover {
+    color: #e9edef;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.grant-access-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.grant-access-icon-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #e9edef;
+    white-space: nowrap;
+}
+
+.icon-granted {
+    color: #00a884;
+}
+
+.icon-pending {
+    color: #ffb703;
+}
+
+.icon-success {
+    color: #00a884;
+    flex-shrink: 0;
+}
+
+.icon-warning {
+    color: #ffb703;
+}
+
+.grant-access-status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.grant-access-email-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0, 168, 132, 0.15);
+    border: 1px solid rgba(0, 168, 132, 0.35);
+    padding: 3px 10px;
+    border-radius: 14px;
+    font-size: 0.78rem;
+    color: #40d080;
+    font-weight: 500;
+    max-width: 220px;
+}
+
+.grant-access-email-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.grant-access-plan-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(255, 183, 3, 0.15);
+    border: 1px solid rgba(255, 183, 3, 0.35);
+    padding: 3px 10px;
+    border-radius: 14px;
+    font-size: 0.75rem;
+    color: #ffd166;
+    font-weight: 600;
+}
+
+.plan-badge-icon {
+    font-size: 0.8rem;
+}
+
+.grant-access-form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 240px;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+}
+
+.grant-access-input {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(0, 255, 0, 0.18);
+    border-radius: 6px;
+    padding: 5px 10px;
+    color: #e9edef;
+    font-size: 0.78rem;
+    outline: none;
+    transition: all 0.25s ease;
+    flex: 1;
+    min-width: 160px;
+    max-width: 200px;
+}
+
+.grant-access-input:focus {
+    border-color: rgba(0, 168, 132, 0.7);
+    background: rgba(0, 0, 0, 0.35);
+    box-shadow: 0 0 0 2px rgba(0, 168, 132, 0.15);
+}
+
+.grant-access-input::placeholder {
+    color: #667781;
+}
+
+.grant-access-select {
+    background: rgba(26, 42, 34, 0.9);
+    border: 1px solid rgba(0, 168, 132, 0.4);
+    border-radius: 6px;
+    padding: 5px 8px;
+    color: #40d080;
+    font-size: 0.76rem;
+    font-weight: 600;
+    outline: none;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.grant-access-select:focus {
+    border-color: #00a884;
+    box-shadow: 0 0 0 2px rgba(0, 168, 132, 0.2);
+}
+
+.grant-access-select option {
+    background: #1f2c34;
+    color: #e9edef;
+    padding: 6px;
+}
+
+.grant-access-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.grant-access-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 11px;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.grant-access-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-grant {
+    background: #00a884;
+    color: #111b21;
+}
+
+.btn-grant:hover:not(:disabled) {
+    background: #06cf9c;
+    transform: translateY(-1px);
+}
+
+.btn-resend {
+    background: rgba(0, 168, 132, 0.18);
+    color: #00a884;
+    border: 1px solid rgba(0, 168, 132, 0.35);
+}
+
+.btn-resend:hover:not(:disabled) {
+    background: rgba(0, 168, 132, 0.28);
+}
+
+.btn-edit {
+    background: rgba(255, 255, 255, 0.08);
+    color: #e9edef;
+    padding: 5px 8px;
+}
+
+.btn-edit:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.btn-cancel {
+    background: rgba(255, 70, 70, 0.18);
+    color: #ff4646;
+    border: 1px solid rgba(255, 70, 70, 0.35);
+    padding: 5px 10px;
+}
+
+.btn-cancel:hover:not(:disabled) {
+    background: rgba(255, 70, 70, 0.28);
+}
+
+.grant-access-message {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    padding: 4px 8px;
+    border-radius: 4px;
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+.message-error {
+    background: rgba(255, 70, 70, 0.15);
+    color: #ff6b6b;
+    border-left: 3px solid #ff4646;
+}
+
+.message-success {
+    background: rgba(0, 168, 132, 0.15);
+    color: #40d080;
+    border-left: 3px solid #00a884;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-3px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Modal confirmación cambio de email */
+.grant-access-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+
+.grant-access-modal {
+    background: #1f2c34;
+    border: 1px solid rgba(255, 183, 3, 0.4);
+    border-radius: 12px;
+    padding: 20px 24px;
+    max-width: 420px;
+    width: 90%;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    color: #e9edef;
+}
+
+.grant-access-modal-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.grant-access-modal-header h4 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #ffb703;
+}
+
+.grant-access-modal p {
+    font-size: 0.85rem;
+    line-height: 1.4;
+    margin: 8px 0;
+    color: #a6b6c0;
+}
+
+.grant-access-modal p strong {
+    color: #e9edef;
+}
+
+.grant-access-modal-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
    Responsive — Mobile (≤768px)  WhatsApp-style navigation
    ═══════════════════════════════════════════════════════════════ */
 
@@ -1516,5 +1871,34 @@
     .chat-lightbox-img {
         max-width: 95vw;
         max-height: 85vh;
+    }
+
+    /* ── Grant access panel mobile adjustment ── */
+    .grant-access-panel {
+        padding: 6px 12px;
+    }
+    .grant-access-collapsed-bar {
+        padding: 4px 0;
+    }
+    .grant-access-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        width: 100%;
+    }
+    .grant-access-form,
+    .grant-access-status {
+        width: 100%;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+    .grant-access-input,
+    .grant-access-select {
+        width: 100%;
+        max-width: none;
+    }
+    .grant-access-email-badge {
+        max-width: calc(100% - 90px);
     }
 }

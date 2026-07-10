@@ -355,4 +355,184 @@ router.delete('/:jid', async (req, res) => {
     }
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Manual Access Panel endpoints
+// These allow the admin to manually trigger the same flow that runs automatically
+// after payment detection. The key shared point is accessManagerService.autoGrantAccess()
+// ─────────────────────────────────────────────────────────────────────────────
+
+const courseAccessService = require('../services/courseAccess.service');
+const accessManagerService = require('../services/accessManager.service');
+
+/**
+ * GET /api/chat/access-info/:jid
+ * Returns the latest course access record for a JID.
+ * Used by the chat panel to show the saved email and access status.
+ */
+router.get('/access-info/:jid', verifyToken, async (req, res) => {
+    try {
+        const jid = decodeURIComponent(req.params.jid);
+        const record = await courseAccessService.getLatestByJid(jid);
+        const driveConfig = await accessManagerService.getPlanFolderConfig();
+        const planFolders = driveConfig.planFolders || {};
+        res.json({ success: true, record: record || null, planFolders });
+    } catch (error) {
+        console.error('❌ [ManualAccess] GET /access-info error:', error.message);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+/**
+ * POST /api/chat/grant-access
+ * Manually grant Drive access and send welcome messages to a client.
+ * Reutilizes the SAME accessManagerService.autoGrantAccess() that runs automatically.
+ *
+ * Body: { jid, email, plan?, force? }
+ *   - jid:   WhatsApp JID of the contact
+ *   - email: Client email to share Drive with
+ *   - plan:  Optional plan (combo-10 or combo-15). Defaults to env default folder.
+ *   - force: If true, replaces the existing email on the record
+ */
+router.post('/grant-access', verifyToken, async (req, res) => {
+    try {
+        const { jid, email, plan, force } = req.body;
+        console.log(`➡️ [ManualAccess] POST /grant-access requested for ${jid} | email: "${email}" | force: ${force}`);
+
+        // Validate inputs
+        if (!jid) return res.status(400).json({ success: false, error: 'El JID es requerido' });
+        if (!email) return res.status(400).json({ success: false, error: 'El correo es requerido' });
+
+        const emailRegex = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
+        if (!emailRegex.test(email.trim())) {
+            return res.status(400).json({ success: false, error: 'El formato del correo no es válido' });
+        }
+
+        const cleanEmail = email.trim().toLowerCase();
+
+        // Check for existing record
+        let record = await courseAccessService.getLatestByJid(jid);
+
+        if (record) {
+            // Record exists — check for email conflict
+            if (record.email && record.email !== cleanEmail && !force) {
+                return res.status(409).json({
+                    success: false,
+                    conflict: true,
+                    existingEmail: record.email,
+                    error: `Este contacto ya tiene el correo ${record.email} registrado. Usa force=true para reemplazarlo.`
+                });
+            }
+
+            // Update email if it changed or was empty
+            if (record.email !== cleanEmail) {
+                record = await courseAccessService.updateEmail(record.id, cleanEmail);
+            }
+
+            // Update plan if provided and different
+            if (plan && plan !== record.plan) {
+                record = await courseAccessService.updatePlan(record.id, plan);
+            }
+        } else {
+            // No existing record — create one
+            const pushName = jid.replace(/@.*$/, '');
+            record = await courseAccessService.createManualAccess({
+                phone: jid.replace(/@s\.whatsapp\.net$/, ''),
+                pushName,
+                email: cleanEmail,
+                plan: plan || '',
+                status: 'pending_access'
+            });
+        }
+
+        if (!record) {
+            return res.status(500).json({ success: false, error: 'No se pudo crear o encontrar el registro de acceso' });
+        }
+
+        // ── CORE: call the SAME autoGrantAccess used by the automatic flow ──
+        // This shares Drive folders + sends WhatsApp confirmation messages
+        try {
+            const updatedRecord = await accessManagerService.autoGrantAccess(record.id);
+            console.log(`✅ [ManualAccess] Access granted for ${jid} (${cleanEmail}) via chat panel`);
+            return res.json({ success: true, record: updatedRecord });
+        } catch (grantErr) {
+            // Provide meaningful error messages for common Drive errors
+            let userMessage = 'No fue posible compartir la carpeta en Google Drive';
+            if (grantErr.message?.includes('No folders configured') || grantErr.message?.includes('no default folder')) {
+                userMessage = 'No hay carpeta de Drive configurada para este plan. Configúrala en Ajustes → Google Drive.';
+            } else if (grantErr.message?.includes('not found') || grantErr.message?.includes('404')) {
+                userMessage = 'La carpeta de Google Drive no fue encontrada. Verifica el ID en la configuración.';
+            } else if (grantErr.message?.includes('invalid') || grantErr.message?.includes('400')) {
+                userMessage = 'El correo electrónico fue rechazado por Google Drive. Verifica que sea una cuenta de Google válida.';
+            } else if (grantErr.message?.includes('not initialized') || grantErr.message?.includes('credentials')) {
+                userMessage = 'Google Drive no está configurado. Verifica las credenciales del servidor.';
+            }
+
+            console.error(`❌ [ManualAccess] autoGrantAccess failed for ${jid}: ${grantErr.message}`);
+            return res.status(502).json({ success: false, error: userMessage, detail: grantErr.message });
+        }
+
+    } catch (error) {
+        console.error('❌ [ManualAccess] POST /grant-access error:', error.message);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+/**
+ * POST /api/chat/resend-access
+ * Resend only the WhatsApp welcome messages WITHOUT re-sharing the Drive folder.
+ * For clients who say "I didn't receive it" or "I deleted the message".
+ *
+ * Body: { jid }
+ */
+router.post('/resend-access', verifyToken, async (req, res) => {
+    try {
+        const { jid } = req.body;
+        if (!jid) return res.status(400).json({ success: false, error: 'El JID es requerido' });
+
+        const record = await courseAccessService.getLatestByJid(jid);
+        if (!record || !record.email) {
+            return res.status(404).json({
+                success: false,
+                error: 'Este contacto no tiene un correo de acceso registrado'
+            });
+        }
+
+        // Get the WhatsApp socket from the whatsapp core module
+        const whatsapp = require('../core/WhatsApp');
+        if (!whatsapp.sock) {
+            return res.status(503).json({ success: false, error: 'WhatsApp no está conectado' });
+        }
+
+        // Build the confirmation message with stored Drive links (same as autoGrantAccess)
+        const chatHistoryService = require('../services/chatHistory.service');
+        const welcomeAutomationService = require('../services/welcomeAutomation.service');
+        const io = req.app.get('io');
+
+        const drivePerms = (record.drivePermissions || []).filter(p => !p.revokedAt);
+        let linksText = '';
+        if (drivePerms.length > 0) {
+            linksText = '\n\n📂 Enlaces de acceso directo:\n' +
+                drivePerms.map(p => `• *${p.folderName}*:\n${p.webViewLink || 'https://drive.google.com'}`).join('\n\n');
+        }
+
+        const msgText = `🎉 ¡Listo! Ya te he dado acceso a las carpetas del curso en tu Google Drive. Revisa tu correo (bandeja de entrada o spam) para acceder al material. ¡Que lo disfrutes! 🚀${linksText}`;
+
+        welcomeAutomationService.markBotSent(jid);
+        await whatsapp.sock.sendMessage(jid, { text: msgText });
+
+        try {
+            const savedMsg = await chatHistoryService.addMessage(jid, msgText, true, undefined, 'bot');
+            if (io) io.emit('chat:message', { jid, message: savedMsg });
+        } catch (_) { /* non-critical */ }
+
+        console.log(`🔄 [ManualAccess] Access messages resent to ${jid} (${record.email})`);
+        res.json({ success: true, record });
+
+    } catch (error) {
+        console.error('❌ [ManualAccess] POST /resend-access error:', error.message);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 module.exports = router;
+

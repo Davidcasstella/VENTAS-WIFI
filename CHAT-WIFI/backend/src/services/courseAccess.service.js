@@ -345,6 +345,74 @@ class CourseAccessService {
         return records.find(r => r.jid === jid && (r.status === 'pending_email' || r.status === 'pending_access'));
     }
 
+    /**
+     * Find the most recent record for a JID, regardless of status.
+     * Used by the manual access panel in the chat UI to show the saved email.
+     */
+    async getLatestByJid(jid) {
+        const records = await this._load();
+        // Filter all records for this JID and return the most recent one
+        const jidRecords = records.filter(r => r.jid === jid);
+        if (jidRecords.length === 0) return null;
+        // Prefer access_granted > pending_access > pending_email > denied
+        const priority = { access_granted: 0, pending_access: 1, pending_email: 2, access_denied: 3 };
+        return jidRecords.sort((a, b) => {
+            const pa = priority[a.status] ?? 99;
+            const pb = priority[b.status] ?? 99;
+            if (pa !== pb) return pa - pb;
+            // Same status: prefer most recent
+            return new Date(b.updatedAt || b.createdAt).getTime() - new Date(a.updatedAt || a.createdAt).getTime();
+        })[0];
+    }
+
+    /**
+     * Update the email for an existing record.
+     * Used when the admin enters a different email from the chat panel.
+     */
+    async updateEmail(id, email) {
+        const records = await this._load();
+        const record = records.find(r => r.id === id);
+        if (!record) return null;
+
+        record.email = email.trim().toLowerCase();
+        record.emailReceivedAt = new Date().toISOString();
+        // If it was pending_email, advance to pending_access
+        if (record.status === 'pending_email') {
+            record.status = 'pending_access';
+        }
+        record.updatedAt = new Date().toISOString();
+
+        await this._save(records);
+        console.log(`📧 [CourseAccess] Email updated for record ${id}: ${record.email}`);
+
+        if (this._io) {
+            this._io.emit('course-access:update', record);
+        }
+
+        return record;
+    }
+
+    /**
+     * Update the plan (course folder type e.g. combo-10, combo-15) for a record.
+     */
+    async updatePlan(id, plan) {
+        const records = await this._load();
+        const record = records.find(r => r.id === id);
+        if (!record) return null;
+
+        record.plan = plan || '';
+        record.updatedAt = new Date().toISOString();
+
+        await this._save(records);
+        console.log(`📦 [CourseAccess] Plan updated for record ${id}: "${record.plan}"`);
+
+        if (this._io) {
+            this._io.emit('course-access:update', record);
+        }
+
+        return record;
+    }
+
     async isPendingEmail(jid) {
         const records = await this._load();
         return records.some(r => r.jid === jid && r.status === 'pending_email');

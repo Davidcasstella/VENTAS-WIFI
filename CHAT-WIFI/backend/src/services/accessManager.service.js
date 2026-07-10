@@ -133,6 +133,7 @@ class AccessManagerService {
         const drivePermissions = [];
         for (const folderId of folderIds) {
             try {
+                console.log(`⏳ [AccessManager] Sharing folder ${folderId} with ${record.email}...`);
                 const result = await googleDriveService.shareFolderWithEmail(
                     folderId,
                     record.email,
@@ -142,7 +143,9 @@ class AccessManagerService {
                 let folderName = folderId;
                 let folderLink = '';
                 try {
-                    const info = await googleDriveService.getFolderInfo(folderId);
+                    const infoPromise = googleDriveService.getFolderInfo(folderId);
+                    const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 6000));
+                    const info = await Promise.race([infoPromise, timeoutPromise]);
                     folderName = info.name || folderId;
                     folderLink = info.webViewLink || '';
                 } catch { }
@@ -160,6 +163,10 @@ class AccessManagerService {
             } catch (err) {
                 console.error(`❌ [AccessManager] Failed to share folder ${folderId} with ${record.email}: ${err.message}`);
             }
+        }
+
+        if (folderIds.length > 0 && drivePermissions.length === 0) {
+            throw new Error(`No fue posible compartir la carpeta de Google Drive con ${record.email}. Verifica que el servicio de Drive esté conectado y que el correo sea válido.`);
         }
 
         // Update the record with Drive permissions

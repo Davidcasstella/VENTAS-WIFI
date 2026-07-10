@@ -79,7 +79,7 @@ class GoogleDriveService {
                 }
             }
 
-            this._drive = google.drive({ version: 'v3', auth });
+            this._drive = google.drive({ version: 'v3', auth, timeout: 15000 });
             this._initialized = true;
             console.log('✅ [GoogleDrive] Service initialized successfully');
             return true;
@@ -276,7 +276,7 @@ class GoogleDriveService {
         const defaultMessage = '¡Ya tienes acceso a tu contenido! 🎉 Abre esta carpeta para ver el material.';
 
         try {
-            const response = await this._drive.permissions.create({
+            const createPromise = this._drive.permissions.create({
                 fileId: folderId,
                 requestBody: {
                     type: 'user',
@@ -287,6 +287,12 @@ class GoogleDriveService {
                 emailMessage: emailMessage || defaultMessage,
                 fields: 'id, emailAddress, role',
             });
+
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('Tiempo de espera agotado de Google Drive API (14s)')), 14000)
+            );
+
+            const response = await Promise.race([createPromise, timeoutPromise]);
 
             console.log(`✅ [GoogleDrive] Shared folder ${folderId} with ${email} as ${role} (permissionId: ${response.data.id})`);
 

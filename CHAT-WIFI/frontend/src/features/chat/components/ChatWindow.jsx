@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { ArrowLeft, Send, Loader2, Power, RotateCcw, CheckCheck, Paperclip, Mic, X } from 'lucide-react';
 
 import api from '../../../services/api';
+import GrantAccessPanel from './GrantAccessPanel';
 
 // Backend base URL — same logic as api.js
 const BACKEND_URL = window.location.hostname === 'localhost'
@@ -547,6 +548,9 @@ const ChatWindow = ({ jid, pushName, messages, loading, onSend, onBack }) => {
                     </button>
                 </div>
             </div>
+
+            {/* Manual Grant Access Panel */}
+            <GrantAccessPanel jid={jid} />
 
             {/* Messages area */}
             <div className="chat-messages" ref={messagesContainerRef}>
