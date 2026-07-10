@@ -24,6 +24,7 @@
         "fs-extra": "^11.3.3",
         "googleapis": "^173.0.0",
         "jsonwebtoken": "^9.0.3",
+        "link-preview-js": "^3.2.0",
         "multer": "^2.0.2",
         "node-cron": "^4.6.0",
         "pdf-parse": "^2.4.5",

@@ -48,7 +48,10 @@ class AccessManagerService {
         if (dynamo.isEnabled()) {
             try {
                 const data = await dynamo.getItem('CONFIG', 'drive-config');
-                if (data) return data;
+                if (data) {
+                    await fs.writeJson(configPath, data, { spaces: 2 }).catch(() => {});
+                    return data;
+                }
                 // Migrate from local
                 const local = await fs.readJson(configPath).catch(() => ({ planFolders: {}, activityLog: [] }));
                 await dynamo.putItem('CONFIG', 'drive-config', local);
@@ -188,16 +191,33 @@ class AccessManagerService {
 
                 const msgText = `🎉 ¡Listo! Ya te he dado acceso a las carpetas del curso en tu Google Drive. Revisa tu correo (bandeja de entrada o spam) para acceder al material. ¡Que lo disfrutes! 🚀${linksText}`;
                 
-                const welcomeAutomationService = require('./welcomeAutomation.service');
-                welcomeAutomationService.markBotSent(record.jid);
+                let targetJid = record.jid;
+                if (targetJid && targetJid.includes('@lid@s.whatsapp.net')) {
+                    targetJid = targetJid.replace('@lid@s.whatsapp.net', '@lid');
+                }
+                if (targetJid.includes('@lid') && record.phone && !record.phone.includes('@lid')) {
+                    targetJid = `${record.phone}@s.whatsapp.net`;
+                }
 
-                await this._sock.sendMessage(record.jid, { text: msgText });
+                const welcomeAutomationService = require('./welcomeAutomation.service');
+                welcomeAutomationService.markBotSent(targetJid);
+
+                try {
+                    await this._sock.sendMessage(targetJid, { text: msgText, linkPreview: null });
+                } catch (sendErr) {
+                    console.log(`⚠️ Primer intento falló al enviar a ${targetJid} (rotación de sesión?), reintentando en 1.5s...`);
+                    await new Promise(r => setTimeout(r, 1500));
+                    await this._sock.sendMessage(targetJid, { text: msgText, linkPreview: null });
+                }
                 
                 const chatHistoryService = require('./chatHistory.service');
-                const s = await chatHistoryService.addMessage(record.jid, msgText, true, undefined, 'bot');
+                const s = await chatHistoryService.addMessage(targetJid, msgText, true, undefined, 'bot');
                 
                 if (this._io) {
-                    this._io.emit('chat:message', { jid: record.jid, message: s });
+                    this._io.emit('chat:message', { jid: targetJid, message: s });
+                    if (record.jid && record.jid !== targetJid) {
+                        this._io.emit('chat:message', { jid: record.jid, message: s });
+                    }
                 }
             } catch (msgErr) {
                 console.error(`⚠️ [AccessManager] Failed to send WhatsApp notification to ${record.jid}:`, msgErr.message);

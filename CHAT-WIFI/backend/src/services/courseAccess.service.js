@@ -34,7 +34,11 @@ class CourseAccessService {
         if (dynamo.isEnabled()) {
             try {
                 const data = await dynamo.getItem(DYNAMO_PK, DYNAMO_SK);
-                if (data && Array.isArray(data.records)) return data.records;
+                if (data && Array.isArray(data.records)) {
+                    // Sync DynamoDB data back to local file so local is never stale
+                    await fs.writeJson(DATA_PATH, data.records, { spaces: 2 }).catch(() => {});
+                    return data.records;
+                }
                 // Seed from local
                 const local = await this._loadLocal();
                 await dynamo.putItem(DYNAMO_PK, DYNAMO_SK, { records: local });
@@ -59,15 +63,22 @@ class CourseAccessService {
     }
 
     async _save(records) {
+        // ALWAYS write to local file first to ensure local consistency and zero stale data
+        try {
+            await fs.ensureFile(DATA_PATH);
+            await fs.writeJson(DATA_PATH, records, { spaces: 2 });
+        } catch (localErr) {
+            console.error(`❌ [CourseAccess] Local write failed: ${localErr.message}`);
+        }
+
+        // Also write to DynamoDB if enabled
         if (dynamo.isEnabled()) {
             try {
                 await dynamo.putItem(DYNAMO_PK, DYNAMO_SK, { records });
-                return;
             } catch (err) {
                 console.error(`❌ [CourseAccess] DynamoDB write failed: ${err.message}`);
             }
         }
-        await fs.writeJson(DATA_PATH, records, { spaces: 2 });
     }
 
     _genId() {
@@ -168,15 +179,22 @@ class CourseAccessService {
 
     async saveEmail(jid, email) {
         const records = await this._load();
-        const record = records.find(r => r.jid === jid && r.status === 'pending_email');
+        let record = records.find(r => r.jid === jid && r.status === 'pending_email') 
+                  || records.find(r => r.jid === jid && r.status === 'pending_access')
+                  || records.find(r => r.jid === jid);
+
+        const cleanEmail = email.trim().toLowerCase();
 
         if (!record) {
-            console.warn(`⚠️ [CourseAccess] No pending_email record found for ${jid}`);
-            return null;
+            console.log(`📋 [CourseAccess] No existing record for ${jid} when saving email. Creating new pending access...`);
+            const pushName = jid.replace(/@.*$/, '');
+            record = await this.createPendingAccess(jid, pushName, '');
         }
 
-        record.email = email.trim().toLowerCase();
-        record.status = 'pending_access';
+        record.email = cleanEmail;
+        if (record.status === 'pending_email') {
+            record.status = 'pending_access';
+        }
         record.emailReceivedAt = new Date().toISOString();
         record.updatedAt = new Date().toISOString();
 

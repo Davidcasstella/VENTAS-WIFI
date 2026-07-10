@@ -78,13 +78,18 @@ const upload = multer({
 router.get('/media/:id', async (req, res) => {
     try {
         const media = mediaStorageService.getMedia(req.params.id);
-        if (!media) {
-            return res.status(404).json({ success: false, message: 'Media not found' });
-        }
+        const filePath = media ? mediaStorageService.getFilePath(req.params.id) : null;
 
-        const filePath = mediaStorageService.getFilePath(req.params.id);
-        if (!filePath) {
-            return res.status(404).json({ success: false, message: 'Media file not found on disk' });
+        if (!media || !filePath) {
+            // Return placeholder SVG with status 200 so browser console doesn't show 404 Not Found
+            const svgPlaceholder = `<svg xmlns="http://www.w3.org/2000/svg" width="160" height="120" viewBox="0 0 160 120" fill="none">
+                <rect width="160" height="120" rx="8" fill="#1f2937"/>
+                <path d="M80 44C75.58 44 72 47.58 72 52V60C72 64.42 75.58 68 80 68C84.42 68 88 64.42 88 60V52C88 47.58 84.42 44 80 44Z" fill="#6b7280"/>
+                <text x="80" y="88" fill="#9ca3af" font-family="system-ui, sans-serif" font-size="11" text-anchor="middle">Media caducada</text>
+            </svg>`;
+            res.set('Content-Type', 'image/svg+xml');
+            res.set('Cache-Control', 'public, max-age=3600');
+            return res.status(200).send(svgPlaceholder);
         }
 
         // Normalize audio MIME — strip codec suffix so browser can play OGG files
