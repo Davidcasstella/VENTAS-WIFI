@@ -155,15 +155,19 @@ class ChatHistoryService {
         if (dynamo.isEnabled()) {
             try {
                 const conv = await this._readConvDynamo(jid);
-                // Si no hay mensajes en Dynamo pero sí existen en el archivo local, migrar y retornarlos
-                if (!conv.messages || conv.messages.length === 0) {
-                    const localData = await this._readLocal();
-                    if (localData[jid] && localData[jid].messages && localData[jid].messages.length > 0) {
-                        console.log(`🔄 [ChatHistory] Migrando ${localData[jid].messages.length} mensajes de ${jid} desde local a DynamoDB...`);
-                        await this._writeConvDynamo(jid, localData[jid]);
-                        return localData[jid];
-                    }
+                const localData = await this._readLocal();
+                const localConv = localData[jid];
+
+                // Si no hay mensajes en Dynamo pero sí existen en el archivo local, o si local tiene MÁS mensajes o es más reciente
+                const dynamoMsgsLen = conv?.messages?.length || 0;
+                const localMsgsLen = localConv?.messages?.length || 0;
+
+                if (localConv && localMsgsLen > dynamoMsgsLen) {
+                    console.log(`🔄 [ChatHistory] Migrando/actualizando ${localMsgsLen} mensajes de ${jid} desde archivo local a DynamoDB...`);
+                    await this._writeConvDynamo(jid, localConv);
+                    return localConv;
                 }
+
                 return conv;
             } catch (err) {
                 console.error(`❌ [ChatHistory] DynamoDB read failed, falling back to local: ${err.message}`);
@@ -183,36 +187,49 @@ class ChatHistoryService {
                 // Scan all CHAT# prefixed items directly — no secondary index needed
                 const dynamoChats = await this._scanAllChatsDynamo();
                 
-                // Verificación de sincronización con el archivo local
+                // Verificación de sincronización con el archivo local (chat-history.json)
                 const localData = await this._readLocal();
                 const localChats = this._buildConversationList(localData);
 
-                // Si hay conversaciones en local que no están aún en DynamoDB, migrarlas/combinarlas
-                if (localChats.length > 0 && dynamoChats.length < localChats.length) {
-                    console.log(`🔄 [ChatHistory] Detectados ${localChats.length} chats locales vs ${dynamoChats.length} en DynamoDB. Sincronizando hacia AWS...`);
-                    // Sincronizar hacia DynamoDB las que faltan
-                    const dynamoJids = new Set(dynamoChats.map(c => c.jid));
-                    for (const [jid, convData] of Object.entries(localData)) {
-                        if (!jid.includes('@g.us') && !dynamoJids.has(jid)) {
-                            try {
-                                await this._writeConvDynamo(jid, convData);
-                            } catch (e) {
-                                console.error(`⚠️ Error al migrar ${jid} a DynamoDB:`, e.message);
-                            }
+                // Combinar conversaciones de DynamoDB y el archivo local independientemente
+                const mergedMap = new Map();
+                dynamoChats.forEach(c => mergedMap.set(c.jid, c));
+
+                let needsSyncCount = 0;
+                for (const localConv of localChats) {
+                    const jid = localConv.jid;
+                    if (!jid || jid.includes('@g.us')) continue;
+
+                    const inDynamo = mergedMap.get(jid);
+                    if (!inDynamo) {
+                        mergedMap.set(jid, localConv);
+                        needsSyncCount++;
+                        // Subir a AWS en segundo plano
+                        this._writeConvDynamo(jid, localData[jid]).catch(e => 
+                            console.error(`⚠️ Error al migrar ${jid} a DynamoDB:`, e.message)
+                        );
+                    } else {
+                        // Si ya está en ambos, elegir el que tenga el mensaje más reciente o más historial
+                        const localTime = localConv.lastMessageTime ? new Date(localConv.lastMessageTime).getTime() : 0;
+                        const dynamoTime = inDynamo.lastMessageTime ? new Date(inDynamo.lastMessageTime).getTime() : 0;
+                        if (localTime > dynamoTime) {
+                            mergedMap.set(jid, localConv);
+                            this._writeConvDynamo(jid, localData[jid]).catch(e => 
+                                console.error(`⚠️ Error al actualizar ${jid} en DynamoDB:`, e.message)
+                            );
                         }
                     }
-                    // Combinar las conversaciones para mostrar al usuario sin demoras
-                    const mergedMap = new Map();
-                    localChats.forEach(c => mergedMap.set(c.jid, c));
-                    dynamoChats.forEach(c => mergedMap.set(c.jid, c));
-                    return Array.from(mergedMap.values()).sort((a, b) => {
-                        const aTime = a.lastMessageTime ? new Date(a.lastMessageTime).getTime() : 0;
-                        const bTime = b.lastMessageTime ? new Date(b.lastMessageTime).getTime() : 0;
-                        return bTime - aTime;
-                    });
                 }
 
-                return dynamoChats;
+                if (needsSyncCount > 0) {
+                    console.log(`🔄 [ChatHistory] Detectados ${needsSyncCount} chats locales no existentes en DynamoDB. Sincronizando hacia AWS...`);
+                }
+
+                return Array.from(mergedMap.values()).sort((a, b) => {
+                    const aTime = a.lastMessageTime ? new Date(a.lastMessageTime).getTime() : 0;
+                    const bTime = b.lastMessageTime ? new Date(b.lastMessageTime).getTime() : 0;
+                    return bTime - aTime;
+                });
             } catch (err) {
                 console.error(`❌ [ChatHistory] DynamoDB getConversations failed, falling back to local: ${err.message}`);
             }
