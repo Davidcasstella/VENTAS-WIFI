@@ -83,9 +83,18 @@ const ChatInterface = ({ setDashboardTab }) => {
     }, []);
 
 
-    // Load conversations on mount
+    // Load conversations on mount & silent polling every 7s to catch cloud updates
     useEffect(() => {
         loadConversations();
+        const interval = setInterval(() => {
+            if (mountedRef.current && !document.hidden) {
+                loadConversations(0, true);
+                if (activeJidRef.current) {
+                    silentLoadMessages(activeJidRef.current);
+                }
+            }
+        }, 7000);
+        return () => clearInterval(interval);
     }, []);
 
     // Socket.io real-time message listener — mounted ONCE, uses ref for activeJid
@@ -127,7 +136,6 @@ const ChatInterface = ({ setDashboardTab }) => {
             // Add message to active chat if it matches — with deduplication by ID
             if (jid === activeJidRef.current) {
                 setMessages(prev => {
-                    // Deduplicate: skip if message with same ID already exists
                     if (message.id && prev.some(m => m.id === message.id)) {
                         return prev;
                     }
@@ -138,15 +146,29 @@ const ChatInterface = ({ setDashboardTab }) => {
 
         socket.on('chat:message', handleNewMessage);
         return () => socket.off('chat:message', handleNewMessage);
-    }, []); // Empty deps: listener is stable, uses refs
+    }, []);
 
-    const loadConversations = async (retryCount = 0) => {
-        // Cancel any previous in-flight request
-        if (conversationsAbortRef.current) {
+    const silentLoadMessages = async (jid) => {
+        try {
+            const { data } = await api.get(`/api/chat/messages/${encodeURIComponent(jid)}`);
+            if (!mountedRef.current || activeJidRef.current !== jid) return;
+            const newMsgs = data.data?.messages || [];
+            setMessages(prev => {
+                if (newMsgs.length === prev.length) return prev;
+                return newMsgs;
+            });
+        } catch (err) {
+            /* ignore silent background polling errors */
+        }
+    };
+
+    const loadConversations = async (retryCount = 0, silent = false) => {
+        // Cancel any previous in-flight request unless this is a silent background poll
+        if (!silent && conversationsAbortRef.current) {
             conversationsAbortRef.current.abort();
         }
         const abortController = new AbortController();
-        conversationsAbortRef.current = abortController;
+        if (!silent) conversationsAbortRef.current = abortController;
 
         try {
             const { data } = await api.get('/api/chat/conversations', {
@@ -160,7 +182,7 @@ const ChatInterface = ({ setDashboardTab }) => {
 
             // If we got an empty result and haven't retried yet, wait a moment and retry
             // This handles the edge case where the backend hasn't fully loaded yet
-            if (convos.length === 0 && retryCount < 2) {
+            if (!silent && convos.length === 0 && retryCount < 2) {
                 setTimeout(() => {
                     if (mountedRef.current) {
                         loadConversations(retryCount + 1);
@@ -170,7 +192,7 @@ const ChatInterface = ({ setDashboardTab }) => {
         } catch (err) {
             // Ignore aborted requests (user navigated away)
             if (err?.name === 'CanceledError' || err?.code === 'ERR_CANCELED') return;
-            if (!mountedRef.current) return;
+            if (!mountedRef.current || silent) return;
 
             console.error('Error loading conversations:', err);
             // Auto-retry once on network error
