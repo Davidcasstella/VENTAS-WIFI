@@ -241,18 +241,60 @@ class ChatHistoryService {
                     console.log(`🔄 [ChatHistory] Detectados ${needsSyncCount} chats locales no existentes en DynamoDB. Sincronizando hacia AWS...`);
                 }
 
-                return Array.from(mergedMap.values()).sort((a, b) => {
-                    const aTime = a.lastMessageTime ? new Date(a.lastMessageTime).getTime() : 0;
-                    const bTime = b.lastMessageTime ? new Date(b.lastMessageTime).getTime() : 0;
-                    return bTime - aTime;
-                });
+                const mergedList = Array.from(mergedMap.values());
+                return this._deduplicateConversations(mergedList);
             } catch (err) {
                 console.error(`❌ [ChatHistory] DynamoDB getConversations failed, falling back to local: ${err.message}`);
             }
         }
 
         const data = await this._readLocal();
-        return this._buildConversationList(data);
+        return this._deduplicateConversations(this._buildConversationList(data));
+    }
+
+    /**
+     * Unifica conversaciones duplicadas si comparten exactamente el mismo nombre real de contacto o teléfono normalizado.
+     */
+    _deduplicateConversations(convList) {
+        const dedupMap = new Map();
+
+        for (const conv of convList) {
+            if (!conv || !conv.jid) continue;
+            
+            // Determinar una clave única de desduplicación: nombre real si existe (no genérico), o el propio jid
+            const name = (conv.pushName || '').trim();
+            const isGenericName = !name || name === '..' || name === 'System' || name === 'Wifi' || /^57\d+$/.test(name);
+            const dedupKey = (!isGenericName && name.length > 1) ? `name:${name.toLowerCase()}` : `jid:${conv.jid}`;
+
+            if (!dedupMap.has(dedupKey)) {
+                dedupMap.set(dedupKey, { ...conv });
+            } else {
+                const existing = dedupMap.get(dedupKey);
+                const existingTime = existing.lastMessageTime ? new Date(existing.lastMessageTime).getTime() : 0;
+                const convTime = conv.lastMessageTime ? new Date(conv.lastMessageTime).getTime() : 0;
+
+                if (convTime > existingTime) {
+                    // Si este es más reciente, tomamos sus datos principales y acumulamos conteos
+                    dedupMap.set(dedupKey, {
+                        ...conv,
+                        messageCount: (existing.messageCount || 0) + (conv.messageCount || 0),
+                        unreadCount: (existing.unreadCount || 0) + (conv.unreadCount || 0)
+                    });
+                } else {
+                    dedupMap.set(dedupKey, {
+                        ...existing,
+                        messageCount: (existing.messageCount || 0) + (conv.messageCount || 0),
+                        unreadCount: (existing.unreadCount || 0) + (conv.unreadCount || 0)
+                    });
+                }
+            }
+        }
+
+        return Array.from(dedupMap.values()).sort((a, b) => {
+            const aTime = a.lastMessageTime ? new Date(a.lastMessageTime).getTime() : 0;
+            const bTime = b.lastMessageTime ? new Date(b.lastMessageTime).getTime() : 0;
+            return bTime - aTime;
+        });
     }
 
     /**
