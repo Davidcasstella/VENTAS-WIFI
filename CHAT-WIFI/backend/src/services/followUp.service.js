@@ -102,18 +102,23 @@ class FollowUpService {
         return config;
     }
 
-    async saveConfig(updates) {
-        const current = await this.getConfig();
-        const next = { ...current, ...updates, updatedAt: new Date().toISOString() };
+    async _persistConfig(config) {
+        config.updatedAt = new Date().toISOString();
         if (dynamo.isEnabled()) {
             try {
-                await dynamo.putItem('CONFIG', 'follow-up-config', next);
+                await dynamo.putItem('CONFIG', 'follow-up-config', config);
             } catch (err) {
                 console.error(`❌ [FollowUp] DynamoDB write failed: ${err.message}`);
             }
         }
-        await fs.writeJson(CONFIG_PATH, next, { spaces: 2 });
-        return next;
+        await fs.writeJson(CONFIG_PATH, config, { spaces: 2 });
+        return config;
+    }
+
+    async saveConfig(updates) {
+        const current = await this.getConfig();
+        const next = { ...current, ...updates };
+        return await this._persistConfig(next);
     }
 
     // ── Step management ───────────────────────────────────────────────────
@@ -130,8 +135,7 @@ class FollowUpService {
 
         // Merge updates (don't overwrite media paths unless explicitly set)
         config.steps[idx] = { ...config.steps[idx], ...updates };
-        config.updatedAt = new Date().toISOString();
-        await fs.writeJson(CONFIG_PATH, config, { spaces: 2 });
+        await this._persistConfig(config);
         return config.steps[idx];
     }
 
@@ -148,8 +152,7 @@ class FollowUpService {
             imagePath: null
         };
         config.steps.push(newStep);
-        config.updatedAt = new Date().toISOString();
-        await fs.writeJson(CONFIG_PATH, config, { spaces: 2 });
+        await this._persistConfig(config);
         return newStep;
     }
 
@@ -164,8 +167,7 @@ class FollowUpService {
         if (step.imagePath && fs.existsSync(step.imagePath)) await fs.remove(step.imagePath);
 
         config.steps = config.steps.filter(s => s.id !== stepId);
-        config.updatedAt = new Date().toISOString();
-        await fs.writeJson(CONFIG_PATH, config, { spaces: 2 });
+        await this._persistConfig(config);
         return true;
     }
 
@@ -333,17 +335,18 @@ class FollowUpService {
 
             const now = new Date().toISOString();
             let anchorAt = now;
+            const initialStepIdx = this._getNextValidStepIndex(config, 0);
+
             if (forceImmediate) {
-                const enabledSteps = config.steps.filter(s => s.enabled);
-                if (enabledSteps.length > 0) {
-                    const delayMs = enabledSteps[0].delayMinutes * 60000;
+                if (initialStepIdx < config.steps.length) {
+                    const delayMs = config.steps[initialStepIdx].delayMinutes * 60000;
                     anchorAt = new Date(Date.now() - delayMs).toISOString();
                 }
             }
 
             state.startedAt = state.startedAt || now;
             state.anchorAt = anchorAt;
-            state.currentStepIndex = 0;
+            state.currentStepIndex = initialStepIdx < config.steps.length ? initialStepIdx : 0;
             state.lastStepSentAt = null;
             state.status = 'active';
             state.pauseReason = null;
@@ -468,32 +471,44 @@ class FollowUpService {
         }
     }
 
+    _getNextValidStepIndex(config, startIndex) {
+        let idx = startIndex || 0;
+        while (idx < config.steps.length) {
+            const step = config.steps[idx];
+            const hasContent = (step.text && step.text.trim()) || step.audioPath || step.imagePath || step.videoPath;
+            if (step.enabled && hasContent) {
+                return idx;
+            }
+            idx++;
+        }
+        return idx;
+    }
+
     /**
      * Process the follow-up queue — check all active states and send pending steps.
      */
     async _processQueue() {
         try {
             const config = await this.getConfig();
-            if (!this._sock) return;
-
-            const enabledSteps = config.steps.filter(s => s.enabled);
-            if (enabledSteps.length === 0) return;
+            if (!this._sock || !config.steps || config.steps.length === 0) return;
 
             const states = await this._readStates();
             const now = Date.now();
 
-            // Snapshot: decide which JIDs are due WITHOUT mutating shared state
-            // here. All state changes happen inside _mutate() so we never race
-            // with startFollowUp / pauseFollowUp / closeFollowUp.
             const dueJids = [];
             for (const [jid, state] of Object.entries(states)) {
                 const status = state.status || (state.cancelled || state.completed ? 'closed' : 'active');
                 if (status !== 'active') continue;
 
-                const stepIdx = state.currentStepIndex || 0;
-                if (stepIdx >= enabledSteps.length) continue; // sequence exhausted
+                const validIdx = this._getNextValidStepIndex(config, state.currentStepIndex || 0);
+                if (validIdx !== (state.currentStepIndex || 0)) {
+                    // Update index if we skipped disabled/empty steps
+                    state.currentStepIndex = validIdx;
+                }
 
-                const step = enabledSteps[stepIdx];
+                if (validIdx >= config.steps.length) continue; // sequence exhausted
+
+                const step = config.steps[validIdx];
                 const referenceTime = state.lastStepSentAt
                     ? new Date(state.lastStepSentAt).getTime()
                     : new Date(state.anchorAt || state.startedAt).getTime();
@@ -507,8 +522,9 @@ class FollowUpService {
             for (const jid of dueJids) {
                 const step = await this._mutateJid(jid, async (state) => {
                     if ((state.status || 'active') !== 'active') return null;
-                    const stepIdx = state.currentStepIndex || 0;
-                    if (stepIdx >= enabledSteps.length) return null;
+                    const validIdx = this._getNextValidStepIndex(config, state.currentStepIndex || 0);
+                    state.currentStepIndex = validIdx;
+                    if (validIdx >= config.steps.length) return null;
 
                     if (await this._clientRepliedSince(jid, state)) {
                         state.status = 'paused';
@@ -517,7 +533,7 @@ class FollowUpService {
                         console.log(`⏸️ Follow-up paused for ${jid}: client replied (pre-send check)`);
                         return null;
                     }
-                    return enabledSteps[stepIdx];
+                    return config.steps[validIdx];
                 });
 
                 if (!step) continue;
@@ -538,7 +554,10 @@ class FollowUpService {
                         state.lastStepSentAt = nowIso;
                         state.currentStepIndex = (state.currentStepIndex || 0) + 1;
                         state.updatedAt = nowIso;
-                        if (state.currentStepIndex >= enabledSteps.length) {
+                        
+                        // Check if sequence is now exhausted
+                        const nextValid = this._getNextValidStepIndex(config, state.currentStepIndex);
+                        if (nextValid >= config.steps.length) {
                             state.completed = true;
                             state.completedAt = nowIso;
                             console.log(`✅ Follow-up sequence exhausted for ${jid}`);
