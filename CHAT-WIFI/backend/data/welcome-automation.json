@@ -1,13 +1,13 @@
 {
-  "isEnabled": true,
-  "messageText": "En cual estas interesado?\nEn el curso de 10 mil hacking básico\no en el curso de 15 mil full combo avanzado",
-  "audioFilePath": null,
-  "cooldownHours": 48,
-  "updatedAt": "2026-07-05T06:13:12.070Z",
+  "messageText": "En cual estas interesado?\nEn el curso de 10 mil hacking básico\no en el curso de 15 mil full combo avanzadodssss",
   "videoFilePath": "C:\\Users\\David\\Desktop\\VENTAS-WIFI\\VENTAS-WIFI\\CHAT-WIFI\\backend\\public\\uploads\\welcome-video.mp4",
-  "videoEnabled": false,
+  "postVideoDelays": [],
+  "postVideoMessage": "si tienes alguna duda me preguntas bro",
   "imageFilePath": "C:\\Users\\David\\Desktop\\VENTAS-WIFI\\VENTAS-WIFI\\CHAT-WIFI\\backend\\public\\uploads\\welcome-image.jpeg",
-  "imageEnabled": false,
+  "videoEnabled": false,
+  "responseDelay": 0.5,
+  "audioFilePath": null,
+  "greetingByTimeMessageIndex": 3,
   "messageDelays": [
     0,
     12,
@@ -16,8 +16,9 @@
     4,
     5
   ],
-  "responseDelay": 0.5,
+  "isEnabled": true,
   "greetingByTimeEnabled": true,
-  "postVideoMessage": "si tienes alguna duda me preguntas bro",
-  "postVideoDelays": []
+  "cooldownHours": 48,
+  "imageEnabled": false,
+  "updatedAt": "2026-07-10T00:49:17.165Z"
 }
