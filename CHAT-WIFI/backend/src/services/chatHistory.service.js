@@ -29,6 +29,22 @@ class ChatHistoryService {
         }
         // In-memory cache for performance
         this._cache = null;
+        this.cache = null;
+        this.dirty = false;
+        this._autoSyncOnInit();
+    }
+
+    async _autoSyncOnInit() {
+        try {
+            await new Promise(r => setTimeout(r, 5000)); // Esperar 5s a que el cliente Dynamo esté listo
+            if (dynamo.isEnabled()) {
+                console.log('🔄 [ChatHistory] Ejecutando sincronización automática de arranque con DynamoDB...');
+                const chats = await this.getConversations();
+                console.log(`✅ [ChatHistory] Sincronización de arranque completada. ${chats?.length || 0} chats verificados/migrados.`);
+            }
+        } catch (err) {
+            console.error('⚠️ [ChatHistory] Error en autoSyncOnInit:', err.message);
+        }
     }
 
     // ── Private helpers ──
