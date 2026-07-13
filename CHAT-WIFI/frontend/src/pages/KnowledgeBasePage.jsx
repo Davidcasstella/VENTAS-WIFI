@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 import {
     Upload, FileText, Search, Plus, Trash2, RefreshCw,
     Download, X, AlertCircle, CheckCircle, Clock, Loader,
-    BookOpen, ChevronRight, Pencil, Check
+    BookOpen, ChevronRight, Pencil, Check, Video, Mic, Film, Volume2
 } from 'lucide-react';
 import useKnowledgeStore from '../features/knowledge-base/store/useKnowledgeStore';
 import api from '../services/api';
@@ -10,19 +10,30 @@ import api from '../services/api';
 const KnowledgeBasePage = () => {
     const {
         documents, loading, uploading, error: docError,
-        fetchDocuments, uploadDocument, reprocessDocument, deleteDocument, clearError
+        fetchDocuments, uploadDocument, reprocessDocument, deleteDocument, updateDocumentDescription, clearError
     } = useKnowledgeStore();
 
     // ── Local state ─────────────────────────────────────────
     const [dragActive, setDragActive] = useState(false);
     const [manualEntries, setManualEntries] = useState([]);
 
-    // Modal
+    // Modal Manual Knowledge
     const [modalOpen, setModalOpen] = useState(false);
     const [modalTitle, setModalTitle] = useState('');
     const [modalContent, setModalContent] = useState('');
     const [modalEditingId, setModalEditingId] = useState(null);
     const [savingManual, setSavingManual] = useState(false);
+
+    // Modal Media / Doc Upload Description
+    const [mediaModalOpen, setMediaModalOpen] = useState(false);
+    const [pendingFile, setPendingFile] = useState(null);
+    const [pendingDescription, setPendingDescription] = useState('');
+
+    // Modal Edit Document Description
+    const [editDocModalOpen, setEditDocModalOpen] = useState(false);
+    const [editingDoc, setEditingDoc] = useState(null);
+    const [editDocDescription, setEditDocDescription] = useState('');
+    const [savingDocEdit, setSavingDocEdit] = useState(false);
 
     // RAG search
     const [searchQuery, setSearchQuery] = useState('');
@@ -62,8 +73,28 @@ const KnowledgeBasePage = () => {
 
     const handleFileUpload = async (file) => {
         const ext = file.name.toLowerCase().match(/\.[^.]+$/)?.[0];
-        if (!['.pdf', '.txt'].includes(ext)) { alert('Solo PDF y TXT'); return; }
-        await uploadDocument(file);
+        const allowed = ['.pdf', '.txt', '.mp4', '.mov', '.avi', '.webm', '.mkv', '.mp3', '.ogg', '.wav', '.m4a', '.aac'];
+        if (!allowed.includes(ext)) {
+            alert('Formato no permitido. Soporta PDF, TXT, Videos (MP4/MOV/AVI/WEBM/MKV) y Audios (MP3/OGG/WAV/M4A/AAC)');
+            return;
+        }
+
+        const videoAudios = ['.mp4', '.mov', '.avi', '.webm', '.mkv', '.mp3', '.ogg', '.wav', '.m4a', '.aac'];
+        if (videoAudios.includes(ext)) {
+            setPendingFile(file);
+            setPendingDescription('');
+            setMediaModalOpen(true);
+        } else {
+            await uploadDocument(file);
+        }
+    };
+
+    const confirmMediaUpload = async () => {
+        if (!pendingFile) return;
+        await uploadDocument(pendingFile, pendingDescription);
+        setMediaModalOpen(false);
+        setPendingFile(null);
+        setPendingDescription('');
     };
 
     // ── Manual knowledge ────────────────────────────────────
@@ -233,7 +264,7 @@ const KnowledgeBasePage = () => {
                 {/* ── MAIN CARD ── */}
                 <div className="premium-card kb-main-card">
                     {/* Hidden file input */}
-                    <input ref={fileInputRef} type="file" accept=".pdf,.txt"
+                    <input ref={fileInputRef} type="file" accept=".pdf,.txt,.mp4,.mov,.avi,.webm,.mkv,.mp3,.ogg,.wav,.m4a,.aac"
                         onChange={handleFileSelect} style={{ display: 'none' }} />
 
                     {/* Topbar */}
@@ -242,7 +273,7 @@ const KnowledgeBasePage = () => {
                             <FileText size={14} />
                             <span>
                                 {unifiedEntries.length > 0
-                                    ? `Documentos (${unifiedEntries.length})`
+                                    ? `Documentos y Multimedia (${unifiedEntries.length})`
                                     : 'Sin contenido aún'}
                             </span>
                         </div>
@@ -256,7 +287,7 @@ const KnowledgeBasePage = () => {
                             </button>
                             <button className="kb-btn-pri" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
                                 {uploading ? <Loader size={13} className="spin" /> : <Upload size={13} />}
-                                {uploading ? 'Subiendo...' : 'Subir archivo'}
+                                {uploading ? 'Subiendo...' : 'Subir archivo o media'}
                             </button>
                         </div>
                     </div>
@@ -266,12 +297,27 @@ const KnowledgeBasePage = () => {
                         <div className="kb-entries-list-compact">
                             {unifiedEntries.map((entry, idx) => (
                                 <div key={entry.id || idx} className="kb-entry-row">
-                                    <span className="kb-type-badge">
+                                    <span className="kb-type-badge" style={{
+                                        backgroundColor: entry.type === 'video' ? 'rgba(0, 150, 255, 0.2)' : entry.type === 'audio' ? 'rgba(255, 150, 0, 0.2)' : undefined,
+                                        color: entry.type === 'video' ? '#38bdf8' : entry.type === 'audio' ? '#fbbf24' : undefined
+                                    }}>
+                                        {entry.type === 'video' && <Video size={11} style={{ marginRight: 4 }} />}
+                                        {entry.type === 'audio' && <Volume2 size={11} style={{ marginRight: 4 }} />}
                                         {entry._itemType === 'document' ? entry.type?.toUpperCase() : 'TEXTO'}
                                     </span>
 
                                     <div className="kb-entry-row-info" style={{ flex: 1 }}>
                                         <span className="kb-entry-row-title">{entry.title}</span>
+                                        {entry.description && (
+                                            <span style={{ display: 'block', fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)', marginTop: '2px' }}>
+                                                {entry.description}
+                                            </span>
+                                        )}
+                                        {(entry.type === 'video' || entry.type === 'audio') && (
+                                            <span style={{ display: 'inline-block', fontSize: '0.7rem', color: '#00ff00', marginTop: '3px', fontFamily: 'monospace' }}>
+                                                Etiqueta IA: [MEDIA_{entry.id}]
+                                            </span>
+                                        )}
                                     </div>
 
                                     <div className="kb-entry-row-status" style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
@@ -307,8 +353,16 @@ const KnowledgeBasePage = () => {
                                                         <RefreshCw size={13} />
                                                     </button>
                                                 )}
-                                                <button className="kb-icon-btn" title="Descargar"
-                                                    onClick={() => window.open(`${api.defaults.baseURL}/api/knowledge-base/documents/${entry.id}/download`, '_blank')}>
+                                                <button className="kb-icon-btn" title="Editar descripción/palabras clave"
+                                                    onClick={() => {
+                                                        setEditingDoc(entry);
+                                                        setEditDocDescription(entry.description || '');
+                                                        setEditDocModalOpen(true);
+                                                    }}>
+                                                    <Pencil size={13} />
+                                                </button>
+                                                <button className="kb-icon-btn" title={entry.type === 'video' || entry.type === 'audio' ? 'Ver/Escuchar' : 'Descargar'}
+                                                    onClick={() => window.open(`${api.defaults.baseURL}/api/knowledge-base/documents/${entry.id}/${entry.type === 'video' || entry.type === 'audio' ? 'media' : 'download'}`, '_blank')}>
                                                     <Download size={13} />
                                                 </button>
                                                 <button className="kb-icon-btn kb-icon-btn-danger" title="Eliminar"
@@ -334,14 +388,14 @@ const KnowledgeBasePage = () => {
                     ) : (
                         <div className="kb-empty-state" style={{ paddingTop: '2.5rem' }}>
                             <FileText size={40} style={{ opacity: 0.25 }} />
-                            <h2>Sin documentos</h2>
-                            <p>Sube archivos PDF/TXT o escribe contenido manualmente para empezar</p>
+                            <h2>Sin documentos o archivos multimedia</h2>
+                            <p>Sube archivos PDF, TXT, Videos o Audios, o escribe contenido manualmente</p>
                         </div>
                     )}
                 </div>
             </div>
 
-            {/* ── MODAL ── */}
+            {/* ── MODAL MANUAL KNOWLEDGE ── */}
             {modalOpen && (
                 <div className="kb-modal-overlay" onClick={closeModal}>
                     <div className="kb-modal" onClick={e => e.stopPropagation()}>
@@ -374,6 +428,89 @@ const KnowledgeBasePage = () => {
                             >
                                 {savingManual ? <Loader size={13} className="spin" /> : <CheckCircle size={13} />}
                                 {modalEditingId ? 'Guardar cambios' : 'Guardar y vectorizar'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ── MODAL MEDIA UPLOAD DESCRIPTION ── */}
+            {mediaModalOpen && (
+                <div className="kb-modal-overlay" onClick={() => setMediaModalOpen(false)}>
+                    <div className="kb-modal" onClick={e => e.stopPropagation()}>
+                        <div className="kb-modal-header">
+                            <h3>Indexar Archivo Multimedia para IA</h3>
+                            <button className="kb-modal-close" onClick={() => setMediaModalOpen(false)}><X size={16} /></button>
+                        </div>
+                        <div className="kb-modal-body">
+                            <div style={{ marginBottom: '1rem', color: '#00ff00', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <Film size={18} /> Archivo: {pendingFile?.name}
+                            </div>
+                            <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', marginBottom: '0.75rem' }}>
+                                Ingresa una descripción clara o palabras clave de qué trata este video/audio. La Inteligencia Artificial leerá esta descripción para saber <b>cuándo enviarle este archivo</b> al usuario por WhatsApp:
+                            </p>
+                            <textarea
+                                className="form-input kb-modal-textarea"
+                                placeholder="Ej: Video explicativo que muestra cómo es la plataforma por dentro, los 31 cursos de ciberseguridad y cómo se accede a las clases..."
+                                value={pendingDescription} onChange={e => setPendingDescription(e.target.value)}
+                                rows={5}
+                                autoFocus
+                            />
+                        </div>
+                        <div className="kb-modal-footer">
+                            <button className="btn-premium danger" onClick={() => setMediaModalOpen(false)}>
+                                <X size={13} /> Cancelar
+                            </button>
+                            <button
+                                className="btn-premium primary"
+                                onClick={confirmMediaUpload}
+                                disabled={uploading}
+                            >
+                                {uploading ? <Loader size={13} className="spin" /> : <CheckCircle size={13} />}
+                                Subir e Indexar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ── MODAL EDIT DOC / MEDIA DESCRIPTION ── */}
+            {editDocModalOpen && (
+                <div className="kb-modal-overlay" onClick={() => setEditDocModalOpen(false)}>
+                    <div className="kb-modal" onClick={e => e.stopPropagation()}>
+                        <div className="kb-modal-header">
+                            <h3>Editar Descripción ({editingDoc?.name})</h3>
+                            <button className="kb-modal-close" onClick={() => setEditDocModalOpen(false)}><X size={16} /></button>
+                        </div>
+                        <div className="kb-modal-body">
+                            <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', marginBottom: '0.75rem' }}>
+                                Modifica las palabras clave o explicación que utilizará la Inteligencia Artificial al buscar este archivo:
+                            </p>
+                            <textarea
+                                className="form-input kb-modal-textarea"
+                                placeholder="Escribe la descripción o palabras clave..."
+                                value={editDocDescription} onChange={e => setEditDocDescription(e.target.value)}
+                                rows={5}
+                                autoFocus
+                            />
+                        </div>
+                        <div className="kb-modal-footer">
+                            <button className="btn-premium danger" onClick={() => setEditDocModalOpen(false)}>
+                                <X size={13} /> Cancelar
+                            </button>
+                            <button
+                                className="btn-premium primary"
+                                onClick={async () => {
+                                    if (!editingDoc) return;
+                                    setSavingDocEdit(true);
+                                    await updateDocumentDescription(editingDoc.id, editDocDescription);
+                                    setSavingDocEdit(false);
+                                    setEditDocModalOpen(false);
+                                }}
+                                disabled={savingDocEdit}
+                            >
+                                {savingDocEdit ? <Loader size={13} className="spin" /> : <CheckCircle size={13} />}
+                                Guardar y Re-vectorizar
                             </button>
                         </div>
                     </div>

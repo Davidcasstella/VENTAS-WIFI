@@ -794,6 +794,60 @@ const WelcomeAutomationPage = () => {
                             })()}
                         </div>
 
+                        {/* AI Response Delay Multiplier (Human Typing Simulation) */}
+                        <div className="premium-card wa-card">
+                            <div className="wa-card-header">
+                                <Zap size={20} style={{ color: '#00ff66' }} />
+                                <span className="wa-card-title">Velocidad de Respuesta IA (Simulación Humana)</span>
+                            </div>
+                            <p className="wa-card-desc" style={{ marginBottom: '1rem' }}>
+                                Controla qué tan rápido o despacio responde la IA para simular la velocidad real de un humano escribiendo desde el celular.
+                            </p>
+
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+                                <input
+                                    type="range"
+                                    className="wa-delay-slider"
+                                    min={0.1}
+                                    max={3.0}
+                                    step={0.1}
+                                    value={responseDelay}
+                                    onChange={e => setResponseDelay(Number(e.target.value))}
+                                    style={{ flex: 1 }}
+                                />
+                                <div className="wa-delay-input-wrap" style={{ minWidth: '85px', textAlign: 'center' }}>
+                                    <span style={{ fontSize: '1.1rem', fontWeight: 700, color: '#00ff66' }}>{Number(responseDelay).toFixed(1)}x</span>
+                                </div>
+                            </div>
+
+                            {/* Quick Speed Presets */}
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '1rem' }}>
+                                {[
+                                    { label: '⚡ Instantáneo', val: 0.2, time: '~0.5s' },
+                                    { label: '🏎️ Rápido', val: 0.5, time: '~1.5s' },
+                                    { label: '🧑 Humano Normal', val: 1.0, time: '~3s' },
+                                    { label: '☕ Pausado', val: 1.8, time: '~6s' },
+                                    { label: '🐢 Súper Lento', val: 2.6, time: '~9s' }
+                                ].map(preset => (
+                                    <button
+                                        key={preset.val}
+                                        type="button"
+                                        className={`wa-preset-btn ${Math.abs(responseDelay - preset.val) < 0.15 ? 'active' : ''}`}
+                                        onClick={() => setResponseDelay(preset.val)}
+                                        style={{ padding: '6px 10px', fontSize: '0.8rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}
+                                    >
+                                        <span>{preset.label}</span>
+                                        <span style={{ fontSize: '0.7rem', opacity: 0.7 }}>({preset.time})</span>
+                                    </button>
+                                ))}
+                            </div>
+
+                            <div style={{ background: 'rgba(0, 255, 102, 0.06)', border: '1px dashed rgba(0, 255, 102, 0.25)', borderRadius: '8px', padding: '10px 14px', fontSize: '0.83rem', color: 'rgba(255, 255, 255, 0.85)', display: 'flex', justifyContent: 'space-between' }}>
+                                <span>Mensaje corto (ej. <i>"dale bro"</i>): <strong>~{Math.max(0.3, (1.5 * responseDelay)).toFixed(1)} segs</strong></span>
+                                <span>Mensaje largo (ej. <i>"El combo de 10 trae..."</i>): <strong>~{Math.max(0.6, (4.0 * responseDelay)).toFixed(1)} segs</strong></span>
+                            </div>
+                        </div>
+
                         {/* Cooldown */}
                         <div className="premium-card wa-card">
                             <div className="wa-card-header">

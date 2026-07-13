@@ -1,1 +1,28 @@
-[]
+[
+  {
+    "id": "doc_94cf137b5c3e",
+    "name": "WhatsApp Video 2026-07-13 at 3.49.52 PM.mp4",
+    "storedName": "doc_94cf137b5c3e.mp4",
+    "type": "video",
+    "description": "Este video muestra en detalle el contenido completo del curso de Ciberseguridad, recorriendo los 31 módulos (cursos) que lo componen. Sirve como evidencia visual de todo lo que el cliente recibe al inscribirse: el temario completo, el orden de los módulos y una idea general de los temas que se tratan en cada uno. Se debe enviar este video cada vez que el cliente pregunte por el contenido, el temario, los módulos, qué incluye el curso, qué va a aprender, o pida \"ver\" o \"conocer\" de qué trata el curso por dentro.\r\nCuándo usarlo (dispara el envío del video):\r\n\r\nEl cliente pregunta qué incluye el curso o qué trae por dentro.\r\nEl cliente pregunta cuántos módulos/cursos tiene o de qué tratan.\r\nEl cliente pregunta por el temario o el contenido del curso.\r\nEl cliente pide ver un adelanto, muestra o vista previa del curso.\r\nEl cliente duda sobre si el curso es completo o vale la pena, y se le quiere mostrar el contenido como respaldo.\r\n\r\nFrases típicas del cliente que deben activarlo:\r\n\"¿Qué trae el curso?\", \"¿Qué voy a aprender?\", \"¿Cuántos cursos incluye?\", \"¿Qué contenido tiene?\", \"¿Me puedes mostrar el temario?\", \"¿Qué incluyen los 31 cursos?\", \"¿Cómo está armado el curso?\"\r\nRespuesta sugerida al enviar el video:\r\n\"Aquí te dejo un video con todo el contenido del curso, para que veas los 31 módulos que incluye y de qué trata cada uno 👇\"",
+    "size": 9399406,
+    "createdAt": "2026-07-13T20:53:36.164Z",
+    "status": "processed",
+    "chunkCount": 1,
+    "updatedAt": "2026-07-13T20:53:36.335Z",
+    "processedAt": "2026-07-13T20:53:36.334Z"
+  },
+  {
+    "id": "doc_9b8349e4ca1a",
+    "name": "WhatsApp Audio 2026-07-13 at 3.56.09 PM.ogg",
+    "storedName": "doc_9b8349e4ca1a.ogg",
+    "type": "audio",
+    "description": "Descripción:\r\nEste audio explica la razón por la cual vale la pena entrar al curso de Ciberseguridad, para qué sirve realmente y por qué es necesario comenzar por la carpeta de Fundamentos antes que las demás, ya que sin esa base no se pueden entender bien los cursos siguientes. Es un mensaje motivacional y explicativo, pensado para resolver las dudas del cliente sobre el \"por qué\" del curso y guiarlo sobre cómo debe empezar a estudiarlo. Se debe enviar este audio cada vez que el cliente pregunte por la utilidad del curso, por qué debería tomarlo, si sirve para alguien que no sabe nada, o por dónde debe empezar.\r\nCuándo usarlo (dispara el envío del audio):\r\n\r\nEl cliente pregunta para qué sirve el curso o qué gana con tomarlo.\r\nEl cliente duda si le va a servir siendo principiante o sin conocimientos previos.\r\nEl cliente pregunta por dónde empezar o cuál módulo ver primero.\r\nEl cliente pregunta por qué es importante la carpeta de Fundamentos.\r\nEl cliente muestra inseguridad o indecisión sobre si inscribirse o no.\r\n\r\nFrases típicas del cliente que deben activarlo:\r\n\"¿Para qué me sirve este curso?\", \"¿Por qué debería tomarlo?\", \"No sé nada de esto, ¿me sirve igual?\", \"¿Por dónde empiezo?\", \"¿Cuál veo primero?\", \"¿Por qué tengo que ver primero Fundamentos?\", \"No estoy seguro si inscribirme\"\r\nRespuesta sugerida al enviar el audio:\r\n\"Aqui aprenderas a analizar la informacion, y a protegerte\"\r\n",
+    "size": 68280,
+    "createdAt": "2026-07-13T20:58:27.755Z",
+    "status": "processed",
+    "chunkCount": 1,
+    "updatedAt": "2026-07-13T20:58:27.876Z",
+    "processedAt": "2026-07-13T20:58:27.875Z"
+  }
+]

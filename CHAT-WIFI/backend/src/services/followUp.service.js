@@ -351,7 +351,12 @@ class FollowUpService {
             state.status = 'active';
             state.pauseReason = null;
             state.closedReason = null;
-            state.history = state.history || [];
+            if (opts && (opts.isManual || opts.resetHistory)) {
+                state.history = [];
+                state.startedAt = now;
+            } else {
+                state.history = state.history || [];
+            }
             state.completed = false;
             state.cancelled = false;
             state.cancelReason = null;

@@ -8,26 +8,27 @@ const router = express.Router();
 // Configure multer for memory storage (we handle file saving ourselves)
 const upload = multer({
     storage: multer.memoryStorage(),
-    limits: { fileSize: 20 * 1024 * 1024 }, // 20MB max
+    limits: { fileSize: 200 * 1024 * 1024 }, // 200MB max (videos can be large)
     fileFilter: (req, file, cb) => {
-        const allowed = ['.pdf', '.txt'];
+        const allowed = ['.pdf', '.txt', '.mp4', '.mov', '.avi', '.webm', '.mkv', '.mp3', '.ogg', '.wav', '.m4a', '.aac'];
         const ext = file.originalname.toLowerCase().match(/\.[^.]+$/);
         if (ext && allowed.includes(ext[0])) {
             cb(null, true);
         } else {
-            cb(new Error('Only PDF and TXT files are allowed'));
+            cb(new Error('Tipo de archivo no soportado. Use PDF, TXT, video (MP4/MOV/AVI/WEBM/MKV) o audio (MP3/OGG/WAV/M4A/AAC)'));
         }
     }
 });
 
-// Upload a document
+// Upload a document (supports PDF, TXT, video and audio)
 router.post('/upload', verifyToken, upload.single('file'), async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ success: false, message: 'No file provided' });
         }
 
-        const doc = await knowledgeBaseService.uploadAndProcess(req.file);
+        const description = req.body.description || '';
+        const doc = await knowledgeBaseService.uploadAndProcess(req.file, description);
         res.json({
             success: true,
             message: 'Document uploaded and processing started',
@@ -64,6 +65,73 @@ router.delete('/documents/:id', verifyToken, async (req, res) => {
     try {
         await knowledgeBaseService.deleteDocument(req.params.id);
         res.json({ success: true, message: 'Document deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Update description of a document (for video/audio re-indexing)
+router.patch('/documents/:id/description', verifyToken, async (req, res) => {
+    try {
+        const { description } = req.body;
+        const updated = await fileStorage.updateDocumentStatus(req.params.id, { description: description || '' });
+        if (!updated) return res.status(404).json({ success: false, message: 'Document not found' });
+        // Re-process so the new description gets embedded
+        knowledgeBaseService.reprocessDocument(req.params.id).catch(() => {});
+        res.json({ success: true, document: updated });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Stream / serve a stored media file (video or audio)
+router.get('/documents/:id/media', verifyToken, async (req, res) => {
+    try {
+        const index = await fileStorage.getIndex();
+        const doc = index.find(d => d.id === req.params.id);
+        if (!doc) return res.status(404).json({ success: false, message: 'Not found' });
+
+        const docPath = await fileStorage.getDocumentPath(req.params.id);
+        const fs = require('fs');
+        if (!docPath || !fs.existsSync(docPath)) {
+            return res.status(404).json({ success: false, message: 'File not found on disk' });
+        }
+
+        const mimeMap = {
+            '.mp4': 'video/mp4', '.mov': 'video/quicktime', '.avi': 'video/x-msvideo',
+            '.webm': 'video/webm', '.mkv': 'video/x-matroska',
+            '.mp3': 'audio/mpeg', '.ogg': 'audio/ogg', '.wav': 'audio/wav',
+            '.m4a': 'audio/mp4', '.aac': 'audio/aac'
+        };
+        const path = require('path');
+        const ext = path.extname(doc.storedName).toLowerCase();
+        const mime = mimeMap[ext] || 'application/octet-stream';
+
+        const stat = fs.statSync(docPath);
+        const fileSize = stat.size;
+        const range = req.headers.range;
+
+        if (range) {
+            const parts = range.replace(/bytes=/, '').split('-');
+            const start = parseInt(parts[0], 10);
+            const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+            const chunkSize = end - start + 1;
+            const stream = fs.createReadStream(docPath, { start, end });
+            res.writeHead(206, {
+                'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+                'Accept-Ranges': 'bytes',
+                'Content-Length': chunkSize,
+                'Content-Type': mime
+            });
+            stream.pipe(res);
+        } else {
+            res.writeHead(200, {
+                'Content-Length': fileSize,
+                'Content-Type': mime,
+                'Content-Disposition': `inline; filename="${doc.name}"`
+            });
+            fs.createReadStream(docPath).pipe(res);
+        }
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }

@@ -45,6 +45,18 @@ class AIResponseService {
             kbContext = kbContext ? `${kbContext}\n\n--- Información adicional ---\n${ragContext}` : ragContext;
         }
 
+        // Add media summary if any video/audio is in the knowledge base
+        try {
+            if (typeof knowledgeBaseService.getAllMediaSummary === 'function') {
+                const mediaSummary = await knowledgeBaseService.getAllMediaSummary();
+                if (mediaSummary) {
+                    kbContext = kbContext ? `${kbContext}\n${mediaSummary}` : mediaSummary;
+                }
+            }
+        } catch (err) {
+            console.error('❌ Error fetching media summary:', err.message);
+        }
+
         if (!kbContext) {
             console.log('🌐 No context found, short-circuiting to FALLBACK_TRIGGER.');
             return 'FALLBACK_TRIGGER';
@@ -201,9 +213,23 @@ CIERRE DE VENTA OBLIGATORIO (SOLO ANTES DEL PAGO):
 REGLA VIDEO PROMO:
 - Solo usa [VIDEO_PROMO] cuando el cliente acepte VER el contenido del curso (ej. responde "si" a "quieres ver lo que trae?").
 - NUNCA uses [VIDEO_PROMO] si el cliente ya está en flujo de pago o ya eligió curso.
-${options.promoVideoAlreadySent ? `- VIDEO YA ENVIADO: NUNCA vuelvas a mencionar enviar video ni uses [VIDEO_PROMO]. Enfócate en cerrar la venta mencionando precios y datos de pago.\n` : ''}
+${options.promoVideoAlreadySent ? `- ¡ATENCIÓN! VIDEO Y TEMARIO YA ENVIADOS PREVIAMENTE EN EL HISTORIAL:
+  * Si el cliente pregunta "¿qué más trae?", "¿qué más tiene?", "¿tiene algo más?", o vuelve a preguntar por el contenido, **¡NUNCA REPITAS LA LISTA DE CURSOS NI EL TEMARIO COMPLETO QUE YA LE ENVIASTE EN EL HISTORIAL! ¡Y NUNCA VUELVAS A ADJUNTAR LA ETIQUETA [MEDIA_doc_xxxx] O [VIDEO_PROMO]!**
+  * En su lugar, explícale en breves palabras los beneficios adicionales y el valor extra: por ejemplo, que incluye acceso vitalicio para toda la vida, actualizaciones continuas 2026, pack de audiolibros, programas y herramientas profesionales, inteligencia artificial Claude, y soporte para dudas.
+  * Y termina cerrando la venta preguntando por el pago: "¿Te paso los métodos de pago? tienes Nequi o Daviplata?"\n` : ''}
 RESPUESTAS A "no sé" / "nose":
 Responde animando: el curso es para empezar de cero ||| a medida que avanzas vas aprendiendo cosas más avanzadas ||| quieres que te muestre lo que trae? [VIDEO_PROMO]
+
+REGLA DE ARCHIVOS MULTIMEDIA DE LA BASE DE CONOCIMIENTO (VIDEOS Y AUDIOS) - ¡MUY IMPORTANTE Y OBLIGATORIO!:
+- En el "Contexto proporcionado" verás la sección "ARCHIVOS MULTIMEDIA DISPONIBLES EN LA BASE DE CONOCIMIENTO (VIDEOS Y AUDIOS)" que enumera todos los videos y audios con sus etiquetas exactas [MEDIA_doc_xxxx] y las condiciones o frases que los activan.
+- SIEMPRE que el cliente haga una pregunta que coincida con las condiciones de un archivo multimedia, DEBES incluir la etiqueta [MEDIA_doc_xxxx] en tu respuesta. El sistema la convertirá automáticamente en el archivo real de video o audio.
+- DIFERENCIACIÓN CRÍTICA SEGÚN EL TIPO DE PREGUNTA:
+  1) SI LA PREGUNTA ACTIVA UN AUDIO (ej: "¿para qué me sirve?", "¿por dónde empiezo?", "¿por qué ver fundamentos?"):
+     Escribe únicamente la respuesta sugerida del audio y agrega al final su etiqueta:
+     Aqui aprenderas a analizar la informacion, y a protegerte ||| [MEDIA_id_del_audio]
+  2) SI LA PREGUNTA ACTIVA UN VIDEO DE TEMARIO O CONTENIDO (ej: "¿qué trae el curso?", "¿qué voy a aprender?", "¿cuántos cursos incluye?", "¿qué temario tiene?"):
+     ${options.promoVideoAlreadySent ? `¡ATENCIÓN! COMO EL TEMARIO Y EL VIDEO YA SE ENVIARON PREVIAMENTE, NO VUELVAS A ADJUNTAR NINGUNA ETIQUETA DE VIDEO NI A LISTAR LOS CURSOS. Responde hablando de los beneficios adicionales como acceso de por vida y herramientas.` : `¡ATENCIÓN! NO respondas solo con la frase corta. DEBES EXPLICAR EN PALABRAS LO QUE TRAE EL COMBO DE 10 MIL / 15 MIL (o la lista de cursos según la REGLA DE INFORMACIÓN / "QUE TRAE") Y ADEMÁS ADJUNTAR LA ETIQUETA DEL VIDEO [MEDIA_id_del_video].
+     Ejemplo: El combo de 10 trae 15 cursos [MEDIA_id_del_video] ||| 1. Introducción al Hacking Ético\\n2. El arte del espionaje... [lista completa en palabras] ||| Te paso los métodos de pago? tienes Nequi o Daviplata?`}
 
 REGLAS CRÍTICAS:
 1. Usa SOLO la información del Contexto. No inventes datos.

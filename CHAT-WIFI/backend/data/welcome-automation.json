@@ -1,13 +1,13 @@
 {
-  "messageText": "En cual estas interesado?\nEn el curso de 10 mil hacking básico\no en el curso de 15 mil full combo avanzadodssss",
-  "videoFilePath": "C:\\Users\\David\\Desktop\\VENTAS-WIFI\\VENTAS-WIFI\\CHAT-WIFI\\backend\\public\\uploads\\welcome-video.mp4",
+  "messageText": "hola",
+  "videoFilePath": "/home/ec2-user/VENTAS-WIFI/CHAT-WIFI/backend/public/uploads/welcome-video.mp4",
   "postVideoDelays": [],
   "postVideoMessage": "si tienes alguna duda me preguntas bro",
-  "imageFilePath": "C:\\Users\\David\\Desktop\\VENTAS-WIFI\\VENTAS-WIFI\\CHAT-WIFI\\backend\\public\\uploads\\welcome-image.jpeg",
-  "videoEnabled": false,
-  "responseDelay": 0.5,
+  "imageFilePath": "/home/ec2-user/VENTAS-WIFI/CHAT-WIFI/backend/public/uploads/welcome-image.jpeg",
+  "videoEnabled": true,
+  "responseDelay": 1.8,
   "audioFilePath": null,
-  "greetingByTimeMessageIndex": 3,
+  "greetingByTimeMessageIndex": 4,
   "messageDelays": [
     0,
     12,
@@ -19,6 +19,6 @@
   "isEnabled": true,
   "greetingByTimeEnabled": true,
   "cooldownHours": 48,
-  "imageEnabled": false,
-  "updatedAt": "2026-07-10T00:49:17.165Z"
+  "imageEnabled": true,
+  "updatedAt": "2026-07-13T21:41:26.902Z"
 }

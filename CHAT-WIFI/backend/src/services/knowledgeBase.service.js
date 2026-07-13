@@ -9,12 +9,13 @@ class KnowledgeBaseService {
     /**
      * Upload and process a document: save → extract text → chunk → embed.
      * @param {Object} file - Multer file object
+     * @param {string} [description=''] - Optional description (used for video/audio indexing)
      * @returns {Object} - The document entry with processing status
      */
-    async uploadAndProcess(file) {
+    async uploadAndProcess(file, description = '') {
         // Step 1: Save document to disk
-        const doc = await fileStorage.saveDocument(file);
-        console.log(`📄 Document saved: ${doc.name} (${doc.id})`);
+        const doc = await fileStorage.saveDocument(file, description);
+        console.log(`📄 Document saved: ${doc.name} (${doc.id}) [type: ${doc.type}]`);
 
         // Step 2: Process asynchronously (don't block the upload response)
         this.processDocument(doc.id).catch(err => {
@@ -41,7 +42,7 @@ class KnowledgeBaseService {
 
             // Extract text
             console.log(`📝 Extracting text from ${doc.name}...`);
-            const text = await this.extractText(docPath, doc.type);
+            const text = await this.extractText(docPath, doc.type, doc);
 
             if (!text || text.trim().length === 0) {
                 await fileStorage.updateDocumentStatus(docId, { status: 'error', error: 'No text extracted' });
@@ -84,8 +85,16 @@ class KnowledgeBaseService {
     /**
      * Extract text from a document file.
      */
-    async extractText(filePath, type) {
-        if (type === 'pdf') {
+    async extractText(filePath, type, doc = {}) {
+        if (type === 'video' || type === 'audio') {
+            const descText = doc.description || doc.name.replace(/\.[^/.]+$/, "");
+            const typeLabel = type === 'video' ? 'Video explicativo / demostrativo' : 'Audio / nota de voz explicativa';
+            return `[MEDIA: ${type.toUpperCase()}] ID: [MEDIA_${doc.id}]
+Nombre del archivo: ${doc.name}
+Tipo: ${typeLabel}
+Descripción / Contenido: ${descText}
+Para enviar este archivo multimedia al usuario por WhatsApp en el momento oportuno, debes incluir exactamente su etiqueta [MEDIA_${doc.id}] al final de tu respuesta.`;
+        } else if (type === 'pdf') {
             const buffer = await fs.readFile(filePath);
             const data = await pdfParse(buffer);
             return data.text;
@@ -180,6 +189,35 @@ class KnowledgeBaseService {
     async deleteDocument(docId) {
         await fileStorage.deleteDocument(docId);
         console.log(`🗑️ Document ${docId} fully deleted`);
+    }
+
+    /**
+     * Get a formatted summary of all video and audio files currently stored in the knowledge base.
+     * This is injected into the AI system prompt so the AI knows all available media and when to send them.
+     */
+    async getAllMediaSummary() {
+        try {
+            const index = await fileStorage.getIndex();
+            const mediaDocs = index.filter(d => (d.type === 'video' || d.type === 'audio') && d.status === 'processed');
+            if (mediaDocs.length === 0) return '';
+
+            let summary = '=== ARCHIVOS MULTIMEDIA DISPONIBLES EN LA BASE DE CONOCIMIENTO (VIDEOS Y AUDIOS) ===\n';
+            summary += '¡INSTRUCCIÓN CRÍTICA PARA LA IA! Cada archivo multimedia a continuación tiene condiciones específicas de cuándo usarlo y frases típicas que lo activan.\n';
+            summary += 'Cuando el usuario haga una pregunta o comentario que encaje con las condiciones o frases de un archivo, DEBES responder con el texto / respuesta sugerida y OBLIGATORIAMENTE pegar al final del mensaje la etiqueta exacta [MEDIA_id] de ese archivo.\n\n';
+
+            mediaDocs.forEach((doc, idx) => {
+                const typeName = doc.type.toUpperCase();
+                summary += `${idx + 1}. [MEDIA_${doc.id}] (Tipo: ${typeName})\n`;
+                summary += `Nombre: ${doc.name}\n`;
+                summary += `Descripción / Condiciones de activación / Cuándo enviarlo:\n${doc.description || 'Sin descripción'}\n\n`;
+            });
+
+            summary += '=== FIN ARCHIVOS MULTIMEDIA ===';
+            return summary;
+        } catch (error) {
+            console.error('❌ Error in getAllMediaSummary:', error.message);
+            return '';
+        }
     }
 
     /**

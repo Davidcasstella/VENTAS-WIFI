@@ -2,10 +2,13 @@ const fs = require('fs-extra');
 const path = require('path');
 const fileStorage = require('./fileStorage');
 const embeddingService = require('./embeddingService');
+const dynamo = require('./dynamoStore');
 
 const QA_PATH = path.join(__dirname, '../../knowledge-base/qa-pairs.json');
 const CHUNKS_DIR = path.join(__dirname, '../../knowledge-base/chunks');
 const EMBEDDINGS_DIR = path.join(__dirname, '../../knowledge-base/embeddings');
+
+const DYNAMO_PK_CONFIG = 'KB_CONFIG';
 
 class QAPairsService {
     /**
@@ -13,6 +16,24 @@ class QAPairsService {
      * @returns {Promise<Array>} - Array of Q&A pair objects
      */
     async getAll() {
+        if (dynamo.isEnabled()) {
+            try {
+                const data = await dynamo.getItem(DYNAMO_PK_CONFIG, 'qa_pairs');
+                if (data && Array.isArray(data.pairs) && data.pairs.length > 0) {
+                    return data.pairs;
+                }
+                // Seed from local
+                await fs.ensureFile(QA_PATH);
+                const local = await fs.readJson(QA_PATH).catch(() => []);
+                const pairs = Array.isArray(local) ? local : [];
+                if (pairs.length > 0) {
+                    await dynamo.putItem(DYNAMO_PK_CONFIG, 'qa_pairs', { pairs });
+                }
+                return pairs;
+            } catch (err) {
+                console.error(`❌ [QAPairs] DynamoDB getAll failed: ${err.message}`);
+            }
+        }
         await fs.ensureFile(QA_PATH);
         try {
             const data = await fs.readJson(QA_PATH);
@@ -23,10 +44,17 @@ class QAPairsService {
     }
 
     /**
-     * Save the full Q&A array to disk.
+     * Save the full Q&A array to disk and DynamoDB.
      */
     async _save(pairs) {
         await fs.writeJson(QA_PATH, pairs, { spaces: 2 });
+        if (dynamo.isEnabled()) {
+            try {
+                await dynamo.putItem(DYNAMO_PK_CONFIG, 'qa_pairs', { pairs });
+            } catch (err) {
+                console.error(`❌ [QAPairs] DynamoDB _save failed: ${err.message}`);
+            }
+        }
     }
 
     /**

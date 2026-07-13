@@ -48,6 +48,22 @@ const POST_FLOW_CLOSINGS = [
     'Lo que necesites saber, me dices y te ayudo',
 ];
 
+function cleanTextForWhatsApp(text) {
+    if (!text) return '';
+    return text
+        // Convert literal escaped newlines/tabs from LLM JSON into real characters
+        .replace(/\\n/g, '\n')
+        .replace(/\\r/g, '')
+        .replace(/\\t/g, ' ')
+        // Normalize line breaks
+        .replace(/\r\n/g, '\n')
+        .replace(/\r/g, '\n')
+        // Remove null bytes, control characters (except \n), and invalid unicode
+        .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]/g, '')
+        .replace(/[\uFFFD\u0000]/g, '')
+        .trim();
+}
+
 class HumanResponseService {
 
     constructor() {
@@ -290,12 +306,28 @@ class HumanResponseService {
                 }
 
                 markBotSentFn(jid);
-                await sock.sendMessage(jid, { text: parts[i] });
+                const cleanText = cleanTextForWhatsApp(parts[i]);
+                if (!cleanText) continue;
+
+                let sentSuccess = false;
+                for (let attempt = 1; attempt <= 3 && !sentSuccess; attempt++) {
+                    try {
+                        await sock.sendMessage(jid, { text: cleanText });
+                        sentSuccess = true;
+                    } catch (sendErr) {
+                        if (attempt < 3 && (sendErr.message.includes('Connection Closed') || sendErr.message.includes('xml-not-well-formed') || sendErr.message.includes('stream errored'))) {
+                            console.log(`⚠️ [HumanResponse] Part ${i + 1} attempt ${attempt} failed (${sendErr.message}). Retrying in 2s...`);
+                            await this._sleep(2000);
+                        } else {
+                            throw sendErr;
+                        }
+                    }
+                }
 
                 // Record each individual fragment in chat history
-                await this._recordSentMessage(jid, parts[i]);
+                await this._recordSentMessage(jid, cleanText);
 
-                console.log(`🧑 [HumanResponse] Part ${i + 1}/${partCount} sent (${typingDelay}ms delay): "${parts[i].substring(0, 60)}${parts[i].length > 60 ? '...' : ''}"`);
+                console.log(`🧑 [HumanResponse] Part ${i + 1}/${partCount} sent (${typingDelay}ms delay): "${cleanText.substring(0, 60)}${cleanText.length > 60 ? '...' : ''}"`);
             } catch (err) {
                 console.error(`❌ [HumanResponse] Part ${i + 1} failed: ${err.message}`);
             }

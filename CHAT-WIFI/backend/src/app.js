@@ -23,6 +23,7 @@ const googleDriveRoutes = require('./routes/googleDrive.routes');
 const blockedNumbersService = require('./services/blockedNumbers.service');
 const analyticsService = require('./services/analyticsService');
 const welcomeAutomationService = require('./services/welcomeAutomation.service');
+const knowledgeBaseService = require('./services/knowledgeBase.service');
 const aiFallbackService = require('./services/aiFallback.service');
 const { verifyToken } = require('./middleware/auth.middleware');
 
@@ -794,13 +795,21 @@ async function processGroupedMessages(remoteJid, debouncer) {
 
     // === FETCH RECENT HISTORY ===
     let recentConvHistory = [];
-    const preCheckState = await welcomeAutomationService.getUserState(remoteJid);
-    const promoAlreadySent = !!(preCheckState?.promoVideoSent) || sentPromoJids.has(remoteJid);
-
     try {
         const conv = await chatHistoryService.getMessages(remoteJid);
         recentConvHistory = conv.messages.slice(-30);
     } catch (_) { }
+
+    const preCheckState = await welcomeAutomationService.getUserState(remoteJid);
+    const hasHistoryCourseList = recentConvHistory.some(m =>
+        (m.sender === 'bot' || m.fromMe || m.sender === 'System') &&
+        typeof m.text === 'string' &&
+        (m.text.includes('1. Introducción al Hacking') || m.text.includes('1. Malware') || m.text.includes('trae 15 cursos') || m.text.includes('trae todo lo del combo') || m.text.includes('MEDIA_doc_') || m.text.includes('VIDEO_PROMO'))
+    );
+    const promoAlreadySent = !!(preCheckState?.promoVideoSent) || sentPromoJids.has(remoteJid) || hasHistoryCourseList;
+    if (promoAlreadySent) {
+        sentPromoJids.add(remoteJid);
+    }
 
     // Check if this client is in follow-up (active or paused) to offer discount pricing.
     // IMPORTANT: Only activate discount pricing if at least one follow-up message
@@ -863,6 +872,53 @@ async function processGroupedMessages(remoteJid, debouncer) {
     if (whatsapp.sock) {
         let finalResponse = response;
         let sendPromoVideo = false;
+
+        let mediaToProcess = [];
+        const mediaMatches = finalResponse.match(/\[MEDIA_(doc_[a-zA-Z0-9_]+)\]/g);
+        if (mediaMatches) {
+            for (const match of mediaMatches) {
+                const docId = match.replace(/^\[MEDIA_/, '').replace(/\]$/, '');
+                mediaToProcess.push(docId);
+            }
+            finalResponse = finalResponse.replace(/\[MEDIA_(doc_[a-zA-Z0-9_]+)\]/g, '').trim();
+            if (finalResponse.includes('|||') && finalResponse.endsWith('|||')) {
+                finalResponse = finalResponse.replace(/\|\|\|$/, '').trim();
+            }
+        }
+
+        // --- AUTO-SAFEGUARD MULTIMEDIA (Garantiza envío de video/audio aunque la IA olvide la etiqueta) ---
+        if (mediaToProcess.length === 0 && knowledgeBaseService.getDocuments) {
+            try {
+                const index = await knowledgeBaseService.getDocuments();
+                const lowerText = (combinedText || "").toLowerCase();
+                const lowerResp = finalResponse.toLowerCase();
+
+                // 1) Si preguntan qué trae el curso / temario / módulos / cursos o si la IA listó los cursos
+                const isTemarioQuery = lowerText.includes('que trae') || lowerText.includes('qué trae') || lowerText.includes('temario') || lowerText.includes('modulo') || lowerText.includes('módulo') || lowerText.includes('que incluye') || lowerText.includes('qué incluye') || lowerText.includes('que voy a aprender') || lowerText.includes('cuantos cursos') || lowerText.includes('cuántos cursos');
+                const isListingCourses = lowerResp.includes('1. introducción al hacking') || lowerResp.includes('1. malware') || lowerResp.includes('trae 15 cursos') || lowerResp.includes('31 cursos');
+
+                if ((isTemarioQuery || isListingCourses) && !promoAlreadySent) {
+                    const videoDocs = index.filter(d => d.type === 'video' && d.status === 'processed');
+                    if (videoDocs.length > 0) {
+                        console.log(`🎥 [Auto-Safeguard] Detected temario query/course listing without [MEDIA] tag. Auto-attaching video: ${videoDocs[0].id}`);
+                        mediaToProcess.push(videoDocs[0].id);
+                    }
+                }
+
+                // 2) Si preguntan para qué sirve / por dónde empiezo / fundamentos
+                const isAudioQuery = lowerText.includes('para que sirve') || lowerText.includes('para qué me sirve') || lowerText.includes('por donde empiezo') || lowerText.includes('por dónde empiezo') || lowerText.includes('cual veo primero') || lowerText.includes('cuál veo primero') || lowerText.includes('fundamentos') || lowerText.includes('por que debería tomarlo');
+                if (isAudioQuery && mediaToProcess.length === 0) {
+                    const audioDocs = index.filter(d => d.type === 'audio' && d.status === 'processed');
+                    if (audioDocs.length > 0) {
+                        console.log(`🔊 [Auto-Safeguard] Detected audio activation query without [MEDIA] tag. Auto-attaching audio: ${audioDocs[0].id}`);
+                        mediaToProcess.push(audioDocs[0].id);
+                    }
+                }
+            } catch (autoErr) {
+                console.error('❌ Error in auto-safeguard media detection:', autoErr.message);
+            }
+        }
+
         if (finalResponse.includes('[VIDEO_PROMO]')) {
             const userState = await welcomeAutomationService.getUserState(remoteJid);
             if (!sentPromoJids.has(remoteJid) && !userState?.promoVideoSent) {
@@ -953,6 +1009,65 @@ async function processGroupedMessages(remoteJid, debouncer) {
                 }
             } catch (err) {
                 console.error(`❌ Error sending promo video to ${remoteJid}:`, err.message);
+            }
+        }
+
+        // Send any attached videos/audios from Knowledge Base ([MEDIA_doc_xxx])
+        if (mediaToProcess && mediaToProcess.length > 0) {
+            const fileStorage = require('./services/fileStorage');
+            const index = await fileStorage.getIndex();
+            for (const docId of mediaToProcess) {
+                try {
+                    const doc = index.find(d => d.id === docId);
+                    if (!doc) {
+                        console.log(`⚠️ KB Media ${docId} not found in index`);
+                        continue;
+                    }
+                    const mediaPath = await fileStorage.getDocumentPath(docId);
+                    if (!mediaPath || !fs.existsSync(mediaPath)) {
+                        console.log(`⚠️ KB Media file not found at path for ${docId}`);
+                        continue;
+                    }
+                    await new Promise(r => setTimeout(r, 2500));
+                    welcomeAutomationService.markBotSent(remoteJid);
+
+                    let mediaSent = false;
+                    for (let attempt = 1; attempt <= 3 && !mediaSent; attempt++) {
+                        try {
+                            if (doc.type === 'video') {
+                                console.log(`🎥 Sending KB video "${doc.name}" to ${remoteJid} (attempt ${attempt})...`);
+                                await whatsapp.sock.sendMessage(remoteJid, {
+                                    video: fs.readFileSync(mediaPath),
+                                    caption: "", // Send ONLY the video cleanly without internal AI prompt descriptions
+                                    mimetype: 'video/mp4'
+                                });
+                                console.log(`✅ KB video delivered to ${remoteJid}`);
+                                sentPromoJids.add(remoteJid);
+                                try { await welcomeAutomationService.markPromoSent(remoteJid); } catch (_) { }
+                                mediaSent = true;
+                            } else if (doc.type === 'audio') {
+                                console.log(`🔊 Sending KB audio "${doc.name}" to ${remoteJid} (attempt ${attempt})...`);
+                                const isOgg = doc.name.toLowerCase().endsWith('.ogg') || doc.name.toLowerCase().endsWith('.opus');
+                                await whatsapp.sock.sendMessage(remoteJid, {
+                                    audio: fs.readFileSync(mediaPath),
+                                    mimetype: isOgg ? 'audio/ogg; codecs=opus' : 'audio/mp4',
+                                    ptt: true // Send as voice note for realistic personal delivery
+                                });
+                                console.log(`✅ KB audio delivered to ${remoteJid}`);
+                                mediaSent = true;
+                            }
+                        } catch (attemptErr) {
+                            if (attempt < 3 && (attemptErr.message.includes('Connection Closed') || attemptErr.message.includes('stream errored') || attemptErr.message.includes('not-well-formed'))) {
+                                console.log(`⚠️ KB media send attempt ${attempt} failed (${attemptErr.message}). Waiting 3s for reconnect...`);
+                                await new Promise(r => setTimeout(r, 3000));
+                            } else {
+                                throw attemptErr;
+                            }
+                        }
+                    }
+                } catch (mediaErr) {
+                    console.error(`❌ Error sending KB media ${docId} to ${remoteJid}:`, mediaErr.message);
+                }
             }
         }
     }

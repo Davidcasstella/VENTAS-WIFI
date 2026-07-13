@@ -19,11 +19,12 @@ const useKnowledgeStore = create((set) => ({
         }
     },
 
-    uploadDocument: async (file) => {
+    uploadDocument: async (file, description = '') => {
         set({ uploading: true, error: null });
         try {
             const formData = new FormData();
             formData.append('file', file);
+            if (description) formData.append('description', description);
             const response = await api.post('/api/knowledge-base/upload', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
@@ -37,6 +38,21 @@ const useKnowledgeStore = create((set) => ({
             }
         } catch (error) {
             set({ error: error.response?.data?.message || 'Error al subir documento', uploading: false });
+            return false;
+        }
+    },
+
+    updateDocumentDescription: async (id, description) => {
+        set({ loading: true, error: null });
+        try {
+            await api.patch(`/api/knowledge-base/documents/${id}/description`, { description });
+            const response = await api.get('/api/knowledge-base/documents');
+            if (response.data.success) {
+                set({ documents: response.data.documents, loading: false });
+            }
+            return true;
+        } catch (error) {
+            set({ error: error.response?.data?.message || 'Error al actualizar descripción', loading: false });
             return false;
         }
     },
