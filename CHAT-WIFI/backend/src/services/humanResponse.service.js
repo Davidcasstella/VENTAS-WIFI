@@ -110,18 +110,19 @@ class HumanResponseService {
 
     /**
      * Returns a human-like typing delay in ms based on text length.
-     * Short texts (greetings) → 1.5–3s, longer texts → 3–6s, with randomization.
+     * Short texts (greetings) → 3–5s, longer texts → 5–9s, with randomization.
+     * Minimum 3 seconds between parts (except first message).
      * @param {string} text - The message text
      * @param {boolean} isFirstMessage - Whether this is the first message in sequence
      * @param {number} multiplier - Speed multiplier (0.5=fast, 1.0=normal, 3.0=slow)
      */
     _humanDelay(text, isFirstMessage = false, multiplier = 1.0) {
         const len = (text || '').length;
-        // Base delay proportional to message length, capped
+        // Base delay proportional to message length — increased for more natural feel
         let base;
-        if (len < 30) base = 1500;       // short: "dale bro"
-        else if (len < 80) base = 2500;   // medium: a sentence
-        else base = 4000;                 // longer: a paragraph
+        if (len < 30) base = 3000;       // short: "dale bro"    → 3–5s
+        else if (len < 120) base = 5000;  // medium: a sentence   → 5–8s
+        else base = 7000;                 // longer: a paragraph  → 7–11s
 
         // Add randomness (±30%) to feel unpredictable
         const jitter = base * (0.7 + Math.random() * 0.6);
@@ -132,7 +133,8 @@ class HumanResponseService {
         // First message has a shorter delay (they're "already typing")
         if (isFirstMessage) return Math.floor(scaled * 0.6);
 
-        return Math.floor(scaled);
+        // Guarantee a minimum 3-second gap between non-first parts
+        return Math.max(3000, Math.floor(scaled));
     }
 
     async _showTyping(sock, jid) {
