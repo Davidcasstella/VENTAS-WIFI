@@ -1,5 +1,235 @@
 [
   {
+    "driveAccessGrantedAt": "2026-07-16T23:19:02.921Z",
+    "amount": 10000,
+    "accessGrantedAt": "2026-07-16T23:19:02.876Z",
+    "notes": null,
+    "jid": "21075689783496@lid",
+    "drivePermissions": [
+      {
+        "permissionId": "14243230233267127281",
+        "webViewLink": "https://drive.google.com/drive/folders/1xza9RAmHK2J-kNA2eKlgwIiBV4HxU0BG",
+        "folderName": "TODO-HACKING",
+        "role": "reader",
+        "sharedAt": "2026-07-16T23:19:02.854Z",
+        "folderId": "1xza9RAmHK2J-kNA2eKlgwIiBV4HxU0BG"
+      }
+    ],
+    "createdAt": "2026-07-16T23:15:18.046Z",
+    "phone": "21075689783496",
+    "driveAccessRevokedAt": null,
+    "paymentDetectedAt": "2026-07-16T23:15:18.046Z",
+    "emailReceivedAt": "2026-07-16T23:19:00.901Z",
+    "id": "5vtkedo4utbmro4n3xa",
+    "accessExpiresAt": null,
+    "pushName": "Alexander",
+    "plan": "combo-15",
+    "email": "sanchezgalvan2020@gmail.com",
+    "status": "access_granted",
+    "updatedAt": "2026-07-16T23:19:02.921Z"
+  },
+  {
+    "driveAccessGrantedAt": "2026-07-15T21:22:16.599Z",
+    "amount": 15000,
+    "accessGrantedAt": "2026-07-15T21:22:16.564Z",
+    "notes": null,
+    "jid": "91676429271221@lid",
+    "drivePermissions": [
+      {
+        "permissionId": "01105062516585513029",
+        "webViewLink": "https://drive.google.com/drive/folders/1xza9RAmHK2J-kNA2eKlgwIiBV4HxU0BG",
+        "folderName": "TODO-HACKING",
+        "role": "reader",
+        "sharedAt": "2026-07-15T21:22:16.549Z",
+        "folderId": "1xza9RAmHK2J-kNA2eKlgwIiBV4HxU0BG"
+      }
+    ],
+    "createdAt": "2026-07-15T21:21:25.941Z",
+    "phone": "91676429271221",
+    "driveAccessRevokedAt": null,
+    "paymentDetectedAt": "2026-07-15T21:21:25.941Z",
+    "emailReceivedAt": "2026-07-15T21:22:10.318Z",
+    "id": "h1o0p31cinfmrml4tkl",
+    "accessExpiresAt": null,
+    "pushName": "JOSE ALBERTO OSORIO OSORI",
+    "plan": "combo-15",
+    "email": "procesodeaprendizaje.jaoo@gmail.com",
+    "status": "access_granted",
+    "updatedAt": "2026-07-15T21:22:16.599Z"
+  },
+  {
+    "driveAccessGrantedAt": "2026-07-15T03:42:50.565Z",
+    "amount": 10000,
+    "accessGrantedAt": "2026-07-15T03:42:50.529Z",
+    "notes": null,
+    "jid": "237735130472476@lid",
+    "drivePermissions": [
+      {
+        "permissionId": "00904793865535334816",
+        "webViewLink": "https://drive.google.com/drive/folders/1dnC4TuiDaU2b8SCdxeeBsjkAY4AbcLaV",
+        "folderName": "CURSOS HACKING ",
+        "role": "reader",
+        "sharedAt": "2026-07-15T03:42:28.039Z",
+        "folderId": "1dnC4TuiDaU2b8SCdxeeBsjkAY4AbcLaV"
+      },
+      {
+        "permissionId": "00904793865535334816",
+        "webViewLink": "https://drive.google.com/drive/folders/1xza9RAmHK2J-kNA2eKlgwIiBV4HxU0BG",
+        "folderName": "TODO-HACKING",
+        "role": "reader",
+        "sharedAt": "2026-07-15T03:42:50.512Z",
+        "folderId": "1xza9RAmHK2J-kNA2eKlgwIiBV4HxU0BG"
+      }
+    ],
+    "createdAt": "2026-07-15T03:40:56.509Z",
+    "phone": "237735130472476",
+    "driveAccessRevokedAt": null,
+    "paymentDetectedAt": "2026-07-15T03:40:56.509Z",
+    "emailReceivedAt": "2026-07-15T03:42:24.104Z",
+    "id": "6g77j6obz8cmrlj90sc",
+    "accessExpiresAt": null,
+    "pushName": "Luis Oviedo",
+    "plan": "combo-15",
+    "email": "kaaluismendez01@gmail.com",
+    "status": "access_granted",
+    "updatedAt": "2026-07-15T03:42:50.565Z"
+  },
+  {
+    "driveAccessGrantedAt": "2026-07-15T03:07:46.929Z",
+    "amount": 10000,
+    "accessGrantedAt": "2026-07-15T03:07:46.887Z",
+    "notes": null,
+    "jid": "181634250887304@lid",
+    "drivePermissions": [
+      {
+        "permissionId": "06031456248902705496",
+        "webViewLink": "https://drive.google.com/drive/folders/1dnC4TuiDaU2b8SCdxeeBsjkAY4AbcLaV",
+        "folderName": "CURSOS HACKING ",
+        "role": "reader",
+        "sharedAt": "2026-07-15T03:07:06.865Z",
+        "folderId": "1dnC4TuiDaU2b8SCdxeeBsjkAY4AbcLaV"
+      },
+      {
+        "permissionId": "06031456248902705496",
+        "webViewLink": "https://drive.google.com/drive/folders/1xza9RAmHK2J-kNA2eKlgwIiBV4HxU0BG",
+        "folderName": "TODO-HACKING",
+        "role": "reader",
+        "sharedAt": "2026-07-15T03:07:46.868Z",
+        "folderId": "1xza9RAmHK2J-kNA2eKlgwIiBV4HxU0BG"
+      }
+    ],
+    "createdAt": "2026-07-15T03:06:39.455Z",
+    "phone": "181634250887304",
+    "driveAccessRevokedAt": null,
+    "paymentDetectedAt": "2026-07-15T03:06:39.455Z",
+    "emailReceivedAt": "2026-07-15T03:07:02.737Z",
+    "id": "ivobnxxoppmrli0xjz",
+    "accessExpiresAt": null,
+    "pushName": "🔭",
+    "plan": "combo-15",
+    "email": "cristianvillada95@gmail.com",
+    "status": "access_granted",
+    "updatedAt": "2026-07-15T03:07:46.929Z"
+  },
+  {
+    "driveAccessGrantedAt": "2026-07-14T03:29:30.217Z",
+    "amount": 15000,
+    "accessGrantedAt": "2026-07-14T03:29:30.173Z",
+    "notes": null,
+    "jid": "53640433819805@lid",
+    "drivePermissions": [
+      {
+        "permissionId": "11533403459488895481",
+        "webViewLink": "https://drive.google.com/drive/folders/1xza9RAmHK2J-kNA2eKlgwIiBV4HxU0BG",
+        "folderName": "TODO-HACKING",
+        "role": "reader",
+        "sharedAt": "2026-07-14T03:29:30.154Z",
+        "folderId": "1xza9RAmHK2J-kNA2eKlgwIiBV4HxU0BG"
+      }
+    ],
+    "createdAt": "2026-07-14T03:28:55.764Z",
+    "phone": "53640433819805",
+    "driveAccessRevokedAt": null,
+    "paymentDetectedAt": "2026-07-14T03:28:55.764Z",
+    "emailReceivedAt": "2026-07-14T03:29:25.167Z",
+    "id": "ur12ymnvjkmrk3dpzo",
+    "accessExpiresAt": null,
+    "pushName": "NatCoral",
+    "plan": "combo-15",
+    "email": "natcoral.n@gmail.com",
+    "status": "access_granted",
+    "updatedAt": "2026-07-14T03:29:30.217Z"
+  },
+  {
+    "driveAccessGrantedAt": "2026-07-14T02:47:02.933Z",
+    "amount": 15000,
+    "accessGrantedAt": "2026-07-14T02:47:02.860Z",
+    "notes": null,
+    "jid": "26809773092930@lid@s.whatsapp.net",
+    "drivePermissions": [
+      {
+        "permissionId": "14792326205932575353",
+        "webViewLink": "https://drive.google.com/drive/folders/1xza9RAmHK2J-kNA2eKlgwIiBV4HxU0BG",
+        "folderName": "TODO-HACKING",
+        "role": "reader",
+        "sharedAt": "2026-07-14T02:47:02.839Z",
+        "folderId": "1xza9RAmHK2J-kNA2eKlgwIiBV4HxU0BG"
+      }
+    ],
+    "createdAt": "2026-07-14T02:47:01.269Z",
+    "phone": "26809773092930@lid",
+    "driveAccessRevokedAt": null,
+    "paymentDetectedAt": "2026-07-14T02:47:01.269Z",
+    "emailReceivedAt": "2026-07-14T02:47:01.269Z",
+    "id": "o3q1ymmqojmrk1vtsl",
+    "accessExpiresAt": null,
+    "pushName": "26809773092930",
+    "plan": "combo-15",
+    "email": "canal.telebahia@gmail.com",
+    "status": "access_granted",
+    "updatedAt": "2026-07-14T02:47:02.933Z"
+  },
+  {
+    "driveAccessGrantedAt": null,
+    "amount": 15000,
+    "accessGrantedAt": null,
+    "notes": null,
+    "jid": "26809773092930@lid@s.whatsapp.net",
+    "drivePermissions": [],
+    "createdAt": "2026-07-14T02:45:13.290Z",
+    "phone": "26809773092930@lid",
+    "driveAccessRevokedAt": null,
+    "paymentDetectedAt": "2026-07-14T02:45:13.290Z",
+    "emailReceivedAt": "2026-07-14T02:45:13.290Z",
+    "id": "n9o7ganzjwomrk1tih6",
+    "accessExpiresAt": null,
+    "pushName": "26809773092930",
+    "plan": "combo-15",
+    "email": "andres_ruales84@hotmail.com",
+    "status": "pending_access",
+    "updatedAt": "2026-07-14T02:45:13.290Z"
+  },
+  {
+    "driveAccessGrantedAt": null,
+    "amount": 15000,
+    "accessGrantedAt": null,
+    "notes": null,
+    "jid": "254468541157383@lid@s.whatsapp.net",
+    "drivePermissions": [],
+    "createdAt": "2026-07-14T02:43:48.075Z",
+    "phone": "254468541157383@lid",
+    "driveAccessRevokedAt": null,
+    "paymentDetectedAt": "2026-07-14T02:43:48.075Z",
+    "emailReceivedAt": "2026-07-14T02:43:48.075Z",
+    "id": "ae7465dg3j4mrk1roq3",
+    "accessExpiresAt": null,
+    "pushName": "254468541157383",
+    "plan": "combo-15",
+    "email": "andres_ruales84@hotmail.com",
+    "status": "pending_access",
+    "updatedAt": "2026-07-14T02:43:48.075Z"
+  },
+  {
     "driveAccessGrantedAt": "2026-07-12T00:08:19.953Z",
     "amount": 10000,
     "accessGrantedAt": "2026-07-12T00:08:19.918Z",
@@ -35,26 +265,6 @@
     "email": "dulce290817@gmail.com",
     "status": "access_granted",
     "updatedAt": "2026-07-12T00:08:19.953Z"
-  },
-  {
-    "driveAccessGrantedAt": null,
-    "amount": 10000,
-    "accessGrantedAt": null,
-    "notes": null,
-    "jid": "254468541157383@lid",
-    "drivePermissions": [],
-    "createdAt": "2026-07-11T03:55:54.943Z",
-    "phone": "254468541157383",
-    "driveAccessRevokedAt": null,
-    "paymentDetectedAt": "2026-07-11T03:55:54.943Z",
-    "emailReceivedAt": null,
-    "id": "26ldopzh3t5mrfu0vcu",
-    "accessExpiresAt": null,
-    "pushName": "David Castella",
-    "plan": "combo-10",
-    "email": null,
-    "status": "pending_email",
-    "updatedAt": "2026-07-11T03:55:54.943Z"
   },
   {
     "driveAccessGrantedAt": "2026-07-10T05:25:49.814Z",
@@ -179,34 +389,5 @@
     "email": "milhsa2025@gmail.com",
     "status": "access_granted",
     "updatedAt": "2026-07-10T03:37:51.308Z"
-  },
-  {
-    "driveAccessGrantedAt": "2026-07-10T01:42:58.807Z",
-    "amount": 15000,
-    "accessGrantedAt": "2026-07-10T01:42:58.602Z",
-    "notes": null,
-    "jid": "573028599105@s.whatsapp.net",
-    "drivePermissions": [
-      {
-        "permissionId": "02703420635909535741",
-        "webViewLink": "https://drive.google.com/drive/folders/1xza9RAmHK2J-kNA2eKlgwIiBV4HxU0BG",
-        "folderName": "TODO-HACKING",
-        "role": "reader",
-        "sharedAt": "2026-07-10T01:42:58.510Z",
-        "folderId": "1xza9RAmHK2J-kNA2eKlgwIiBV4HxU0BG"
-      }
-    ],
-    "createdAt": "2026-07-10T01:42:56.981Z",
-    "phone": "573028599105",
-    "driveAccessRevokedAt": null,
-    "paymentDetectedAt": "2026-07-10T01:42:56.981Z",
-    "emailReceivedAt": "2026-07-10T01:42:56.981Z",
-    "id": "xl5a5sbrht8mre9u0ut",
-    "accessExpiresAt": null,
-    "pushName": "573028599105",
-    "plan": "combo-15",
-    "email": "amicopdavid15@gmail.com",
-    "status": "access_granted",
-    "updatedAt": "2026-07-10T01:42:58.807Z"
   }
 ]

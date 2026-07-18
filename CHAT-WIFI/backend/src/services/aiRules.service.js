@@ -54,12 +54,15 @@ class AIRulesService {
         if (dynamo.isEnabled()) {
             try {
                 await dynamo.putItem(DYNAMO_PK, DYNAMO_SK, { rules });
-                return;
             } catch (err) {
                 console.error(`❌ [AIRules] DynamoDB write failed: ${err.message}`);
             }
         }
-        await fs.writeJson(RULES_FILE, rules, { spaces: 2 });
+        try {
+            await fs.writeJson(RULES_FILE, rules, { spaces: 2 });
+        } catch (err) {
+            console.error(`❌ [AIRules] Disk sync failed: ${err.message}`);
+        }
     }
 
     /**

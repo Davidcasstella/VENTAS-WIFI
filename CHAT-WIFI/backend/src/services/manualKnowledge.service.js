@@ -54,17 +54,20 @@ class ManualKnowledgeService {
         }
     }
 
-    /** Persist the full array back. */
+    /** Persist the full array back to DynamoDB and sync local disk file. */
     async _save(entries) {
         if (dynamo.isEnabled()) {
             try {
                 await dynamo.putItem(DYNAMO_PK, DYNAMO_SK, { entries });
-                return;
             } catch (err) {
                 console.error(`❌ [ManualKnowledge] DynamoDB write failed: ${err.message}`);
             }
         }
-        await fs.writeJson(MK_PATH, entries, { spaces: 2 });
+        try {
+            await fs.writeJson(MK_PATH, entries, { spaces: 2 });
+        } catch (err) {
+            console.error(`❌ [ManualKnowledge] Disk sync failed: ${err.message}`);
+        }
     }
 
     // ── Text chunking (replicates KnowledgeBaseService.chunkText) ──

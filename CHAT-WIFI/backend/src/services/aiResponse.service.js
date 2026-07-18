@@ -23,20 +23,18 @@ class AIResponseService {
         const { name, apiKey } = activeProvider;
         const providerName = name.toLowerCase();
 
-        // Always load the full manual knowledge base as primary context.
-        // It's small (one entry) and ensures the AI always has complete course
-        // details, pricing, and payment info regardless of the query.
+        // Always load the full manual knowledge base through manualKnowledgeService.
+        // It's small and ensures the AI always has complete course details,
+        // pricing, and payment info from DynamoDB (or local disk) regardless of query.
         let kbContext = '';
         try {
-            const fs = require('fs-extra');
-            const pathLib = require('path');
-            const mkPath = pathLib.join(__dirname, '../../knowledge-base/manual-knowledge.json');
-            const entries = await fs.readJson(mkPath);
+            const manualKnowledgeService = require('./manualKnowledge.service');
+            const entries = await manualKnowledgeService.getAll();
             if (Array.isArray(entries) && entries.length > 0) {
                 kbContext = entries.map(e => `${e.title}\n${e.content}`).join('\n\n');
             }
         } catch (err) {
-            console.error('❌ Error loading manual-knowledge:', err.message);
+            console.error('❌ Error loading manual-knowledge via service:', err.message);
         }
 
         // Also search uploaded documents via RAG for supplementary context
@@ -163,45 +161,39 @@ Claro que sí ||| 💳 Nequi: 3028599105\n💳 Daviplata: 3028599105\n🔑 Llave
 REGLA DE ORO: Una vez el cliente elige una opción, NO se cuestiona, NO se compara con otra, NO se insiste. Se confirma y se procede al pago.
 
 REGLA DE INFORMACIÓN / "QUE TRAE":
-- Cuando el cliente pida más información, pregunte "que trae", "que incluye", "que cursos tiene" o similar:
-- SIEMPRE responde con la LISTA DE CURSOS del Contexto.
-- Si no especifica cuál combo: preguntar primero cuál le interesa y luego listar.
+- Cuando el cliente pida más información, pregunte "que trae", "que incluye", "que cursos tiene" o similar sobre cualquier combo ("el de 15", "el de 10", "el básico", "el full"):
+- SIEMPRE responde con la LISTA o DESCRIPCIÓN EXACTA definida en las Reglas Personalizadas o en el Contexto proporcionado.
+- Si no especifica cuál combo: preguntar primero cuál le interesa y luego listar según las Reglas o Contexto.
 - FORMATO DE LISTAS: Usa números para que sea más fácil de leer. Usa saltos de línea dentro de la burbuja de la lista.
 - IMPORTANTE: La respuesta DEBE tener EXACTAMENTE 3 partes separadas por |||:
-  PARTE 1: introducción breve (ej: "El combo de 10 trae 15 cursos")
-  PARTE 2: la lista completa de cursos numerados (UNA sola burbuja con saltos de línea)
+  PARTE 1: introducción breve (ej: "El combo de 15 trae..." o lo que indique la regla del usuario)
+  PARTE 2: la lista completa o descripción EXACTAMENTE como aparezca en las Reglas Personalizadas o el Contexto (UNA sola burbuja con saltos de línea). NUNCA inventes información ni uses listas antiguas/genéricas si el usuario configuró una lista o descripción en las Reglas o el Contexto.
   PARTE 3: cierre de venta (ej: "Te paso los métodos de pago? tienes Nequi o Daviplata?")
 - NUNCA pongas la intro, la lista y el cierre todo junto en un solo mensaje. SIEMPRE usa ||| para separarlos.
 
 ${options.isInFollowUp ? `REGLA COMBO BÁSICO (Oferta $7.000):
-- Listar los 15 cursos del básico.
-- Ejemplo:
-El combo de 7 trae 15 cursos ||| 1. Introducción al Hacking Ético\\n2. El arte del espionaje\\n3. Hacking de Celulares\\n4. Métodos WiFi\\n5. Hacking Páginas Web\\n6. Hacking Enterprise\\n7. Desarrollo Web\\n8. Inglés\\n9. Programas y herramientas\\n10. Pack Audiolibros\\n11. Diseño Gráfico\\n12. Termux\\n13. Claude IA\\n14. Blackhat Cracking\\n15. Protección de Datos ||| Te paso los métodos de pago? tienes Nequi o Daviplata?
+- Explica y muestra el contenido y la lista del combo básico exactamente según se describa en las Reglas Personalizadas o en el Contexto proporcionado.
+- NUNCA uses los precios normales de 10 mil y 15 mil.
 
 REGLA COMBO FULL (Oferta $10.000):
-- El combo FULL trae todo lo del combo de 7 MÁS 16 cursos avanzados adicionales.
-- Cuando listen el combo de 10, SOLO muestra los 16 cursos NUEVOS que trae de más.
-- Ejemplo:
-El combo de 10 trae todo lo del combo de 7 mas 16 cursos avanzados ||| 1. Malware\\n2. Espionaje avanzado\\n3. Contramedidas de seguridad\\n4. Ingeniería Social\\n5. Guías para la Ciberseguridad\\n6. Hacking WiFi Pro 1\\n7. Hacking WiFi Pro 2\\n8. Hacking con teclado de computador\\n9. Pentesting profesional\\n10. Casos típicos de ataques\\n11. Controles y mecanismos de seguridad\\n12. Hacking Forensics\\n13. Curso Git y GitHub\\n14. Curso Profesional de Angular\\n15. Autenticación avanzada con Passport\\n16. Curso Avanzado de Node.js ||| En total son 31 cursos completos, te paso los métodos de pago? tienes Nequi o Daviplata?
+- Explica y muestra el contenido del combo FULL exactamente según se describa en las Reglas Personalizadas o en el Contexto proporcionado.
+- Si el Contexto o Reglas indican qué cursos adicionales trae sobre el básico, muestra únicamente esos cursos nuevos para no repetir.
 
 NOMBRES DE LOS COMBOS EN SEGUIMIENTO (OFERTA):
 - Llama al Básico ($7.000) como "combo de 7" o "el de 7".
 - Llama al FULL ($10.000) como "combo de 10" o "el de 10".
 - NUNCA uses los precios normales de 10 mil y 15 mil.` : `REGLA COMBO DE 10 (Básico $10.000):
-- Listar los 15 cursos del básico.
-- Ejemplo:
-El combo de 10 trae 15 cursos ||| 1. Introducción al Hacking Ético\\n2. El arte del espionaje\\n3. Hacking de Celulares\\n4. Métodos WiFi\\n5. Hacking Páginas Web\\n6. Hacking Enterprise\\n7. Desarrollo Web\\n8. Inglés\\n9. Programas y herramientas\\n10. Pack Audiolibros\\n11. Diseño Gráfico\\n12. Termux\\n13. Claude IA\\n14. Blackhat Cracking\\n15. Protección de Datos ||| Te paso los métodos de pago? tienes Nequi o Daviplata?
+- Cuando el cliente pregunte qué trae el combo de 10 (o combo básico), extrae y muestra la información y lista EXACTA que esté definida en las Reglas Personalizadas o en el Contexto proporcionado.
+- Si no hay regla personalizada específica para el de 10, muestra los cursos básicos listados en el Contexto.
 
 REGLA COMBO DE 15 (FULL $15.000):
-- El combo de 15 trae todo lo del combo de 10 MÁS 16 cursos avanzados adicionales.
-- Cuando listen el combo de 15, SOLO muestra los 16 cursos NUEVOS que trae de más. NO repitas los 15 del básico que ya incluye.
-- Ejemplo:
-El combo de 15 trae todo lo del combo de 10 mas 16 cursos avanzados ||| 1. Malware\\n2. Espionaje avanzado\\n3. Contramedidas de seguridad\\n4. Ingeniería Social\\n5. Guías para la Ciberseguridad\\n6. Hacking WiFi Pro 1\\n7. Hacking WiFi Pro 2\\n8. Hacking con teclado de computador\\n9. Pentesting profesional\\n10. Casos típicos de ataques\\n11. Controles y mecanismos de seguridad\\n12. Hacking Forensics\\n13. Curso Git y GitHub\\n14. Curso Profesional de Angular\\n15. Autenticación avanzada con Passport\\n16. Curso Avanzado de Node.js ||| En total son 31 cursos completos, te paso los métodos de pago? tienes Nequi o Daviplata?
+- Cuando el cliente pregunte qué trae el combo de 15 (o combo full / "el de 15"), extrae y muestra la información y lista EXACTA que esté definida en las Reglas Personalizadas o en el Contexto proporcionado.
+- ¡ATENCIÓN CRÍTICA! Si el usuario configuró o modificó en el frontend qué cursos o beneficios trae "el de 15" o "combo de 15", DEBES OBEDECER AL 100% ESA INFORMACIÓN y NUNCA sacar cursos antiguos o listas que no estén en el Contexto actual o Reglas.`}
 
 NOMBRES DE LOS COMBOS:
 - Llama al Básico ($10.000) como "combo de 10" o "el de 10".
 - Llama al FULL ($15.000) como "combo de 15" o "el de 15".
-- El combo de 15 incluye todo lo del combo de 10 + 16 cursos avanzados = 31 cursos totales.`}
+- El combo de 15 incluye todo lo del combo de 10 más el contenido adicional indicado en el Contexto o Reglas.
 
 CIERRE DE VENTA OBLIGATORIO (SOLO ANTES DEL PAGO):
 - Si el cliente AÚN NO ha pedido los datos de pago ni está en proceso de pago, termina tu respuesta preguntando por métodos de pago.
@@ -240,6 +232,7 @@ REGLAS CRÍTICAS:
 
 Contexto proporcionado:
 ${kbContext}
+${customRulesText ? `\n==================================================\n¡ATENCIÓN! REGLAS PERSONALIZADAS CONFIGURADAS EN EL FRONTEND POR EL USUARIO (MÁXIMA PRIORIDAD):\nSi las siguientes reglas mencionan qué trae un combo ("el de 15", "el de 10", temarios, precios o instrucciones específicas), OBEDECE ÚNICA Y EXCLUSIVAMENTE ESTAS REGLAS por encima de cualquier información anterior:\n${customRulesText}\n==================================================\n` : ''}
 ${historyString ? `\nHISTORIAL RECIENTE DE LA CONVERSACION:\n${historyString}\n` : ''}
 `;
 
