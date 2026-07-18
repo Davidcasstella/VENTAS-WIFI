@@ -9,6 +9,121 @@
   },
   "activityLog": [
     {
+      "accessId": "5vtkedo4utbmro4n3xa",
+      "action": "shared",
+      "details": [
+        {
+          "folderId": "1xza9RAmHK2J-kNA2eKlgwIiBV4HxU0BG",
+          "folderName": "TODO-HACKING"
+        }
+      ],
+      "email": "sanchezgalvan2020@gmail.com",
+      "timestamp": "2026-07-16T23:19:02.978Z"
+    },
+    {
+      "accessId": "h1o0p31cinfmrml4tkl",
+      "action": "shared",
+      "details": [
+        {
+          "folderId": "1xza9RAmHK2J-kNA2eKlgwIiBV4HxU0BG",
+          "folderName": "TODO-HACKING"
+        }
+      ],
+      "email": "procesodeaprendizaje.jaoo@gmail.com",
+      "timestamp": "2026-07-15T21:22:16.640Z"
+    },
+    {
+      "accessId": "6g77j6obz8cmrlj90sc",
+      "action": "shared",
+      "details": [
+        {
+          "folderId": "1xza9RAmHK2J-kNA2eKlgwIiBV4HxU0BG",
+          "folderName": "TODO-HACKING"
+        }
+      ],
+      "email": "kaaluismendez01@gmail.com",
+      "timestamp": "2026-07-15T03:42:50.602Z"
+    },
+    {
+      "accessId": "6g77j6obz8cmrlj90sc",
+      "action": "shared",
+      "details": [
+        {
+          "folderId": "1dnC4TuiDaU2b8SCdxeeBsjkAY4AbcLaV",
+          "folderName": "CURSOS HACKING "
+        }
+      ],
+      "email": "kaaluismendez01@gmail.com",
+      "timestamp": "2026-07-15T03:42:28.145Z"
+    },
+    {
+      "accessId": "ivobnxxoppmrli0xjz",
+      "action": "shared",
+      "details": [
+        {
+          "folderId": "1xza9RAmHK2J-kNA2eKlgwIiBV4HxU0BG",
+          "folderName": "TODO-HACKING"
+        }
+      ],
+      "email": "cristianvillada95@gmail.com",
+      "timestamp": "2026-07-15T03:07:46.972Z"
+    },
+    {
+      "accessId": "ivobnxxoppmrli0xjz",
+      "action": "shared",
+      "details": [
+        {
+          "folderId": "1dnC4TuiDaU2b8SCdxeeBsjkAY4AbcLaV",
+          "folderName": "CURSOS HACKING "
+        }
+      ],
+      "email": "cristianvillada95@gmail.com",
+      "timestamp": "2026-07-15T03:07:06.989Z"
+    },
+    {
+      "accessId": "ur12ymnvjkmrk3dpzo",
+      "action": "shared",
+      "details": [
+        {
+          "folderId": "1xza9RAmHK2J-kNA2eKlgwIiBV4HxU0BG",
+          "folderName": "TODO-HACKING"
+        }
+      ],
+      "email": "natcoral.n@gmail.com",
+      "timestamp": "2026-07-14T03:29:30.263Z"
+    },
+    {
+      "accessId": "o3q1ymmqojmrk1vtsl",
+      "action": "shared",
+      "details": [
+        {
+          "folderId": "1xza9RAmHK2J-kNA2eKlgwIiBV4HxU0BG",
+          "folderName": "TODO-HACKING"
+        }
+      ],
+      "email": "canal.telebahia@gmail.com",
+      "timestamp": "2026-07-14T02:47:03.019Z"
+    },
+    {
+      "accessId": "xl5a5sbrht8mre9u0ut",
+      "action": "revoked",
+      "details": [
+        {
+          "folderId": "1xza9RAmHK2J-kNA2eKlgwIiBV4HxU0BG",
+          "folderName": "TODO-HACKING"
+        }
+      ],
+      "email": "amicopdavid15@gmail.com",
+      "timestamp": "2026-07-14T02:43:26.749Z"
+    },
+    {
+      "accessId": "26ldopzh3t5mrfu0vcu",
+      "action": "revoked",
+      "details": [],
+      "email": "andres_ruales84@hotmail.com",
+      "timestamp": "2026-07-14T02:43:18.689Z"
+    },
+    {
       "accessId": "8knc6umop7wmrh195fh",
       "action": "shared",
       "details": [

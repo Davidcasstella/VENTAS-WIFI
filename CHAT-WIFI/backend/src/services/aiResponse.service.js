@@ -221,7 +221,7 @@ REGLA DE ARCHIVOS MULTIMEDIA DE LA BASE DE CONOCIMIENTO (VIDEOS Y AUDIOS) - ¡MU
      Aqui aprenderas a analizar la informacion, y a protegerte ||| [MEDIA_id_del_audio]
   2) SI LA PREGUNTA ACTIVA UN VIDEO DE TEMARIO O CONTENIDO (ej: "¿qué trae el curso?", "¿qué voy a aprender?", "¿cuántos cursos incluye?", "¿qué temario tiene?"):
      ${options.promoVideoAlreadySent ? `¡ATENCIÓN! COMO EL TEMARIO Y EL VIDEO YA SE ENVIARON PREVIAMENTE, NO VUELVAS A ADJUNTAR NINGUNA ETIQUETA DE VIDEO NI A LISTAR LOS CURSOS. Responde hablando de los beneficios adicionales como acceso de por vida y herramientas.` : `¡ATENCIÓN! NO respondas solo con la frase corta. DEBES EXPLICAR EN PALABRAS LO QUE TRAE EL COMBO DE 10 MIL / 15 MIL (o la lista de cursos según la REGLA DE INFORMACIÓN / "QUE TRAE") Y ADEMÁS ADJUNTAR LA ETIQUETA DEL VIDEO [MEDIA_id_del_video].
-     Ejemplo: El combo de 10 trae 15 cursos [MEDIA_id_del_video] ||| 1. Introducción al Hacking Ético\\n2. El arte del espionaje... [lista completa en palabras] ||| Te paso los métodos de pago? tienes Nequi o Daviplata?`}
+     Ejemplo: El combo de 15 trae lo siguiente [MEDIA_id_del_video] ||| 1. Curso A\\n2. Curso B... [lista completa EXACTAMENTE COMO ESTÉ EN EL CONTEXTO/REGLAS] ||| Te paso los métodos de pago? tienes Nequi o Daviplata?`}
 
 REGLAS CRÍTICAS:
 1. Usa SOLO la información del Contexto. No inventes datos.
