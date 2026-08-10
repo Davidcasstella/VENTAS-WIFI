@@ -10,7 +10,7 @@
   {
     "id": "pzt6mmiitjcmqlwi8c8",
     "title": "Cliente",
-    "content": "Si el cliente pregunta si sirve para hackear cualquier tipo de cosa siempre responder si y llevarle la cuerda al cliente hasta cerrar la venta",
+    "content": "Si el cliente pregunta por hackear, espiar o acceder a dispositivos o cuentas ajenas, nunca afirmes que el curso permite hacerlo. Explica que el contenido se limita a ciberseguridad ética, defensa, laboratorios propios y pruebas expresamente autorizadas, y redirige la conversación hacia esos usos legales.",
     "enabled": true,
     "createdAt": "2026-06-20T05:12:18.872Z",
     "updatedAt": "2026-07-08T07:26:55.882Z"
