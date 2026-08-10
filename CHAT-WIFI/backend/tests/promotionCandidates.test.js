@@ -10,6 +10,21 @@ function inbound(text, timestamp = '2026-08-01T12:00:00.000Z') {
     return { text, fromMe: false, timestamp };
 }
 
+test('preserves inbound LID contacts as unresolved and never invents a phone', () => {
+    const chats = [chat('123456789012345@lid', [inbound('Quiero información')], 'Contacto LID')];
+
+    const result = buildPromotionCandidates({ chats, accessRecords: [], blockedEntries: [] });
+
+    assert.equal(result.candidates.length, 0);
+    assert.deepEqual(result.unresolvedCandidates, [{
+        jid: '123456789012345@lid',
+        pushName: 'Contacto LID',
+        lastContactAt: '2026-08-01T12:00:00.000Z',
+        source: 'inbound_lid_conversation',
+        contactable: false,
+    }]);
+});
+
 test('keeps only direct inbound phone conversations', () => {
     const chats = [
         chat('120363000000@g.us', [inbound('Grupo')]),

@@ -28,6 +28,7 @@ async function main() {
     const blockedEntries = await blockedNumbersService.getAll();
     const result = buildPromotionCandidates({ chats, accessRecords, blockedEntries });
     result.candidates.sort((a, b) => String(b.lastContactAt || '').localeCompare(String(a.lastContactAt || '')));
+    result.unresolvedCandidates.sort((a, b) => String(b.lastContactAt || '').localeCompare(String(a.lastContactAt || '')));
 
     const document = {
         schemaVersion: 1,
@@ -46,9 +47,11 @@ async function main() {
             totalAccessRecords: accessRecords.length,
             totalBlockedEntries: blockedEntries.length,
             candidateCount: result.candidates.length,
+            unresolvedCandidateCount: result.unresolvedCandidates.length,
             ...result.summary,
         },
         candidates: result.candidates,
+        unresolvedCandidates: result.unresolvedCandidates,
     };
 
     await fs.ensureDir(path.dirname(outputPath));

@@ -27,6 +27,7 @@ function buildPromotionCandidates({ chats = [], accessRecords = [], blockedEntri
         .map((entry) => phoneFromJid(entry.phoneNumber || entry.jid))
         .filter(Boolean));
     const candidates = [];
+    const unresolvedCandidates = [];
     const seenJids = new Set();
     let excludedBuyers = 0;
     let excludedOptOut = 0;
@@ -39,7 +40,8 @@ function buildPromotionCandidates({ chats = [], accessRecords = [], blockedEntri
         const messages = Array.isArray(conversation.messages) ? conversation.messages : [];
         const inboundMessages = messages.filter((message) => !message.fromMe);
         const isDirectPhone = jid.endsWith('@s.whatsapp.net') && /^\d{8,15}$/.test(phone);
-        if (!isDirectPhone || inboundMessages.length === 0 || seenJids.has(jid)) continue;
+        const isUnresolvedLid = jid.endsWith('@lid') && /^\d{8,15}$/.test(phone);
+        if ((!isDirectPhone && !isUnresolvedLid) || inboundMessages.length === 0 || seenJids.has(jid)) continue;
         seenJids.add(jid);
         if (buyerJids.has(jid)) {
             excludedBuyers += 1;
@@ -58,6 +60,16 @@ function buildPromotionCandidates({ chats = [], accessRecords = [], blockedEntri
             continue;
         }
         const lastMessage = messages[messages.length - 1] || {};
+        if (isUnresolvedLid) {
+            unresolvedCandidates.push({
+                jid,
+                pushName: String(conversation.pushName || '').trim(),
+                lastContactAt: lastMessage.timestamp || null,
+                source: 'inbound_lid_conversation',
+                contactable: false,
+            });
+            continue;
+        }
         candidates.push({
             jid,
             phone,
@@ -69,6 +81,7 @@ function buildPromotionCandidates({ chats = [], accessRecords = [], blockedEntri
 
     return {
         candidates,
+        unresolvedCandidates,
         summary: { excludedBuyers, excludedBlocked, excludedOptOut, excludedPaymentEvidence },
     };
 }
