@@ -8,15 +8,19 @@ from collections import defaultdict, deque
 from typing import Literal, Protocol
 
 from fastapi import FastAPI, Header, HTTPException, Request
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class Message(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     role: Literal["system", "user", "assistant"]
     content: str = Field(min_length=1, max_length=50_000)
 
 
 class CompletionRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     model: str = "hermes-chat-only"
     messages: list[Message] = Field(min_length=1, max_length=40)
 
@@ -64,6 +68,9 @@ Devuelve únicamente el texto final para el cliente, sin análisis interno ni fo
                 skip_background_review=True,
                 load_soul_identity=False,
             )
+            registered_tools = getattr(agent, "tools", None)
+            if not isinstance(registered_tools, list) or registered_tools:
+                raise RuntimeError("Hermes bridge requires exactly zero tools")
             result = agent.run_conversation(prompt, task_id=f"wifi_chat_{uuid.uuid4().hex[:12]}")
 
         for message in reversed(result.get("messages", [])):
