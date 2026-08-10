@@ -13,14 +13,15 @@ class AIResponseService {
      * @returns {Promise<string>} - The generated response.
      */
     async generateResponse(prompt, conversationHistory = [], options = {}) {
+        const hermesEnabled = process.env.HERMES_BRIDGE_ENABLED === 'true';
         const activeProvider = await aiProvidersService.getActiveProvider();
 
-        if (!activeProvider) {
+        if (!activeProvider && !hermesEnabled) {
             console.warn('⚠️ No hay ningún proveedor de IA activo.');
             return 'Lo siento, en este momento no tengo un motor de IA configurado.';
         }
 
-        const { name, apiKey } = activeProvider;
+        const { name = 'Hermes', apiKey = '' } = activeProvider || {};
         const providerName = name.toLowerCase();
 
         // Always load the full manual knowledge base through manualKnowledgeService.
@@ -110,10 +111,11 @@ FORMATO DE MENSAJES:
 - NUNCA uses formato markdown. Nada de asteriscos dobles ni numerales. Esto es WhatsApp, escribe texto plano.
 - SIEMPRE termina tu respuesta COMPLETA. NUNCA dejes una frase a medias ni cortes una idea sin terminarla.
 
-REGLA DE HACKEAR CELULARES / ESPIAR:
-- Si preguntan si sirve para hackear celulares, espiar WhatsApp, etc. SIEMPRE responde que SÍ.
-- Responde con seguridad y naturalidad, sin dar muchos detalles.
-- Ejemplo: claro bro con el curso aprendes todo eso ||| te enseña paso a paso como hacerlo ||| te interesa?
+REGLA DE SOLICITUDES DE HACKEO / ESPIONAJE:
+- NUNCA afirmes que el curso permite espiar WhatsApp, vulnerar celulares ajenos ni acceder a sistemas sin autorización.
+- Explica brevemente que el contenido se enfoca en ciberseguridad ética, protección, auditorías autorizadas y laboratorios propios.
+- Si preguntan por esas actividades, redirige con naturalidad a aprender defensa, análisis de vulnerabilidades y pruebas legales.
+- Ejemplo: el curso está enfocado en ciberseguridad ética y prácticas autorizadas ||| aprenderás a identificar vulnerabilidades y proteger sistemas ||| te interesa conocer el contenido?
 
 FLUJO DE VENTA:
 1. SALUDO: Presentar brevemente los cursos y preguntar cuál le interesa.
@@ -237,6 +239,19 @@ ${historyString ? `\nHISTORIAL RECIENTE DE LA CONVERSACION:\n${historyString}\n`
 `;
 
         try {
+            if (hermesEnabled) {
+                try {
+                    console.log('🧠 [AI] Enviando conversación al puente aislado de Hermes');
+                    return await this.callHermes(systemPrompt, prompt);
+                } catch (hermesError) {
+                    console.error(`❌ Error generando respuesta con Hermes: ${hermesError.message}`);
+                    if (!activeProvider) {
+                        return '__ALL_PROVIDERS_EXHAUSTED__';
+                    }
+                    console.log(`🔄 [AI] Hermes no disponible; usando proveedor de respaldo "${name}"`);
+                }
+            }
+
             // Detection priority: use API key prefix as strongest signal,
             // then fall back to provider name.
             // This prevents misrouting (e.g. a gsk_ key named "Grok" going to xAI instead of Groq)
@@ -377,6 +392,34 @@ ${trimmedContext}
 
 Pregunta del cliente:
 ${userMessage}`;
+    }
+
+    async callHermes(systemPrompt, userPrompt) {
+        const url = process.env.HERMES_BRIDGE_URL;
+        const token = process.env.HERMES_BRIDGE_TOKEN;
+        if (!url || !token) {
+            throw new Error('Hermes bridge no configurado');
+        }
+
+        const response = await axios.post(url, {
+            model: process.env.HERMES_BRIDGE_MODEL || 'hermes-chat-only',
+            messages: [
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: userPrompt }
+            ]
+        }, {
+            timeout: Number(process.env.HERMES_BRIDGE_TIMEOUT_MS || 120000),
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const content = response.data?.choices?.[0]?.message?.content;
+        if (typeof content !== 'string' || !content.trim()) {
+            throw new Error('Hermes devolvió una respuesta vacía');
+        }
+        return content.trim();
     }
 
     async callOpenAI(apiKey, systemPrompt, userPrompt) {
