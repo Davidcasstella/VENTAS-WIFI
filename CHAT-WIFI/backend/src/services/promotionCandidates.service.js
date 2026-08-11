@@ -11,8 +11,11 @@ function normalizeText(value = '') {
 }
 
 function requestedOptOut(messages) {
-    const text = messages.filter((message) => !message.fromMe).map((message) => normalizeText(message.text)).join('\n');
-    return /\b(stop|detener|borrar mi numero|eliminar mi numero|no me escrib(?:a|an|as)|no quiero recibir|no mas mensajes)\b/.test(text);
+    const inboundTexts = messages
+        .filter((message) => !message.fromMe)
+        .map((message) => normalizeText(message.text).trim());
+    if (inboundTexts.some((text) => text === 'no')) return true;
+    return /\b(stop|detener|borrar mi numero|eliminar mi numero|no me escrib(?:a|an|as)|no quiero recibir|no mas mensajes)\b/.test(inboundTexts.join('\n'));
 }
 
 function hasPaymentEvidence(messages) {

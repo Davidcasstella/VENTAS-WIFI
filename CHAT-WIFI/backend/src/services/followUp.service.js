@@ -14,20 +14,21 @@ const DEFAULT_CONFIG = {
     steps: [
         {
             id: 'step_1',
-            label: 'Seguimiento 2 horas',
+            label: 'Oferta inicial 15.000 COP',
             delayMinutes: 120,
             enabled: true,
-            text: '¡Hola! 👋 Vi que te interesó el curso. No dejes pasar la promo: tienes el combo de 7 mil y el combo de 10 mil (el más completo) 🔥 ¿Con cuál te animas?',
+            text: 'Hola bro 👋 Vi tu interés por aprender ciberseguridad y hacking ético.---MSG---Como ves en la imagen, el precio de referencia mostrado para el curso es COL$234.900.---MSG---Tengo una oferta especial para ti: te dejo el curso en $15.000 COP si lo compras hoy.---MSG---Oferta válida hasta las 11:59 p. m. de hoy (hora Colombia). ¿Quieres aprovecharla?---MSG---Si no deseas recibir más mensajes, responde NO.',
             audioPath: null,
             videoPath: null,
-            imagePath: null
+            imagePath: null,
+            imageFirst: true
         },
         {
             id: 'step_2',
             label: 'Seguimiento 4 horas',
             delayMinutes: 240,
-            enabled: true,
-            text: 'Sigo aquí para ayudarte 🙌 Recuerda que por hoy mantienes la promo: combo de 7 mil o el de 10 mil con todo incluido. Es una inversión que se paga sola. ¿Te reservo tu cupo?',
+            enabled: false,
+            text: '',
             audioPath: null,
             videoPath: null,
             imagePath: null
@@ -36,8 +37,8 @@ const DEFAULT_CONFIG = {
             id: 'step_3',
             label: 'Seguimiento 2 días',
             delayMinutes: 2880,
-            enabled: true,
-            text: 'No quiero que pierdas esta oportunidad 😊 La promo de 7 mil y 10 mil sigue disponible por poco tiempo. Muchos ya empezaron su curso. ¿Aseguramos el tuyo hoy?',
+            enabled: false,
+            text: '',
             audioPath: null,
             videoPath: null,
             imagePath: null
@@ -46,8 +47,8 @@ const DEFAULT_CONFIG = {
             id: 'step_4',
             label: 'Seguimiento 4 días',
             delayMinutes: 5760,
-            enabled: true,
-            text: 'Última llamada 🚀 La promo de 7 mil / 10 mil está por cerrarse. Si te animas ahora aseguras el precio especial y el acceso completo. Escríbeme y lo dejamos listo 💪',
+            enabled: false,
+            text: '',
             audioPath: null,
             videoPath: null,
             imagePath: null
@@ -149,7 +150,8 @@ class FollowUpService {
             text: stepData.text || '',
             audioPath: null,
             videoPath: null,
-            imagePath: null
+            imagePath: null,
+            imageFirst: Boolean(stepData.imageFirst)
         };
         config.steps.push(newStep);
         await this._persistConfig(config);
@@ -612,6 +614,23 @@ class FollowUpService {
             this._welcomeAutomationService.markBotSent(jid);
         }
 
+        // Optional: send the reference image before the greeting/text sequence.
+        if (step.imageFirst && step.imagePath && fs.existsSync(step.imagePath)) {
+            if (this._welcomeAutomationService) this._welcomeAutomationService.markBotSent(jid);
+            await this._sock.sendMessage(jid, {
+                image: { url: step.imagePath },
+                caption: ''
+            });
+            console.log(`🖼️ Follow-up image sent first to ${jid}`);
+            if (this._chatHistoryService && this._io) {
+                try {
+                    const savedMsg = await this._chatHistoryService.addMessage(jid, `[Follow-up Image: ${step.label}]`, true, 'System', 'system');
+                    this._io.emit('chat:message', { jid, message: savedMsg });
+                } catch (_) { }
+            }
+            await new Promise(r => setTimeout(r, Math.floor(DELAY * 0.5)));
+        }
+
         // 1. Send audio first (if exists)
         if (step.audioPath && fs.existsSync(step.audioPath)) {
             try {
@@ -661,8 +680,8 @@ class FollowUpService {
             await new Promise(r => setTimeout(r, Math.floor(DELAY * 0.5)));
         }
 
-        // 3. Send image (if exists)
-        if (step.imagePath && fs.existsSync(step.imagePath)) {
+        // 3. Send image after text unless this step explicitly sent it first.
+        if (!step.imageFirst && step.imagePath && fs.existsSync(step.imagePath)) {
             try {
                 if (this._welcomeAutomationService) this._welcomeAutomationService.markBotSent(jid);
                 await this._sock.sendMessage(jid, {

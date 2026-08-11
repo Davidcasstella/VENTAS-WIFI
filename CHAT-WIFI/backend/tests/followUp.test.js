@@ -81,7 +81,19 @@ test('no arma seguimiento si el sistema está desactivado', async () => {
 });
 
 test('arma seguimiento cuando el negocio escribe (cliente aún sin responder)', async () => {
-    await followUp.saveConfig({ globalEnabled: true });
+    await followUp.saveConfig({
+        globalEnabled: true,
+        steps: [{
+            id: 'step_test_arm',
+            label: 'Paso de prueba',
+            delayMinutes: 120,
+            enabled: true,
+            text: 'Contenido de prueba',
+            audioPath: null,
+            videoPath: null,
+            imagePath: null
+        }]
+    });
     const jid = '222@s.whatsapp.net';
 
     const armed = await followUp.startFollowUp(jid);
@@ -121,9 +133,9 @@ test('cierra el seguimiento tras el pago y no lo revive', async () => {
     assert.equal(st.status, 'closed');
 });
 
-test('envía la promo (texto 7 mil / 10 mil + foto) a quien no compró ni respondió', async () => {
+test('envía texto de 15.000 COP y foto a quien no compró ni respondió', async () => {
     const jid = '555@s.whatsapp.net';
-    const promoText = '¡Aprovecha! Combo de 7 mil o el combo de 10 mil 🔥 Escríbeme para asegurar el tuyo';
+    const promoText = 'Oferta especial: curso de ciberseguridad ética por $15.000 COP';
 
     await followUp.saveConfig({
         globalEnabled: true,
@@ -149,8 +161,8 @@ test('envía la promo (texto 7 mil / 10 mil + foto) a quien no compró ni respon
     const images = sent.filter(s => s.content.image);
 
     assert.ok(
-        texts.some(t => t.includes('7 mil') && t.includes('10 mil')),
-        'el mensaje debe insistir con la promo de 7 mil y 10 mil'
+        texts.some(t => t.includes('$15.000 COP') && t.includes('ciberseguridad ética')),
+        'el mensaje debe contener la oferta vigente de $15.000 COP'
     );
     assert.equal(images.length, 1, 'debe enviarse la foto de la promo');
     assert.ok(sent.every(s => s.to === jid), 'todo se envía al cliente correcto');
@@ -159,6 +171,46 @@ test('envía la promo (texto 7 mil / 10 mil + foto) a quien no compró ni respon
     assert.equal(st.currentStepIndex, 1, 'avanza al siguiente paso tras enviar');
     assert.equal(st.history.length, 1);
     assert.equal(st.history[0].ok, true);
+});
+
+test('envía primero la imagen de referencia y después la oferta ética de 15.000 COP', async () => {
+    const jid = '777@s.whatsapp.net';
+    const promoText = [
+        'Hola bro 👋 Vi tu interés por aprender ciberseguridad y hacking ético.',
+        'El precio de referencia mostrado en la imagen es COL$234.900.',
+        'Solo por hoy te dejo el curso en $15.000 COP. Oferta válida hasta las 11:59 p. m. (hora Colombia).',
+        'Si no deseas recibir más mensajes, responde NO.'
+    ].join('---MSG---');
+
+    await followUp.saveConfig({
+        globalEnabled: true,
+        stopOnReply: true,
+        steps: [{
+            id: 'step_reference_offer',
+            label: 'Oferta inicial 15.000 COP',
+            delayMinutes: 0,
+            enabled: true,
+            text: promoText,
+            imageFirst: true,
+            audioPath: null,
+            videoPath: null,
+            imagePath: tmpImage
+        }]
+    });
+
+    const sent = makeDeps([]);
+    await followUp.startFollowUp(jid);
+    await followUp._processQueue();
+
+    assert.ok(sent[0].content.image, 'la imagen de referencia debe enviarse primero');
+    assert.deepEqual(
+        sent.slice(1).map(item => item.content.text),
+        promoText.split('---MSG---'),
+        'los textos deben enviarse después de la imagen y en el orden acordado'
+    );
+    assert.ok(sent.some(item => item.content.text?.includes('$15.000 COP')));
+    assert.ok(sent.some(item => item.content.text?.includes('11:59 p. m.')));
+    assert.ok(sent.some(item => item.content.text?.includes('responde NO')));
 });
 
 test('no envía la promo si el cliente respondió justo antes del envío', async () => {

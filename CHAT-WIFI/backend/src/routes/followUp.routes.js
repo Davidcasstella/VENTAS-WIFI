@@ -63,12 +63,13 @@ router.post('/steps', async (req, res) => {
 // PUT /api/follow-up/steps/:stepId — Update a step
 router.put('/steps/:stepId', async (req, res) => {
     try {
-        const { label, delayMinutes, enabled, text } = req.body;
+        const { label, delayMinutes, enabled, text, imageFirst } = req.body;
         const updates = {};
         if (label !== undefined) updates.label = label;
         if (delayMinutes !== undefined) updates.delayMinutes = Number(delayMinutes);
         if (enabled !== undefined) updates.enabled = enabled;
         if (text !== undefined) updates.text = text;
+        if (imageFirst !== undefined) updates.imageFirst = Boolean(imageFirst);
         const step = await followUpService.updateStep(req.params.stepId, updates);
         res.json({ success: true, step });
     } catch (err) {

@@ -10,6 +10,18 @@ function inbound(text, timestamp = '2026-08-01T12:00:00.000Z') {
     return { text, fromMe: false, timestamp };
 }
 
+test('excludes a standalone NO sent as an opt-out response', () => {
+    const chats = [chat('573009999999@s.whatsapp.net', [
+        inbound('Quiero información', '2026-08-01T12:00:00.000Z'),
+        inbound('NO', '2026-08-01T13:00:00.000Z'),
+    ])];
+
+    const result = buildPromotionCandidates({ chats, accessRecords: [], blockedEntries: [] });
+
+    assert.equal(result.candidates.length, 0);
+    assert.equal(result.summary.excludedOptOut, 1);
+});
+
 test('preserves inbound LID contacts as unresolved and never invents a phone', () => {
     const chats = [chat('123456789012345@lid', [inbound('Quiero información')], 'Contacto LID')];
 
