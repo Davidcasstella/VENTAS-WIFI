@@ -213,6 +213,31 @@ test('envía primero la imagen de referencia y después la oferta ética de 15.0
     assert.ok(sent.some(item => item.content.text?.includes('responde NO')));
 });
 
+test('con automatización global apagada solo procesa seguimientos autorizados manualmente', async () => {
+    const automaticJid = '888@s.whatsapp.net';
+    const manualJid = '999@s.whatsapp.net';
+    const step = {
+        id: 'step_manual_gate',
+        label: 'Oferta manual',
+        delayMinutes: 0,
+        enabled: true,
+        text: 'Oferta manual autorizada',
+        audioPath: null,
+        videoPath: null,
+        imagePath: null
+    };
+
+    await followUp.saveConfig({ globalEnabled: true, steps: [step] });
+    const sent = makeDeps([]);
+    await followUp.startFollowUp(automaticJid);
+
+    await followUp.saveConfig({ globalEnabled: false, steps: [step] });
+    await followUp.startFollowUp(manualJid, { isManual: true, forceImmediate: true });
+    await followUp._processQueue();
+
+    assert.deepEqual(sent.map(item => item.to), [manualJid]);
+});
+
 test('no envía la promo si el cliente respondió justo antes del envío', async () => {
     const jid = '666@s.whatsapp.net';
 

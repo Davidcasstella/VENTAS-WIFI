@@ -351,6 +351,7 @@ class FollowUpService {
             state.currentStepIndex = initialStepIdx < config.steps.length ? initialStepIdx : 0;
             state.lastStepSentAt = null;
             state.status = 'active';
+            state.manualAuthorized = Boolean(isManual);
             state.pauseReason = null;
             state.closedReason = null;
             if (opts && (opts.isManual || opts.resetHistory)) {
@@ -506,6 +507,7 @@ class FollowUpService {
             for (const [jid, state] of Object.entries(states)) {
                 const status = state.status || (state.cancelled || state.completed ? 'closed' : 'active');
                 if (status !== 'active') continue;
+                if (!config.globalEnabled && state.manualAuthorized !== true) continue;
 
                 const validIdx = this._getNextValidStepIndex(config, state.currentStepIndex || 0);
                 if (validIdx !== (state.currentStepIndex || 0)) {
@@ -529,6 +531,7 @@ class FollowUpService {
             for (const jid of dueJids) {
                 const step = await this._mutateJid(jid, async (state) => {
                     if ((state.status || 'active') !== 'active') return null;
+                    if (!config.globalEnabled && state.manualAuthorized !== true) return null;
                     const validIdx = this._getNextValidStepIndex(config, state.currentStepIndex || 0);
                     state.currentStepIndex = validIdx;
                     if (validIdx >= config.steps.length) return null;
@@ -566,6 +569,7 @@ class FollowUpService {
                         const nextValid = this._getNextValidStepIndex(config, state.currentStepIndex);
                         if (nextValid >= config.steps.length) {
                             state.completed = true;
+                            state.manualAuthorized = false;
                             state.completedAt = nowIso;
                             console.log(`✅ Follow-up sequence exhausted for ${jid}`);
                         }
